@@ -1,9 +1,7 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
 using EmployeeSystem.Provider;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeSystemWebApi.Controllers
@@ -12,14 +10,10 @@ namespace EmployeeSystemWebApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IEmployeeService _employeeService;
         private readonly IAuthService _authService;
-        private readonly ApplicationDbContext _context;
 
-        public AuthController(IEmployeeService employeeService, IAuthService authService, ApplicationDbContext applicationDbContext)
+        public AuthController(IAuthService authService)
         {
-            _employeeService = employeeService;
-            _context = applicationDbContext;
             _authService = authService;
         }
 

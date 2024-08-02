@@ -1,16 +1,8 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
 using static EmployeeSystem.Contract.Enums.Enums;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Response;
-using Microsoft.AspNetCore.Http;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -183,7 +175,9 @@ namespace EmployeeSystem.Provider.Services
                 var user = new User
                 {
                     Username = employeeDto.Username,
-                    Password = employeeDto.Password
+                    Password = employeeDto.Password,
+                    CreatedBy = userID,
+                    CreatedOn = DateTime.Now
                 };
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
@@ -252,6 +246,8 @@ namespace EmployeeSystem.Provider.Services
                     {
                         Username = employeeDto.Username,
                         Password = employeeDto.Password,
+                        CreatedBy = userID,
+                        CreatedOn = DateTime.Now,
                     };
 
                     _context.Users.Add(user);
@@ -431,11 +427,11 @@ namespace EmployeeSystem.Provider.Services
         }
     
 
-        public async Task<List<EmployeeDto>?> GetEmloyeesWithDepartmentName(string departmentName)
+        public async Task<List<EmployeeDto>?> GetEmloyeesWithDepartmentName(int id)
         {
             try
             {
-                var res = await _context.Departments.FirstOrDefaultAsync(d => d.Name == departmentName & d.IsActive);
+                var res = await _context.Departments.FirstOrDefaultAsync(d => d.Id == id & d.IsActive);
                 if(res == null)
                 {
                     return null;
@@ -455,7 +451,7 @@ namespace EmployeeSystem.Provider.Services
                         Name = e.Name,
                         Salary = e.Salary,
                         Role = e.Role,
-                        DepartmentName = departmentName,
+                        DepartmentName = e.Department.Name,
                         ManagerName = e.Manager.Name,
                         ManagerId= e.Manager.Id,
                         DepartmentId = e.Department.Id,

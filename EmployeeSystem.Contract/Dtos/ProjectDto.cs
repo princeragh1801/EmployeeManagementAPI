@@ -1,11 +1,4 @@
-﻿using EmployeeSystem.Contract.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EmployeeSystem.Contract.Dtos
+﻿namespace EmployeeSystem.Contract.Dtos
 {
     public class ProjectDto : BaseEntityDto
     {

@@ -1,9 +1,7 @@
 ﻿
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
-using EmployeeSystem.Provider;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -85,7 +83,7 @@ namespace EmployeeSystemWebApi.Controllers
 
         [HttpPost]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<int>>> AddEmployee( AddEmployeeDto employee)
+        public async Task<ActionResult<ApiResponse<int>>> AddEmployee(AddEmployeeDto employee)
         {
             try
             {
@@ -263,12 +261,12 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpGet("department")]
-        public async Task<ActionResult<ApiResponse<List<EmployeeDto>?>>> GetEmployeeDepartmentWise(string departmentName)
+        [HttpGet("department/{id}")]
+        public async Task<ActionResult<ApiResponse<List<EmployeeDto>?>>> GetEmployeeDepartmentWise(int id)
         {
             try
             {
-                var employees = await _employeeService.GetEmloyeesWithDepartmentName(departmentName);
+                var employees = await _employeeService.GetEmloyeesWithDepartmentName(id);
 
                 var response = new ApiResponse<List<EmployeeDto>>
                 {
