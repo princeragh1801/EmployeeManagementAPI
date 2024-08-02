@@ -1,13 +1,9 @@
 ﻿
-using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Dtos;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text; 
-using static EmployeeSystem.Contract.Enums.Enums;
 using EmployeeSystem.Contract.Interfaces;
+using EmployeeSystem.Contract.Models;
+using Microsoft.EntityFrameworkCore;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -20,32 +16,57 @@ namespace EmployeeSystem.Provider.Services
             _context = context;
         }
 
-        public async Task<List<TasksDto>> GetAllTasks()
+        public IQueryable<Tasks> GetTasksInfo(int userId)
+        {
+            //var query = _context.Tasks;
+            var user = _context.Employees.FirstOrDefault(e => e.UserId == userId);
+
+            if (user.Role != Role.SuperAdmin)
+            {
+                var query = _context.Tasks.Include(t => t.Employee).Include(t => t.Admin).Where(t => t.IsActive & (t.Employee.Id == user.Id || t.Employee.ManagerID == user.Id));
+                return query;
+            }
+            return _context.Tasks;
+        }
+
+        public async Task<bool> CheckTaskValidAssign(int assignedTo, int assignedBy)
         {
             try
             {
-                // fetching the tasks and converting them to list of task dto
-                var tasks = await _context.Tasks
-                   
-                    .Include(t => t.Employee)
-                    .Include(t => t.Admin)
-                    .Where(t => t.IsActive)
-                    .Select(t => new TasksDto
-                    {
-                        Id = t.Id,
-                        Name = t.Name,
-                        AssignedBy = t.AssignedBy,
-                        AssignedTo = t.AssignedTo,
-                        Status = t.Status,
-                        Description = t.Description,
-                        AssigneeName = t.Employee.Name,
-                        AssignerName = t.Admin.Name,
-                        CreatedBy = t.CreatedBy,
-                        UpdatedBy = t.UpdatedBy,
-                        CreatedOn = t.CreatedOn,
-                        UpdatedOn = t.UpdatedOn,
+                var assignee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedTo);
+                var assinger = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedBy);
 
-                    }).ToListAsync();
+                return ((assinger != null && assignee != null) && (assinger.Role == Role.SuperAdmin || assignee.ManagerID == assignedBy));
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<TasksDto>> GetAllTasks(int userId)
+        {
+            try
+            {
+                
+                var query = GetTasksInfo(userId);
+
+                var tasks = await query.Select(t => new TasksDto
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    AssignedBy = t.AssignedBy,
+                    AssignedTo = t.AssignedTo,
+                    Status = t.Status,
+                    Description = t.Description,
+                    AssigneeName = t.Employee.Name,
+                    AssignerName = t.Admin.Name,
+                    CreatedBy = t.CreatedBy,
+                    UpdatedBy = t.UpdatedBy,
+                    CreatedOn = t.CreatedOn,
+                    UpdatedOn = t.UpdatedOn,
+
+                }).ToListAsync();
 
                 return tasks;
             }catch (Exception ex)
@@ -54,39 +75,28 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<TasksDto?> GetById(int id)
+        public async Task<TasksDto?> GetById(int userId, int id)
         {
             try
             {
-                // we can apply the check for task exist
-                var check = await TaskExist(id);
-                if (!check)
+                var query = GetTasksInfo(userId);
+                var task = await query.Select(t => new TasksDto
                 {
-                    return null;
-                }
+                    Id = t.Id,
+                    Name = t.Name,
+                    AssignedBy = t.AssignedBy,
+                    AssignedTo = t.AssignedTo,
+                    Status = t.Status,
+                    Description = t.Description,
+                    AssigneeName = t.Employee.Name,
+                    AssignerName = t.Admin.Name,
+                    CreatedBy = t.CreatedBy,
+                    UpdatedBy = t.UpdatedBy,
+                    CreatedOn = t.CreatedOn,
+                    UpdatedOn = t.UpdatedOn,
 
-                // fetching the task details and converting it into task dto
-                var task = await _context.Tasks
-                    .Include(t=> t.Employee)
-                    .Include(t => t.Admin)
-                    .Select(t => new TasksDto
-                    {
-                        Id = t.Id, 
-                        Name = t.Name, 
-                        AssignedBy = t.AssignedBy,
-                        AssignedTo = t.AssignedTo,
-                        Status = t.Status,
-                        Description = t.Description,
-                        AssigneeName = t.Employee.Name,
-                        AssignerName = t.Admin.Name,
-                        projectId = t.ProjectId,
-                        CreatedBy = t.CreatedBy,
-                        UpdatedBy = t.UpdatedBy,
-                        CreatedOn = t.CreatedOn,
-                        UpdatedOn = t.UpdatedOn,
-                    }
-                    ).FirstOrDefaultAsync(t => t.Id == id);
-                
+                }).FirstOrDefaultAsync(t => t.Id == id);
+
                     
                 return task;
             }
@@ -103,7 +113,24 @@ namespace EmployeeSystem.Provider.Services
                 // we can apply check first
 
                 // fetching the task details
-                var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+                var task = await _context.Tasks
+                    .Select(t => new TasksDto
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        AssignedBy = t.AssignedBy,
+                        AssignedTo = t.AssignedTo,
+                        Status = t.Status,
+                        Description = t.Description,
+                        AssigneeName = t.Employee.Name,
+                        AssignerName = t.Admin.Name,
+                        CreatedBy = t.CreatedBy,
+                        UpdatedBy = t.UpdatedBy,
+                        CreatedOn = t.CreatedOn,
+                        UpdatedOn = t.UpdatedOn,
+
+                    })
+                    .FirstOrDefaultAsync(t => t.Id == id);
                     
                     
                 if (task == null)
@@ -117,8 +144,7 @@ namespace EmployeeSystem.Provider.Services
                 task.UpdatedBy = userId;
                 await _context.SaveChangesAsync();
 
-                var taskDto = await GetById(task.Id);
-                return taskDto;
+                return task;
             }
             catch (Exception ex)
             {
@@ -140,22 +166,20 @@ namespace EmployeeSystem.Provider.Services
                     {
                         return -2;
                     }
-
-                }
-
-                var checkProjectEmployee = await _context.ProjectEmployees
-                    .FirstOrDefaultAsync(p => p.ProjectId == taskDto.ProjectId 
+                    var checkProjectEmployee = await _context.ProjectEmployees
+                    .FirstOrDefaultAsync(p => p.ProjectId == taskDto.ProjectId
                         && p.EmployeeId == assignedToId);
-
-                // employee with given id is not in the project so can't assign the task
-                if(checkProjectEmployee == null)
-                {
-                    return -1;
+                    // employee with given id is not in the project so can't assign the task
+                    if (checkProjectEmployee == null)
+                    {
+                        return -1;
+                    }
                 }
+                
 
-                var checkManager = await _context.Employees.FirstOrDefaultAsync(e => e.IsActive & e.Id == assignedToId);
-
-                if (checkManager == null || checkManager.Role != Role.SuperAdmin || checkManager.ManagerID != assignedById)
+                
+                var check = assignedById == assignedToId ? true : await CheckTaskValidAssign(assignedToId, assignedById);
+                if (!check)
                 {
                     return 0;
                 }
@@ -185,7 +209,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // check for assigner details
-        public async Task<bool> Delete(int id)
+        public async Task<bool?> Delete(int userId, int id)
         {
             try
             {
@@ -196,7 +220,20 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return false;
                 }
+                int assignedById = task.AssignedBy;
+                int assignedToId = task.AssignedTo;
 
+                var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId & e.IsActive);
+
+                var check = false;
+                if (employee.Role == Role.SuperAdmin || employee.Id == assignedById)
+                {
+                    check = true;
+                }
+                if (!check)
+                {
+                    return null;
+                }
                 // soft delete
                 task.IsActive = false;
                 // _context.Tasks.Remove(task);    

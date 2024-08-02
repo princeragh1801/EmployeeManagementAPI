@@ -24,7 +24,9 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var tasks = await _taskService.GetAllTasks();
+                // fetching id from token
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var tasks = await _taskService.GetAllTasks(userId);
                 var response = new ApiResponse<List<TasksDto>>
                 {
                     Success = true,
@@ -49,7 +51,9 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var task = await _taskService.GetById(id);
+                // fetching id from token
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var task = await _taskService.GetById(userId, id);
                 var response = new ApiResponse<TasksDto>
                 {
                     Success = true,
@@ -93,12 +97,15 @@ namespace EmployeeSystemWebApi.Controllers
                 if (id == 0)
                 {
                     response.Message = "Unauthorized request, The assigner doesn't has the authority to assign the task";
+                    return Unauthorized(response);
                 }else if(id == -1)
                 {
                     response.Message = "Employee is not in the project so task can't assign";
+                    return Unauthorized(response);
                 }else if(id == -2)
                 {
                     response.Message = "Project not exist";
+                    return NotFound(response);
                 }
 
                 return Ok(response);
@@ -119,19 +126,26 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var deleted = await _taskService.Delete(id);
+                // fetching id from token
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+
+                var deleted = await _taskService.Delete(userId, id);
                 var response = new ApiResponse<bool>
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Task Added",
-                    Data = deleted
+                    Message = "Task Deleted"
                 };
-                if (!deleted)
+                if(deleted == null)
+                {
+                    return Unauthorized(response);
+                }
+                else if (deleted == false)
                 {
                     response.Success = false;
                     response.Status = 404;
                     response.Message = "Task with given id not exist";
+                    return NotFound(response);
                 }
 
                 return Ok(response);

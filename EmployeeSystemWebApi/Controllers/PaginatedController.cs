@@ -46,6 +46,32 @@ namespace EmployeeSystemWebApi.Controllers
                     Data = null
                 });
             }
+        }[HttpPost("departments")]
+        public async Task<ActionResult<ApiResponse<List<EmployeeDto>>>> GetDepartments(PaginatedDto paginatedDto)
+        {
+            try
+            {
+                var departments = await _paginatedService.GetDepartments(paginatedDto);
+
+                var response = new ApiResponse<List<DepartmentDto>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Employees details fetched",
+                    Data = departments
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<DepartmentDto>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
         }
     }
 }

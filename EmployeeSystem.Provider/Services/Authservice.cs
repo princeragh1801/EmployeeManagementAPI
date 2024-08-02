@@ -30,6 +30,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, emp.Name),
                 new Claim("Id", userId.ToString()),
+                new Claim("UserId", emp.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, emp.Role.ToString())
                 
