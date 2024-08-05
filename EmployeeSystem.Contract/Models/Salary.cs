@@ -11,6 +11,8 @@ namespace EmployeeSystem.Contract.Models
 
         public SalaryStatus Status { get; set; } = SalaryStatus.Paid;
 
+        public DateTime PaidOn { get; set; } = DateTime.Now;
+
         [ForeignKey(nameof(EmployeeId))]
         public Employee Employee { get; set; }
 

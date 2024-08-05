@@ -16,9 +16,9 @@ namespace EmployeeSystem.Contract.Dtos
         public string ?AssigneeName { get; set; }
 
         
-        public EmployeeDto? AssignerDetails { get; set; }
+        /*public EmployeeDto? AssignerDetails { get; set; }
         public EmployeeDto? AssigneeDetails { get; set; }
         public ProjectDetailsDto? ProjectDetails { get; set; }
-        public List<TaskReviewDto> ?Reviews { get; set; }
+        public List<TaskReviewDto> ?Reviews { get; set; }*/
     }
 }

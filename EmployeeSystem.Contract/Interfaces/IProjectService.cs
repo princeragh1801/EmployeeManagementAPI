@@ -6,7 +6,7 @@ namespace EmployeeSystem.Contract.Interfaces
     {
         public Task<List<ProjectDto>> GetAll();
         public Task<ProjectDetailsDto?> GetById(int id);
-        public Task<int> Add(int userId, AddProjectDto project);
+        public Task<int> Add(int userId, int adminId, AddProjectDto project);
         public Task<bool> DeleteById(int id);
     }
 }

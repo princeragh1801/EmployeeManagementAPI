@@ -20,12 +20,14 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize]
         public async Task<ActionResult<ApiResponse<List<EmployeeDto>?>>> GetEmployees()
         {
             try
             {
-                var employees = await _employeeService.GetAll();
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
+
+                var employees = await _employeeService.GetAll(userId);
 
                 var response = new ApiResponse<List<EmployeeDto>>
                 {
@@ -198,7 +200,7 @@ namespace EmployeeSystemWebApi.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<EmployeeDto?>>> UpdateEmployee(int id, AddEmployeeDto employee)
+        public async Task<ActionResult<ApiResponse<EmployeeDto?>>> UpdateEmployee(int id, UpdateEmployeeDto employee)
         {
             try
             {

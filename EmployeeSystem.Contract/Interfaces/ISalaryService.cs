@@ -6,6 +6,6 @@ namespace EmployeeSystem.Contract.Interfaces
     {
         public Task<List<SalaryDto>> GetEmployeeSalaryDetails(int id);
 
-        public Task<int> AddSalary(int employeeId);
+        public Task<bool> Pay(int employeeId);
     }
 }

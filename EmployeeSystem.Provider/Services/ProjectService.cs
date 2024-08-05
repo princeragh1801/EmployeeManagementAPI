@@ -2,7 +2,6 @@
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -88,7 +87,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<int> Add(int userId, AddProjectDto projectDto)
+        public async Task<int> Add(int userId, int adminId, AddProjectDto projectDto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -97,25 +96,22 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return 0;
                 }
-                var checkIsSuperAdmin = await _context.Employees.FirstOrDefaultAsync(e => e.IsActive & e.Id == projectDto.AdminId);
 
-                if (checkIsSuperAdmin == null || checkIsSuperAdmin.Role != Role.SuperAdmin)
-                {
-                    return 0;
-                }
                 await transaction.CreateSavepointAsync("Adding New Project");
                 var project = new Project
                 {
                     Name = projectDto.Name,
                     Description = projectDto.Description,
-                    AdminId = projectDto.AdminId,
+                    AdminId = adminId,
                     IsActive = true,
+                    CreatedBy = userId,
+                    CreatedOn = DateTime.Now
                 };
 
                 _context.Projects.Add(project);
-                
+                await _context.SaveChangesAsync();
 
-                foreach(var p in projectDto.Members)
+                foreach (var p in projectDto.Members)
                 {
                     var projectEmployee = new ProjectEmployee
                     {
@@ -149,7 +145,9 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return false;
                 }
-                _context.Projects.Remove(project);
+                project.IsActive = false;
+
+                //_context.Projects.Remove(project);
                 await _context.SaveChangesAsync();
                 return true;
             }

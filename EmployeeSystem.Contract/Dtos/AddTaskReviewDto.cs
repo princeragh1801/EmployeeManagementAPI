@@ -12,8 +12,8 @@ namespace EmployeeSystem.Contract.Dtos
         [MinLength(2)]
         public string Content { get; set; }
 
-        [Required(ErrorMessage = "Reviewer id is required") ]
+        /*[Required(ErrorMessage = "Reviewer id is required") ]
         [Range(1, int.MaxValue)]
-        public int ReviewerId { get; set; }
+        public int ReviewerId { get; set; }*/
     }
 }

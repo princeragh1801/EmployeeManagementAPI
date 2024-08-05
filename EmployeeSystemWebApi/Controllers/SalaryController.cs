@@ -47,5 +47,29 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [HttpPost("{employeeId}")]
+        public async Task<ActionResult<ApiResponse<bool>>> Pay(int employeeId)
+        {
+            try
+            {
+                var response = new ApiResponse<bool>();
+                var paid = await _salaryService.Pay(employeeId);
+
+                if (!paid)
+                {
+                    response.Message = "Already taken advance";
+                    return Conflict(response);
+                }
+                response.Message = "Salary paid";
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                var response = new ApiResponse<bool>();
+                response.Message = ex.Message;
+                response.Status = 500;
+                response.Success = false;
+                return BadRequest(response);
+            }
+        }
     }
 }

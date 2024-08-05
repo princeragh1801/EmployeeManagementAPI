@@ -9,6 +9,6 @@
         public string ?ReviewedBy { get; set; }
         public int ReviewerId { get; set; }
 
-        public EmployeeDto? ReviewerDetails { get; set; }
+        //public EmployeeDto? ReviewerDetails { get; set; }
     }
 }

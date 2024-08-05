@@ -58,7 +58,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
 
-        public async Task<int> Add(int userId, AddTaskReviewDto taskReviewDto)
+        public async Task<int> Add(int userId, int adminId, AddTaskReviewDto taskReviewDto)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace EmployeeSystem.Provider.Services
                 var taskReview = new TaskReview
                 {
                     Content = taskReviewDto.Content,
-                    ReviewedBy = taskReviewDto.ReviewerId,
+                    ReviewedBy = adminId,
                     TaskID = taskReviewDto.TaskID,
                     CreatedOn = DateTime.Now,
                     CreatedBy = userId

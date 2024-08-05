@@ -1,7 +1,11 @@
 ﻿namespace EmployeeSystem.Contract.Dtos
 {
-    internal class PaginatedItemsDto<T>
+    public class PaginatedItemsDto<T>
     {
-        public T ?Items { get; set; }
+        public T ?Data { get; set; }
+
+        public int TotalPages { get; set; }
+
+        public int TotalItems {  get; set; }
     }
 }

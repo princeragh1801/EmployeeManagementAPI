@@ -85,8 +85,9 @@ namespace EmployeeSystemWebApi.Controllers
             {
                 // fetching id from token
                 var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
-                var id = await _taskService.Add(userId, taskDto);
+                var id = await _taskService.Add(userId, adminId, taskDto);
                 var response = new ApiResponse<int>
                 {
                     Success = true,

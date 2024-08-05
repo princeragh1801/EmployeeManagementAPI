@@ -64,10 +64,38 @@ namespace EmployeeSystem.Provider.Services
 
 
         // get all employees
-        public async Task<List<EmployeeDto>?> GetAll()
+        public async Task<List<EmployeeDto>?> GetAll(int userId)
         {
             try
             {
+                var emp = await _context.Employees.FirstOrDefaultAsync(e => e.Id == userId);
+
+                if(emp != null && emp.Role != Role.SuperAdmin)
+                {
+                    return await _context.Employees
+                        .Where(e => e.ManagerID == emp.Id)
+                        .Include(e => e.Manager)
+                    .ThenInclude(e => e.Department)
+                    .Where(e => e.IsActive)
+                    .Select(e => new EmployeeDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        Salary = e.Salary,
+                        Role = e.Role,
+                        ManagerName = e.Manager.Name,
+                        DepartmentName = e.Department.Name,
+                        DepartmentId = e.DepartmentID,
+                        ManagerId = e.ManagerID,
+                        CreatedBy = e.CreatedBy,
+                        UpdatedBy = e.UpdatedBy,
+                        CreatedOn = e.CreatedOn,
+                        UpdatedOn = e.UpdatedOn,
+
+                    }).ToListAsync();
+                }
+
+
                 // fetching employees and converting them to list of dto
                 var employees = await _context.Employees
                     .Include(e => e.Manager)
@@ -315,7 +343,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // update employee
-        public async Task<EmployeeDto?> Update(int userID, int id, AddEmployeeDto employeeDto)
+        public async Task<EmployeeDto?> Update(int userID, int id, UpdateEmployeeDto employeeDto)
         {
             try
             {

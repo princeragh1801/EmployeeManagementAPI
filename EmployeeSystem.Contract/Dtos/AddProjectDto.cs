@@ -13,9 +13,9 @@ namespace EmployeeSystem.Contract.Dtos
         [MinLength(5)]
         public string Description { get; set; }
 
-        [Required]
+        /*[Required]
         [Range(1, int.MaxValue)]
-        public int AdminId { get; set; }
+        public int AdminId { get; set; }*/
 
         [Required]
         public List<AddProjectEmployeeDto> Members { get; set; }

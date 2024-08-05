@@ -17,9 +17,9 @@ namespace EmployeeSystem.Contract.Dtos
         [Range(1, Int32.MaxValue)]
         public int AssignedTo { get; set; }
 
-        [Required(ErrorMessage = "Id of Assigner is required")]
+        /*[Required(ErrorMessage = "Id of Assigner is required")]
         [Range(1, Int32.MaxValue)]
-        public int AssignedBy { get; set; }
+        public int AssignedBy { get; set; }*/
 
         public int? ProjectId { get; set; } = null;
 

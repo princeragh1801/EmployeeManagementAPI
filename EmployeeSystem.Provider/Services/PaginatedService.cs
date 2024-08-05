@@ -2,6 +2,7 @@
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -116,7 +117,7 @@ namespace EmployeeSystem.Provider.Services
             return query;
         }
 
-        public async Task<List<EmployeeDto>> GetEmployees(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<EmployeeDto>>> GetEmployees(PaginatedDto paginatedDto)
         {
             try
             {
@@ -134,6 +135,13 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+
+                var totalCount = query.Count(); 
+                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
+                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
 
                 var employees = await query.
                     Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
@@ -153,8 +161,12 @@ namespace EmployeeSystem.Provider.Services
                         CreatedOn = e.CreatedOn,
                         UpdatedOn = e.UpdatedOn,
                     }).ToListAsync();
+                PaginatedItemsDto<List<EmployeeDto>> res = new PaginatedItemsDto<List<EmployeeDto>>();
 
-                return employees;
+                res.Data = employees;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
 
             }
             catch (Exception ex)
@@ -165,7 +177,7 @@ namespace EmployeeSystem.Provider.Services
 
 
 
-        public async Task<List<DepartmentDto>> GetDepartments(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<DepartmentDto>>> GetDepartments(PaginatedDto paginatedDto)
         {
             try
             {
@@ -181,7 +193,12 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
-
+                var totalCount = query.Count();
+                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
+                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
                 var departments = await query
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
@@ -196,14 +213,19 @@ namespace EmployeeSystem.Provider.Services
                         UpdatedBy = d.UpdatedBy,
                     }).ToListAsync();
 
-                return departments;
+                PaginatedItemsDto<List<DepartmentDto>> res = new PaginatedItemsDto<List<DepartmentDto>>();
+
+                res.Data =departments;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<ProjectDto>> GetProjects(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(PaginatedDto paginatedDto)
         {
             try
             {
@@ -220,6 +242,12 @@ namespace EmployeeSystem.Provider.Services
 
                 query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
+                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
+                var totalCount = query.Count();
+                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
                 var projects = await query
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
@@ -233,15 +261,19 @@ namespace EmployeeSystem.Provider.Services
                          CreatedOn = e.CreatedOn,
                          UpdatedOn = e.UpdatedOn,
                      }).ToListAsync();
+                PaginatedItemsDto<List<ProjectDto>> res = new PaginatedItemsDto<List<ProjectDto>>();
 
-                return projects;
+                res.Data = projects;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<TasksDto>> GetTasks(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(PaginatedDto paginatedDto)
         {
             try
             {
@@ -257,7 +289,12 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
-
+                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
+                var totalCount = query.Count();
+                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
                 var tasks = await query
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
@@ -271,8 +308,11 @@ namespace EmployeeSystem.Provider.Services
                         CreatedOn = e.CreatedOn,
                         UpdatedOn = e.UpdatedOn,
                     }).ToListAsync();
-
-                return tasks;
+                PaginatedItemsDto<List<TasksDto>> res = new PaginatedItemsDto<List<TasksDto>>();
+                res.Data = tasks;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
             }
             catch (Exception ex)
             {

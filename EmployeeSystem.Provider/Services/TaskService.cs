@@ -21,7 +21,7 @@ namespace EmployeeSystem.Provider.Services
             //var query = _context.Tasks;
             var user = _context.Employees.FirstOrDefault(e => e.UserId == userId);
 
-            if (user.Role != Role.SuperAdmin)
+            if (user != null && user.Role != Role.SuperAdmin)
             {
                 var query = _context.Tasks.Include(t => t.Employee).Include(t => t.Admin).Where(t => t.IsActive & (t.Employee.Id == user.Id || t.Employee.ManagerID == user.Id));
                 return query;
@@ -152,11 +152,11 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<int> Add(int userId, AddTaskDto taskDto)
+        public async Task<int> Add(int userId, int adminId, AddTaskDto taskDto)
         {
             try
             {
-                int assignedById = taskDto.AssignedBy;
+                int assignedById = adminId;
                 int assignedToId = taskDto.AssignedTo;
                 if(taskDto.ProjectId != null && taskDto.ProjectId != 0)
                 {
@@ -189,7 +189,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     Name = taskDto.Name,
                     Description = taskDto.Description,
-                    AssignedBy = taskDto.AssignedBy,
+                    AssignedBy = adminId,
                     AssignedTo = taskDto.AssignedTo,
                     Status = taskDto.Status,
                     ProjectId = taskDto.ProjectId == 0 ?null : taskDto.ProjectId,
@@ -226,7 +226,7 @@ namespace EmployeeSystem.Provider.Services
                 var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId & e.IsActive);
 
                 var check = false;
-                if (employee.Role == Role.SuperAdmin || employee.Id == assignedById)
+                if (employee != null && (employee.Role == Role.SuperAdmin || employee.Id == assignedById))
                 {
                     check = true;
                 }
