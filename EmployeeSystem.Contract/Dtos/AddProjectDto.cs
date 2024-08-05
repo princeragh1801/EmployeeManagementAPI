@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Dtos
 {
@@ -13,6 +14,7 @@ namespace EmployeeSystem.Contract.Dtos
         [MinLength(5)]
         public string Description { get; set; }
 
+        public ProjectStatus Status { get; set; } = ProjectStatus.Pending;
         /*[Required]
         [Range(1, int.MaxValue)]
         public int AdminId { get; set; }*/

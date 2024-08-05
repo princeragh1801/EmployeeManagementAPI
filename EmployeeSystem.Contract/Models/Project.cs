@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Models
 {
@@ -11,6 +12,8 @@ namespace EmployeeSystem.Contract.Models
         public string Name { get; set; }
         
         public string Description { get; set; }
+
+        public ProjectStatus Status { get; set; } = ProjectStatus.Pending;
 
         public bool IsActive { get; set; } = true;
 

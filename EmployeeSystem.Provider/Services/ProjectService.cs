@@ -20,6 +20,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 // only fetching project details
                 var projects = await _context.Projects
+                    .Where(p => p.IsActive)
                     .Select(e => new ProjectDto
                     {
                         Id = e.Id,
@@ -29,6 +30,7 @@ namespace EmployeeSystem.Provider.Services
                         UpdatedBy = e.UpdatedBy,
                         CreatedOn = e.CreatedOn,
                         UpdatedOn = e.UpdatedOn,
+                        Status = e.Status,
                     }).ToListAsync();
                 
                 return projects;
@@ -73,6 +75,7 @@ namespace EmployeeSystem.Provider.Services
                     Description = project.Description,
                     Members = projectEmployees,
                     Tasks = tasksDto,
+                    Status = project.Status,
                     CreatedBy = project.CreatedBy,
                     UpdatedBy = project.UpdatedBy,
                     CreatedOn = project.CreatedOn,
@@ -104,6 +107,7 @@ namespace EmployeeSystem.Provider.Services
                     Description = projectDto.Description,
                     AdminId = adminId,
                     IsActive = true,
+                    Status = projectDto.Status,
                     CreatedBy = userId,
                     CreatedOn = DateTime.Now
                 };

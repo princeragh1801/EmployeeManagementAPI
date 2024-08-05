@@ -53,28 +53,22 @@ namespace EmployeeSystem.Provider.Services
                 if (lastPaid != null)
                 {
 
-                    var totalDays = (curr - lastPaid.PaidOn).TotalDays;
-                    if(totalDays >= 30)
+                    var month = (curr.Month - lastPaid.PaidOn.Month);
+
+                    if (lastPaid.Status == SalaryStatus.AdvancePaid)
                     {
-                        if (lastPaid.Status == SalaryStatus.AdvancePaid)
+                        if(month == 2)
                         {
-                            if(totalDays >= 60)
-                            {
-                                salaryPay.Status = SalaryStatus.Paid;
-                            }
-                            else if(totalDays >= 30)
-                            {
-                                salaryPay.Status = SalaryStatus.AdvancePaid;
-                            }
-                            else
-                            {
-                                return false;
-                            }
+                            salaryPay.Status = SalaryStatus.Paid;
                         }
-                    }
-                    else
-                    {
-                        return false;
+                        else if(month == 1)
+                        {
+                            salaryPay.Status = SalaryStatus.AdvancePaid;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
                     
                 }
@@ -84,6 +78,23 @@ namespace EmployeeSystem.Provider.Services
                 return true;
             }
             catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        public async Task<bool> PayAll()
+        {
+            try
+            {
+                // extract all the unpaid employees
+
+                // pay them
+
+
+                return true;
+            }catch(Exception ex)
             {
                 throw new Exception(ex.Message);
             }

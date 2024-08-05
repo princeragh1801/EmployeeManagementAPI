@@ -35,5 +35,24 @@
             Ascending,
             NoOrder
         }
+
+        public enum ProjectStatus
+        {
+            Pending,
+            Active,
+            Complete
+        }
+
+        public enum RequestType
+        {
+            AdvanceSalary,
+
+        }
+        public enum RequestStatus
+        {
+            Requested,
+            Approved,
+            Rejected
+        }
     }
 }

@@ -7,5 +7,7 @@ namespace EmployeeSystem.Contract.Interfaces
         public Task<List<SalaryDto>> GetEmployeeSalaryDetails(int id);
 
         public Task<bool> Pay(int employeeId);
+
+        public Task<bool> PayAll();
     }
 }

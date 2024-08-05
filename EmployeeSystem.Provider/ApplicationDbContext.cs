@@ -19,6 +19,7 @@ namespace EmployeeSystem.Provider
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectEmployee> ProjectEmployees { get; set; }
+        public DbSet<Request> Requests { get; set; }
 
         /*public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
