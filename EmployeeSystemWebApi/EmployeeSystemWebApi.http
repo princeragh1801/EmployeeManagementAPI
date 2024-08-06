@@ -1,6 +1,6 @@
-@EmployeeSystemWebApi_HostAddress = http://localhost:5036
+@EmployeeSystemWebApi_HostAddress = https://localhost:7051
 
-GET {{EmployeeSystemWebApi_HostAddress}}/weatherforecast/
+GET {{EmployeeSystemWebApi_HostAddress}}/Employee/
 Accept: application/json
 
 ###
