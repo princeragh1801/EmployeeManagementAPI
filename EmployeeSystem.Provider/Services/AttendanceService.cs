@@ -25,6 +25,7 @@ namespace EmployeeSystem.Provider.Services
                     .Where(a => a.EmployeeId == employeeId)
                     .Select(a => new AttendanceDto
                     {
+                        Id = a.Id,
                         DateOnly = a.DateOnly
                     }).ToListAsync();
                 response.Message = "Attendance Fetched";
@@ -47,9 +48,23 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var response = new ApiResponse<int>();
+                var checkAlreadyAdded = await _context.Attendances
+                    .OrderByDescending(a => a.Id)
+                    .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+                var todaysDate = DateOnly.FromDateTime(DateTime.Now);
+                if(checkAlreadyAdded != null && todaysDate == checkAlreadyAdded.DateOnly)
+                {
+                    response.Status = 409;
+                    response.Message = "Attendance already added";
+                    response.Data = checkAlreadyAdded.Id;
+                    return response;
+                }
+                
                 var attendance = new Attendance
                 {
-                    EmployeeId = employeeId
+                    EmployeeId = employeeId,
+                    DateOnly = DateOnly.FromDateTime(DateTime.Now)
                 };
 
                 _context.Attendances.Add(attendance);

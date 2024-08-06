@@ -18,11 +18,15 @@ namespace EmployeeSystemWebApi.Controllers
             _attendanceService = attendance;
         }
 
-        [HttpGet("{employeeId}")]
-        public async Task<ActionResult<ApiResponse<List<AttendanceDto>>>> Get(int employeeId)
+        [HttpGet()]
+        public async Task<ActionResult<ApiResponse<List<AttendanceDto>>>> Get()
         {
             try
             {
+                int employeeId = Convert.ToInt32(HttpContext.User.Claims.FirstOrDefault(e => e.Type == "UserId")?.Value);
+
+                Console.WriteLine("UserId : " + employeeId);
+
                 var response = await _attendanceService.GetByEmployeeId(employeeId);
 
                 if(response.Status == 404)
@@ -44,13 +48,21 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpPost("{employeeId}")]
-        public async Task<ActionResult<ApiResponse<int>>> Add(int employeeId)
+        [HttpPost]
+        public async Task<ActionResult<ApiResponse<int>>> Add()
         {
             try
             {
+                int employeeId = Convert.ToInt32(HttpContext.User.Claims.FirstOrDefault(e => e.Type == "UserId")?.Value);
+
+
+                
                 var response = await _attendanceService.Add(employeeId);
                 
+                if(response.Status == 409)
+                {
+                    return Conflict(response);
+                }
                 return Ok(response);
             }catch(Exception ex)
             {

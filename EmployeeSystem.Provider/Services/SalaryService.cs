@@ -41,7 +41,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var lastPaid = await _context.Salaries
-                    .LastOrDefaultAsync(s => s.EmployeeId == employeeId);
+                    .OrderByDescending(s => s.Id).FirstOrDefaultAsync(s => s.EmployeeId == employeeId);
                 var curr = DateTime.Now;
 
                 var salaryPay = new Salary
@@ -57,11 +57,7 @@ namespace EmployeeSystem.Provider.Services
 
                     if (lastPaid.Status == SalaryStatus.AdvancePaid)
                     {
-                        if(month == 2)
-                        {
-                            salaryPay.Status = SalaryStatus.Paid;
-                        }
-                        else if(month == 1)
+                        if(month == 1)
                         {
                             salaryPay.Status = SalaryStatus.AdvancePaid;
                         }
