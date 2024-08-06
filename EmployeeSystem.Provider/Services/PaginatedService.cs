@@ -2,7 +2,6 @@
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -18,29 +17,37 @@ namespace EmployeeSystem.Provider.Services
 
         public IQueryable<Employee> GetOrdered(IQueryable<Employee> query, string columnName, bool ace = true)
         {
-            if (columnName == "Name")
+            if (columnName.ToLower() == "name")
             {
                 query = ace ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
             }
-            else if (columnName == "ManagerName")
+            else if (columnName.ToLower() == "managername")
             {
+                query = query.Where(e => e.ManagerID != null);
                 query = ace ? query.OrderBy(x => x.Manager.Name) : query.OrderByDescending(x => x.Manager.Name);
             }
-            else if (columnName == "DeparmentName")
+            else if (columnName.ToLower() == "departmentname")
             {
+                query = query.Where(e => e.Department.Name != null);
+
                 query = ace ? query.OrderBy(x => x.Department.Name) : query.OrderByDescending(x => x.Department.Name);
             }
-            else if (columnName == "Salary")
+            else if (columnName.ToLower() == "salary")
             {
                 query = ace ? query.OrderBy(x => x.Salary) : query.OrderByDescending(x => x.Salary);
             }
-            else if (columnName == "CreatedOn")
+            else if (columnName.ToLower() == "createdon")
             {
                 query = ace ? query.OrderBy(x => x.CreatedOn) : query.OrderByDescending(x => x.CreatedOn);
-            }else if (columnName == "UpdatedOn")
+            }else if (columnName.ToLower() == "updatedon")
             {
+                query = query.Where(e => e.UpdatedOn != null);
                 query = ace ? query.OrderBy(x => x.UpdatedOn) : query.OrderByDescending(x => x.UpdatedOn);
-            }else
+            }else if(columnName.ToLower() == "role")
+            {
+                query = ace ? query.OrderBy(x => x.Role) : query.OrderByDescending(x => x.Role);
+            }
+            else
             {
                 query = ace ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
             }
@@ -49,15 +56,16 @@ namespace EmployeeSystem.Provider.Services
 
         public IQueryable<Department> GetOrdered(IQueryable<Department> query, string columnName, bool ace = true)
         {
-            if (columnName == "Name")
+            if (columnName.ToLower() == "name")
             {
                 query = ace ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
-            }else if (columnName == "CreatedOn")
+            }else if (columnName.ToLower() == "createdon")
             {
                 query = ace ? query.OrderBy(x => x.CreatedOn) : query.OrderByDescending(x => x.CreatedOn);
             }
-            else if (columnName == "UpdatedOn")
+            else if (columnName.ToLower() == "updatedon")
             {
+                query = query.Where(e => e.UpdatedOn != null);
                 query = ace ? query.OrderBy(x => x.UpdatedOn) : query.OrderByDescending(x => x.UpdatedOn);
             }
             else
@@ -69,20 +77,21 @@ namespace EmployeeSystem.Provider.Services
 
         public IQueryable<Project> GetOrdered(IQueryable<Project> query, string columnName, bool ace = true)
         {
-            if (columnName == "Name")
+            if (columnName.ToLower() == "name")
             {
                 query = ace ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
             }
-            else if (columnName == "Description")
+            else if (columnName.ToLower() == "description")
             {
                 query = ace ? query.OrderBy(x => x.Description) : query.OrderByDescending(x => x.Description);
             }
-            else if (columnName == "CreatedOn")
+            else if (columnName.ToLower() == "createdon")
             {
                 query = ace ? query.OrderBy(x => x.CreatedOn) : query.OrderByDescending(x => x.CreatedOn);
             }
-            else if (columnName == "UpdatedOn")
+            else if (columnName.ToLower() == "updatedon")
             {
+                query = query.Where(e => e.UpdatedOn != null);
                 query = ace ? query.OrderBy(x => x.UpdatedOn) : query.OrderByDescending(x => x.UpdatedOn);
             }
             else
@@ -94,20 +103,21 @@ namespace EmployeeSystem.Provider.Services
 
         public IQueryable<Tasks> GetOrdered(IQueryable<Tasks> query, string columnName, bool ace = true)
         {
-            if (columnName == "Name")
+            if (columnName.ToLower() == "name")
             {
                 query = ace ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
             }
-            else if (columnName == "Description")
+            else if (columnName.ToLower() == "description")
             {
                 query = ace ? query.OrderBy(x => x.Description) : query.OrderByDescending(x => x.Description);
             }
-            else if (columnName == "CreatedOn")
+            else if (columnName.ToLower() == "createdon")
             {
                 query = ace ? query.OrderBy(x => x.CreatedOn) : query.OrderByDescending(x => x.CreatedOn);
             }
-            else if (columnName == "UpdatedOn")
+            else if (columnName.ToLower() == "updatedon")
             {
+                query = query.Where(e => e.UpdatedOn != null);
                 query = ace ? query.OrderBy(x => x.UpdatedOn) : query.OrderByDescending(x => x.UpdatedOn);
             }
             else
