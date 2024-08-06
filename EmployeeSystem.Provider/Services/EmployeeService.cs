@@ -455,7 +455,7 @@ namespace EmployeeSystem.Provider.Services
         }
     
 
-        public async Task<List<EmployeeDto>?> GetEmloyeesWithDepartmentName(int id)
+        public async Task<List<EmployeeDto>?> GetEmployeesWithDepartmentName(int id)
         {
             try
             {

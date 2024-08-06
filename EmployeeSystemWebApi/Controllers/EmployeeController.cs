@@ -268,7 +268,7 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var employees = await _employeeService.GetEmloyeesWithDepartmentName(id);
+                var employees = await _employeeService.GetEmployeesWithDepartmentName(id);
 
                 var response = new ApiResponse<List<EmployeeDto>>
                 {

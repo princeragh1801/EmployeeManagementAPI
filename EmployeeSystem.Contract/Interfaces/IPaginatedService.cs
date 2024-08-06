@@ -5,31 +5,42 @@ namespace EmployeeSystem.Contract.Interfaces
     public interface IPaginatedService
     {
         /// <summary>
-        /// This function retuns list of employee on a particular page with the querable fields
+        /// Retrieves a paginated list of employees based on the specified pagination parameters.
         /// </summary>
-        /// <param name="paginatedDto"></param>
-        /// <returns>List</returns>
+        /// <param name="paginatedDto">An object containing pagination and query parameters.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of EmployeeDto.
+        /// </returns>
         public Task<PaginatedItemsDto<List<EmployeeDto>>> GetEmployees(PaginatedDto paginatedDto);
 
         /// <summary>
-        /// This function retuns list of departments on a particular page with the querable fields
+        /// Retrieves a paginated list of departments based on the specified pagination parameters.
         /// </summary>
-        /// <param name="paginatedDto"></param>
-        /// <returns>List</returns>
+        /// <param name="paginatedDto">An object containing pagination and query parameters.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of DepartmentDto.
+        /// </returns>
         public Task<PaginatedItemsDto<List<DepartmentDto>>> GetDepartments(PaginatedDto paginatedDto);
 
-        /// <summary>
-        /// This function retuns list of projects on a particular page with the querable fields
-        /// </summary>
-        /// <param name="paginatedDto"></param>
-        /// <returns>List</returns>
-        public Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(PaginatedDto paginatedDto);
 
         /// <summary>
-        /// This function retuns list of tasks on a particular page with the querable fields
+        /// Retrieves a paginated list of projects based on the specified pagination parameters.
         /// </summary>
-        /// <param name="paginatedDto"></param>
-        /// <returns>List</returns>
+        /// <param name="paginatedDto">An object containing pagination and query parameters.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of ProjectDto.
+        /// </returns>
+        public Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(PaginatedDto paginatedDto);
+
+
+        /// <summary>
+        /// Retrieves a paginated list of tasks based on the specified pagination parameters.
+        /// </summary>
+        /// <param name="paginatedDto">An object containing pagination and query parameters.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of TasksDto.
+        /// </returns>
         public Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(PaginatedDto paginatedDto);
+
     }
 }

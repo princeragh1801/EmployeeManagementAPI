@@ -5,34 +5,46 @@ namespace EmployeeSystem.Contract.Interfaces
     public interface IProjectService
     {
         /// <summary>
-        /// This is the get request it shows the list of projects present in the system according to the accessability
+        /// Retrieves a list of projects present in the system based on accessibility.
         /// </summary>
-        /// <returns>List</returns>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a list of ProjectDto representing the projects.
+        /// </returns>
         public Task<List<ProjectDto>> GetAll();
 
+
         /// <summary>
-        /// This is the get request it returns the project with the given id
+        /// Retrieves the project with the specified ID.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns>Project object</returns>
+        /// <param name="id">The unique identifier of the project.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a ProjectDetailsDto with the project information, or null if the project is not found.
+        /// </returns>
         public Task<ProjectDetailsDto?> GetById(int id);
 
-        /// <summary>
-        /// This is the post request it adds the project in the system and returns the id of the created project.
-        /// This can only be done by the super-admin
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="adminId"></param>
-        /// <param name="project"></param>
-        /// <returns>Integer</returns>
-        public Task<int> Add(int userId, int adminId, AddProjectDto project);
 
         /// <summary>
-        /// This is the delete request it deletes the project in the system and returns the boolean value
-        /// This can only be done by the super-admin
+        /// Adds a new project to the system and returns the ID of the created project.
+        /// This operation can only be performed by users with the super-admin role.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns>Boolean</returns>
+        /// <param name="userId">The unique identifier of the user performing the operation.</param>
+        /// <param name="adminId">The unique identifier of the super-admin authorizing the project addition.</param>
+        /// <param name="project">An object containing the details of the project to be added.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the ID of the newly created project.
+        /// </returns>
+        public Task<int> Add(int userId, int adminId, AddProjectDto project);
+
+
+        /// <summary>
+        /// Deletes the project with the specified ID from the system and returns a boolean indicating the success of the operation.
+        /// This operation can only be performed by users with the super-admin role.
+        /// </summary>
+        /// <param name="id">The unique identifier of the project to be deleted.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a boolean value indicating whether the deletion was successful.
+        /// </returns>
         public Task<bool> DeleteById(int id);
+
     }
 }

@@ -5,72 +5,99 @@ namespace EmployeeSystem.Contract.Interfaces
     public interface IEmployeeService
     {
         /// <summary>
-        /// This is the get request it shows the list of employees present in the system according to the accessability
+        /// Retrieves a list of employees present in the system based on the user's accessibility.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="userId">The unique identifier of the user requesting the employee list.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a list of EmployeeDto or null if no employees are accessible.
+        /// </returns>
         public Task<List<EmployeeDto>?> GetAll(int userId);
 
+
         /// <summary>
-        /// This function retreives the employee info on the basis of the id
+        /// Retrieves the information of the employee with the specified ID.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="id">The unique identifier of the employee.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing an EmployeeDto if the employee is found, or null if not.
+        /// </returns>
         public Task<EmployeeDto?> GetById(int id);
 
+
         /// <summary>
-        /// This function add the employee in the db.
-        /// This route can only be accessible by the the Employees whose role is super-admin
+        /// Adds a new employee to the database. 
+        /// This route is accessible only by users with the super-admin role.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="employee"></param>
-        /// <returns></returns>
+        /// <param name="userId">The unique identifier of the user adding the employee.</param>
+        /// <param name="employee">An object containing the details of the employee to be added.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the ID of the newly added employee.
+        /// </returns>
         public Task<int> Add(int userId, AddEmployeeDto employee);
 
+
         /// <summary>
-        /// This function add the list of employees in the db.
-        /// This route can only be accessible by the the Employees whose role is super-admin
+        /// Adds a list of employees to the database.
+        /// This route is accessible only by users with the super-admin role.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="employees"></param>
-        /// <returns></returns>
+        /// <param name="userId">The unique identifier of the user adding the employees.</param>
+        /// <param name="employees">A list of objects containing the details of the employees to be added.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing the count of successfully added employees.
+        /// </returns>
         public Task<int> AddList(int userId, List<AddEmployeeDto> employees);
 
+
         /// <summary>
-        /// This function delete the employee with the given id in the db.
-        /// This route can only be accessible by the the Employees whose role is super-admin
+        /// Deletes the employee with the specified ID from the database.
+        /// This route is accessible only by users with the super-admin role.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns>Boolean value</returns>
+        /// <param name="id">The unique identifier of the employee to be deleted.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a boolean value indicating whether the deletion was successful.
+        /// </returns>
         public Task<bool> DeleteById(int id);
 
+
         /// <summary>
-        /// This function updates the employee info in the db.
+        /// Updates the information of the employee with the specified ID in the database.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="id"></param>
-        /// <param name="employee"></param>
-        /// <returns>Employee Information</returns>
+        /// <param name="userId">The unique identifier of the user performing the update.</param>
+        /// <param name="id">The unique identifier of the employee to be updated.</param>
+        /// <param name="employee">An object containing the updated details of the employee.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing an EmployeeDto with the updated information, or null if the employee is not found.
+        /// </returns>
         public Task<EmployeeDto?> Update(int userId, int id, UpdateEmployeeDto employee);
 
+
         /// <summary>
-        /// This is the get request it shows the list of employees who is the manager present in the system according to the accessability
+        /// Retrieves a list of employees who are managers present in the system, based on accessibility.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a list of EmployeeDto representing the managers.
+        /// </returns>
         public Task<List<EmployeeDto>> GetManagers();
 
-        /// <summary>
-        /// This function checks whethe the employee with the given id exist or not
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public Task<bool> EmployeeExist(int id);
 
         /// <summary>
-        /// This function returns the list of employees of a particular department
+        /// Checks whether an employee with the specified ID exists in the system.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public Task<List<EmployeeDto>?> GetEmloyeesWithDepartmentName(int id);
+        /// <param name="id">The unique identifier of the employee.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a boolean value indicating whether the employee exists.
+        /// </returns>
+        public Task<bool> EmployeeExist(int id);
+
+
+        /// <summary>
+        /// Retrieves the list of employees belonging to the specified department.
+        /// </summary>
+        /// <param name="id">The unique identifier of the department.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a list of EmployeeDto for the employees in the specified department, or null if no employees are found.
+        /// </returns>
+        public Task<List<EmployeeDto>?> GetEmployeesWithDepartmentName(int id);
+
     }
 }

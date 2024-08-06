@@ -6,17 +6,23 @@ namespace EmployeeSystem.Contract.Interfaces
     public interface IAttendanceService
     {
         /// <summary>
-        /// This function returns the list of dates of logged in user when the user is present
+        /// Retrieves the list of attendance dates for the specified employee when they were present.
         /// </summary>
-        /// <param name="employeeId"></param>
-        /// <returns></returns>
+        /// <param name="employeeId">The unique identifier of the employee.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing an ApiResponse with a list of AttendanceDto.
+        /// </returns>
         public Task<ApiResponse<List<AttendanceDto>>> GetByEmployeeId(int employeeId);
 
+
         /// <summary>
-        /// This function adds the attendance of the employee
+        /// Adds the attendance record for the specified employee.
         /// </summary>
-        /// <param name="employeeId"></param>
-        /// <returns></returns>
+        /// <param name="employeeId">The unique identifier of the employee.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing an ApiResponse with the ID of the newly created attendance record.
+        /// </returns>
         public Task<ApiResponse<int>> Add(int employeeId);
+
     }
 }
