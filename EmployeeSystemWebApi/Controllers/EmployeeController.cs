@@ -183,7 +183,8 @@ namespace EmployeeSystemWebApi.Controllers
                 };
                 if (!deleted)
                 {
-                    response.Message = "Employee with given details no exist";
+                    response.Message = "Employee with given details no exist or you're trying to delete a employee with the role of super-admin";
+                    return NotFound(response);
                 }
                 return Ok(response);
             }

@@ -51,7 +51,7 @@ namespace EmployeeSystem.Provider.Services
                 
                 var query = GetTasksInfo(userId);
 
-                var tasks = await query.Select(t => new TasksDto
+                var tasks = await query.Where(t => t.IsActive).Select(t => new TasksDto
                 {
                     Id = t.Id,
                     Name = t.Name,
@@ -234,6 +234,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return null;
                 }
+               
                 // soft delete
                 task.IsActive = false;
                 // _context.Tasks.Remove(task);    

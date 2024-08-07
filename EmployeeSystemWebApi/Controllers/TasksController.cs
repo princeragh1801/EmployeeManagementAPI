@@ -135,16 +135,21 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Task Deleted"
+                    Message = "Task Deleted",
+                    Data = true
+                   
                 };
                 if(deleted == null)
                 {
+                    response.Message = "Unauthorized user";
+                    response.Data = false;
                     return Unauthorized(response);
                 }
                 else if (deleted == false)
                 {
                     response.Success = false;
                     response.Status = 404;
+                    response.Data = false;
                     response.Message = "Task with given id not exist";
                     return NotFound(response);
                 }

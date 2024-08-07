@@ -314,7 +314,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 // fetching the employee info
                 var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == id & e.IsActive);
-                if (employee == null)
+                if (employee == null || employee.Role == Role.SuperAdmin)
                 {
                     return false;
 

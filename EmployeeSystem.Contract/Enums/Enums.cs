@@ -13,7 +13,7 @@
         {
             Pending,
             Active,
-            Complete
+            Completed
         }
 
         public enum AttendanceStatus
