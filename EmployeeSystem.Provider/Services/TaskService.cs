@@ -158,6 +158,11 @@ namespace EmployeeSystem.Provider.Services
             {
                 int assignedById = adminId;
                 int assignedToId = taskDto.AssignedTo;
+                var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
+                if(assignedUser == null)
+                {
+                    return -3;
+                }
                 if(taskDto.ProjectId != null && taskDto.ProjectId != 0)
                 {
                     var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);

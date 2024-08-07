@@ -6,12 +6,13 @@ namespace EmployeeSystem.Contract.Dtos
     public class AddProjectDto
     {
         [Required(ErrorMessage = "Name is required")]
-        [MinLength(1)]
-        [MaxLength(50)]
+        [MinLength(2, ErrorMessage = "Name must be at least 2 characters long")]
+        [MaxLength(50, ErrorMessage = "Name must not exceed 50 characters")]
+        [RegularExpression("^[a-zA-Z]+$", ErrorMessage = "Name can only contain lowercase and uppercase letters")]
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Description is required")]
-        [MinLength(5)]
+        [MinLength(10, ErrorMessage = "Name must be at least 10 characters long")]
         public string Description { get; set; }
 
         public ProjectStatus Status { get; set; } = ProjectStatus.Pending;

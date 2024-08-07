@@ -98,14 +98,22 @@ namespace EmployeeSystemWebApi.Controllers
                 if (id == 0)
                 {
                     response.Message = "Unauthorized request, The assigner doesn't has the authority to assign the task";
+                    response.Status = 401;
                     return Unauthorized(response);
                 }else if(id == -1)
                 {
                     response.Message = "Employee is not in the project so task can't assign";
+                    response.Status = 401;
                     return Unauthorized(response);
                 }else if(id == -2)
                 {
                     response.Message = "Project not exist";
+                    response.Status = 404;
+                    return NotFound(response);
+                }else if(id == -3)
+                {
+                    response.Message = "User with assigned to id is not exist";
+                    response.Status = 404;
                     return NotFound(response);
                 }
 
