@@ -48,6 +48,37 @@ namespace EmployeeSystemWebApi.Controllers
 
         }
 
+        [HttpGet("employee/{employeeId}")]
+        public async Task<ActionResult<ApiResponse<List<ProjectDto>>>> GetEmployeeProject(int employeeId)
+        {
+            try
+            {
+                
+                var projects = await _projectService.GetProjectsByEmployee(employeeId);
+                var response = new ApiResponse<List<ProjectDto>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Project Details fetched",
+                    Data = projects
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = new ApiResponse<List<ProjectDto>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                };
+                return BadRequest(response);
+            }
+
+        }
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<ProjectDetailsDto>>> GetById(int id)
         {

@@ -22,36 +22,44 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-
+                // fetching the request to respond
                 var request = await _context.Requests.FirstOrDefaultAsync(r => r.Id == id);
                 if (request == null || request.RequestStatus != RequestStatus.Requested)
                 {
                     return false;
                 }
+
+                // updating the request
                 request.UpdatedOn = DateTime.Now;
                 request.UpdatedBy = userId;
+
+                // checking the type
                 if (request.RequestType == RequestType.AdvanceSalary)
                 {
+                    // extracting the last paid details
                     var salaryDetails = await _context.Salaries
                         .OrderByDescending(s => s.Id)
                         .LastOrDefaultAsync(s => s.EmployeeId == reqDto.RequestedBy);
 
                     if (salaryDetails != null)
                     {
+                        // if last paid is advance
                         if(salaryDetails.Status == SalaryStatus.AdvancePaid)
                         {
+                            // check for the employee is eligible for the pay
                             var checkEligibleAndPay = await _salaryService.Pay(reqDto.RequestedBy);
                             if (checkEligibleAndPay)
                             {
+                                // approved:: updating the status
                                 request.RequestStatus = RequestStatus.Approved;
                                 return true;
                             }
-
+                            // rejected ::
                             request.RequestStatus = RequestStatus.Rejected;
                             return false;
                             
                         }
-                        
+                        // approved ::
                         await _salaryService.Pay(request.RequestedBy);
                         request.RequestStatus = RequestStatus.Approved;
                         return true;
@@ -73,11 +81,15 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // creating a query for all the request which are pending right now
                 var query = _context.Requests
                     .Include(r => r.Employee)
                     .Where(r => r.RequestStatus == RequestStatus.Requested);
 
+                // creating a total count variable and storing the count of pending requests
                 var totalRequest = query.Count();
+
+                // creating dto of all the pending request
                 var pendingRequests = await query
                     .Select(r => new RequestDto
                     {

@@ -12,6 +12,14 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<List<ProjectDto>> GetAll(int id);
 
+        /// <summary>
+        /// Retrieves a list of projects assigned to the specified user.
+        /// </summary>
+        /// <param name="employeeId">The unique identifier of the project.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a list of ProjectDto representing the projects.
+        /// </returns>
+        public Task<List<ProjectDto>> GetProjectsByEmployee(int employeeId);
 
         /// <summary>
         /// Retrieves the project with the specified ID.

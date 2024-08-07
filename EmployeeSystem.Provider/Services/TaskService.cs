@@ -18,9 +18,10 @@ namespace EmployeeSystem.Provider.Services
 
         public IQueryable<Tasks> GetTasksInfo(int userId)
         {
-            //var query = _context.Tasks;
+            // fetching the user details
             var user = _context.Employees.FirstOrDefault(e => e.UserId == userId);
 
+            // checking whether the user is superadmin or not and creating the query according to the role
             if (user != null && user.Role != Role.SuperAdmin)
             {
                 var query = _context.Tasks.Include(t => t.Employee).Include(t => t.Admin).Where(t => t.IsActive & (t.Employee.Id == user.Id || t.Employee.ManagerID == user.Id));
@@ -33,7 +34,10 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // extracting the assignee details
                 var assignee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedTo);
+
+                // extracting the assigner details
                 var assinger = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedBy);
 
                 return ((assinger != null && assignee != null) && (assinger.Role == Role.SuperAdmin || assignee.ManagerID == assignedBy));
@@ -48,9 +52,10 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-                
+                // filter according to the role
                 var query = GetTasksInfo(userId);
 
+                // creating the task dto list
                 var tasks = await query.Where(t => t.IsActive).Select(t => new TasksDto
                 {
                     Id = t.Id,
@@ -75,11 +80,49 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+        public async Task<List<TasksDto>> GetEmployeeTask(int employeeId)
+        {
+            try
+            {
+               
+
+                // creating the task dto list
+                var tasks = await _context.Tasks
+                    .Where(t => t.IsActive & t.AssignedTo == employeeId)
+                    .Select(t => new TasksDto
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        AssignedBy = t.AssignedBy,
+                        AssignedTo = t.AssignedTo,
+                        Status = t.Status,
+                        Description = t.Description,
+                        AssigneeName = t.Employee.Name,
+                        AssignerName = t.Admin.Name,
+                        CreatedBy = t.CreatedBy,
+                        UpdatedBy = t.UpdatedBy,
+                        CreatedOn = t.CreatedOn,
+                        UpdatedOn = t.UpdatedOn,
+
+                    }).ToListAsync();
+
+                return tasks;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
         public async Task<TasksDto?> GetById(int userId, int id)
         {
             try
             {
+                // filter according to the role
                 var query = GetTasksInfo(userId);
+
+                // check whether the task belongs to the list, then convert the task into task dto form
                 var task = await query.Select(t => new TasksDto
                 {
                     Id = t.Id,
@@ -158,11 +201,15 @@ namespace EmployeeSystem.Provider.Services
             {
                 int assignedById = adminId;
                 int assignedToId = taskDto.AssignedTo;
+
+                // fetching the assigned user details
                 var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
                 if(assignedUser == null)
                 {
                     return -3;
                 }
+
+                // check for whether the task belongs to the project or not
                 if(taskDto.ProjectId != null && taskDto.ProjectId != 0)
                 {
                     var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
@@ -171,6 +218,8 @@ namespace EmployeeSystem.Provider.Services
                     {
                         return -2;
                     }
+
+                    // check whether the task whom to assign is belongs to that project 
                     var checkProjectEmployee = await _context.ProjectEmployees
                     .FirstOrDefaultAsync(p => p.ProjectId == taskDto.ProjectId
                         && p.EmployeeId == assignedToId);
@@ -182,7 +231,7 @@ namespace EmployeeSystem.Provider.Services
                 }
                 
 
-                
+                // check for valid task assin
                 var check = assignedById == assignedToId ? true : await CheckTaskValidAssign(assignedToId, assignedById);
                 if (!check)
                 {
@@ -228,9 +277,12 @@ namespace EmployeeSystem.Provider.Services
                 int assignedById = task.AssignedBy;
                 int assignedToId = task.AssignedTo;
 
+                // fetching employee
                 var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId & e.IsActive);
 
                 var check = false;
+
+                // check user who is deleting the task has authority to delete it or not
                 if (employee != null && (employee.Role == Role.SuperAdmin || employee.Id == assignedById))
                 {
                     check = true;
@@ -255,6 +307,7 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // fetching the task
                 var task = await _context.Tasks.Where(t => t.Id ==id & t.IsActive).FirstOrDefaultAsync();
                 return task != null;
             }catch (Exception ex)

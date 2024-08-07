@@ -19,6 +19,7 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // fetching the salary details of the employee
                 var salaryDetails = await _context.Salaries
                     .Where(s => s.EmployeeId == employeeId)
                     .Select(s => new SalaryDto
@@ -35,15 +36,17 @@ namespace EmployeeSystem.Provider.Services
         }
 
 
-        // TODO : 
+        // CHECK
         public async Task<bool> Pay(int employeeId)
         {
             try
             {
+                // fetching the last salary paid details
                 var lastPaid = await _context.Salaries
                     .OrderByDescending(s => s.Id).FirstOrDefaultAsync(s => s.EmployeeId == employeeId);
                 var curr = DateTime.Now;
 
+                // creating a new salary instance model
                 var salaryPay = new Salary
                 {
                     EmployeeId = employeeId,
@@ -52,9 +55,10 @@ namespace EmployeeSystem.Provider.Services
                 };
                 if (lastPaid != null)
                 {
-
+                    // calculating the month difference
                     var month = (curr.Month - lastPaid.PaidOn.Month);
 
+                    // if salary is paid in advance
                     if (lastPaid.Status == SalaryStatus.AdvancePaid)
                     {
                         if(month == 1)
@@ -79,7 +83,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-
+        // TODO :
         public async Task<bool> PayAll()
         {
             try

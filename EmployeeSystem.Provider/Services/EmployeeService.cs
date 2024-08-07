@@ -68,8 +68,10 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // fetching the user details
                 var emp = await _context.Employees.FirstOrDefaultAsync(e => e.Id == userId);
 
+                // if user is not a super-admin then sending the employees where the manager id == emp.id
                 if(emp != null && emp.Role != Role.SuperAdmin)
                 {
                     return await _context.Employees
@@ -178,12 +180,14 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-                
+                // checking the role exist or not
                 bool checkRole = RoleExist(employeeDto.Role);
                 if (!checkRole)
                 {
                     return -1;
                 }
+
+                // checking the user already exist or not
                 bool checkUser = await UserExist(employeeDto.Username);
 
                 if (checkUser)
@@ -193,6 +197,8 @@ namespace EmployeeSystem.Provider.Services
 
                 int? managerId = employeeDto.ManagerID;
                 int? departmentId = employeeDto.DepartmentID;
+
+                // checking the manager belongs to the same department
                 bool check = await CheckManagerAndEmployeeDepartment(managerId, departmentId);
                 
                 
@@ -200,6 +206,8 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return 0;
                 }
+
+                // creating user 
                 var user = new User
                 {
                     Username = employeeDto.Username,
@@ -207,6 +215,8 @@ namespace EmployeeSystem.Provider.Services
                     CreatedBy = userID,
                     CreatedOn = DateTime.Now
                 };
+
+                // adding user to the db
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
@@ -249,12 +259,15 @@ namespace EmployeeSystem.Provider.Services
                     int? managerId = employeeDto.ManagerID;
                     int? departmentId = employeeDto.DepartmentID;
 
+                    // checking the role
                     bool checkRole = RoleExist(employeeDto.Role);
                     if (!checkRole)
                     {
                         //await transaction.RollbackToSavepointAsync("Adding list");
                         return -1;
                     }
+
+                    // checking whether the user with given username is already exist
                     bool checkUser = await UserExist(employeeDto.Username);
 
                     if (checkUser)
@@ -262,6 +275,7 @@ namespace EmployeeSystem.Provider.Services
                         return -3;
                     }
 
+                    // checking the employee and manager relation
                     bool check = await CheckManagerAndEmployeeDepartment(managerId, departmentId);
 
                     if (!check)
@@ -270,6 +284,7 @@ namespace EmployeeSystem.Provider.Services
                         return -2;
                     }
 
+                    // creating the user
                     var user = new User
                     {
                         Username = employeeDto.Username,
@@ -278,6 +293,7 @@ namespace EmployeeSystem.Provider.Services
                         CreatedOn = DateTime.Now,
                     };
 
+                    // adding user to the db
                     _context.Users.Add(user);
 
                     var employee = new Employee
@@ -347,11 +363,13 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // checking the role
                 bool checkRole = RoleExist(employeeDto.Role);
                 if (!checkRole)
                 {
                     return null;
                 }
+
                 // check employee exist
                 var checkEmp = await EmployeeExist(id);
                 if (!checkEmp)
@@ -362,6 +380,7 @@ namespace EmployeeSystem.Provider.Services
                 int? managerId = employeeDto.ManagerID;
                 int? departmentId = employeeDto.DepartmentID;
 
+                // checking for employee manager relation
                 bool check = await CheckManagerAndEmployeeDepartment(managerId, departmentId);
 
                 if (!check)
@@ -459,6 +478,7 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // check whether the department with given id is exist or not
                 var res = await _context.Departments.FirstOrDefaultAsync(d => d.Id == id & d.IsActive);
                 if(res == null)
                 {
@@ -470,6 +490,8 @@ namespace EmployeeSystem.Provider.Services
                     DepartmentName = departmentName,
                     
                 })*/
+
+                // fetching the employees of the department with id-[x]
                 var employees = await _context.Employees
                     .Include(e => e.Manager)
                     .Where(e => e.DepartmentID == res.Id & e.IsActive)

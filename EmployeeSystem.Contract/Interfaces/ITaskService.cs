@@ -14,6 +14,14 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<List<TasksDto>> GetAllTasks(int userId);
 
+        /// <summary>
+        /// Retrieves a list of tasks assigned to the specified user.
+        /// </summary>
+        /// <param name="employeeId">The unique identifier of the user whose role determines accessibility.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a list of TasksDto representing the accessible tasks.
+        /// </returns>
+        public Task<List<TasksDto>> GetEmployeeTask(int employeeId);
 
         /// <summary>
         /// Retrieves the task object with the specified ID for the given user.

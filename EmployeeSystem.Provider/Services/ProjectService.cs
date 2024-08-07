@@ -19,11 +19,19 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // extracting the user info
                 var user = await _context.Employees.FirstAsync(e => e.Id == id);
+
+                // checking the role
                 if(user.Role != Role.SuperAdmin)
                 {
-                    var query = _context.ProjectEmployees.Include(p => p.Employee).Include(p => p.Project).Where(p => p.Project.IsActive && (p.EmployeeId == id || p.Employee.ManagerID == id)).Distinct();
+                    // creating the query if user is not super admin
+                    var query = _context.ProjectEmployees
+                        .Include(p => p.Employee).Include(p => p.Project)
+                        .Where(p => p.Project.IsActive && (p.EmployeeId == id || p.Employee.ManagerID == id))
+                        .Distinct();
 
+                    // fetching project based on the query
                     var res = await query
                         .Select(e => new ProjectDto
                         {
@@ -61,10 +69,47 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+        public async Task<List<ProjectDto>> GetProjectsByEmployee(int employeeId)
+        {
+            try
+            {
+                var query = _context.ProjectEmployees
+                    .Include(p => p.Employee)
+                    .Include(p => p.Project)
+                    .Where(p => p.EmployeeId == employeeId)
+                    .Distinct();
+
+
+
+                // only fetching project details
+                var projects = await query
+                    .Where(p => p.Project.IsActive)
+                    .Select(e => new ProjectDto
+                    {
+                        Id = e.Project.Id,
+                        Name = e.Project.Name,
+                        Description = e.Project.Description,
+                        CreatedBy = e.Project.CreatedBy,
+                        UpdatedBy = e.Project.UpdatedBy,
+                        CreatedOn = e.Project.CreatedOn,
+                        UpdatedOn = e.Project.UpdatedOn,
+                        Status = e.Project.Status,
+                    }).ToListAsync();
+
+                return projects;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
         public async Task<ProjectDetailsDto?> GetById(int id)
         {
             try
             {
+                // fetching the project with given id
                 var project = await _context.Projects
                      .Include(p => p.Tasks)
                      .Include(p => p.ProjectEmployees)
@@ -76,12 +121,14 @@ namespace EmployeeSystem.Provider.Services
                     return null;
                 }
 
+                // fetching the employees of the project
                 var projectEmployees = project.ProjectEmployees.Select(p => new ProjectEmployeeDto
                 {
                     EmployeeId = p.EmployeeId,
                     EmployeeeName = p.Employee.Name,
                 }).ToList();
 
+                // fetching the tasks of the project
                 var tasksDto = project.Tasks.Select(task => new TaskBasicDto
                 {
                     Id = task.Id,
@@ -89,6 +136,7 @@ namespace EmployeeSystem.Provider.Services
                     Description = task.Description,
                 }).ToList();
 
+                // assemble all the details in project details dto to send
                 var projectDetails = new ProjectDetailsDto
                 {
                     Id = project.Id,
@@ -116,12 +164,15 @@ namespace EmployeeSystem.Provider.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                // check if total members in the project is less than 3
                 if(projectDto.Members.Count <= 2)
                 {
                     return 0;
                 }
 
                 await transaction.CreateSavepointAsync("Adding New Project");
+
+                // creating a new project model
                 var project = new Project
                 {
                     Name = projectDto.Name,
@@ -133,9 +184,11 @@ namespace EmployeeSystem.Provider.Services
                     CreatedOn = DateTime.Now
                 };
 
+                // added the new project in db
                 _context.Projects.Add(project);
                 await _context.SaveChangesAsync();
 
+                // now adding the employees to db
                 foreach (var p in projectDto.Members)
                 {
                     var projectEmployee = new ProjectEmployee
@@ -164,12 +217,15 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                // fetching the project details
                 var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
                 if(project == null)
                 {
                     return false;
                 }
+
+                // soft delete
                 project.IsActive = false;
 
                 //_context.Projects.Remove(project);
