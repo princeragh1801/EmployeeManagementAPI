@@ -26,5 +26,7 @@ namespace EmployeeSystem.Contract.Models
         public virtual ICollection<ProjectEmployee> ProjectEmployees { get; set; } = new List<ProjectEmployee>();
 
         public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+
+       
     }
 }

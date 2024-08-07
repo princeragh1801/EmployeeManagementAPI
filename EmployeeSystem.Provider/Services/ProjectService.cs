@@ -2,6 +2,7 @@
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -14,10 +15,30 @@ namespace EmployeeSystem.Provider.Services
             _context = applicationDbContext;
         }
 
-        public async Task<List<ProjectDto>> GetAll()
+        public async Task<List<ProjectDto>> GetAll(int id)
         {
             try
             {
+                var user = await _context.Employees.FirstAsync(e => e.Id == id);
+                if(user.Role != Role.SuperAdmin)
+                {
+                    var query = _context.ProjectEmployees.Include(p => p.Employee).Include(p => p.Project).Where(p => p.Project.IsActive && (p.EmployeeId == id || p.Employee.ManagerID == id)).Distinct();
+
+                    var res = await query
+                        .Select(e => new ProjectDto
+                        {
+                            Id = e.ProjectId,
+                            Name = e.Project.Name,
+                            Description = e.Project.Description,
+                            CreatedBy = e.Project.CreatedBy,
+                            UpdatedBy = e.Project.UpdatedBy,
+                            CreatedOn = e.Project.CreatedOn,
+                            UpdatedOn = e.Project.UpdatedOn,
+                            Status = e.Project.Status,
+                        }).Distinct().ToListAsync();
+                    return res;
+                }
+                
                 // only fetching project details
                 var projects = await _context.Projects
                     .Where(p => p.IsActive)

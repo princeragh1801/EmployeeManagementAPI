@@ -10,7 +10,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a list of ProjectDto representing the projects.
         /// </returns>
-        public Task<List<ProjectDto>> GetAll();
+        public Task<List<ProjectDto>> GetAll(int id);
 
 
         /// <summary>
