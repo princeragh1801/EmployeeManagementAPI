@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -41,7 +42,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing the ID of the newly created project.
         /// </returns>
-        public Task<int> Add(int userId, int adminId, AddProjectDto project);
+        public Task<int> Add(int adminId, AddProjectDto project);
 
 
         /// <summary>

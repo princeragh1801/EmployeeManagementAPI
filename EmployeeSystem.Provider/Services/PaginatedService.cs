@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq.Dynamic.Core;
 using static EmployeeSystem.Contract.Enums.Enums;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -187,7 +188,7 @@ namespace EmployeeSystem.Provider.Services
             return query;
         }
 
-        public async Task<PaginatedItemsDto<List<EmployeeDto>>> GetEmployees(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(PaginatedDto paginatedDto)
         {
             try
             {
@@ -204,14 +205,10 @@ namespace EmployeeSystem.Provider.Services
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {
-                    query = query.Where(e => e.Name.Contains(search));
+                    query = query.Where(e => e.Name.Contains(search) || e.Department.Name.Contains(search) || e.Manager.Name.Contains(search) );
                 }
 
                 query = GetOrdered(query, orderKey, true);
-
-                Console.WriteLine("Query done");
-                // now getting the order wise details
-                //query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
                 var totalCount = query.Count(); 
@@ -225,7 +222,7 @@ namespace EmployeeSystem.Provider.Services
                 var employees = await query.
                     Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
-                    .Select(e => new EmployeeDto
+                    .Select(e => new EmployeePaginationInfo
                     {
                         Id = e.Id,
                         Name = e.Name,
@@ -233,16 +230,12 @@ namespace EmployeeSystem.Provider.Services
                         Role = e.Role,
                         ManagerName = e.Manager.Name,
                         DepartmentName = e.Department.Name,
-                        DepartmentId = e.DepartmentID,
-                        ManagerId = e.ManagerID,
-                        CreatedBy = e.CreatedBy,
-                        UpdatedBy = e.UpdatedBy,
+                        //CreatedBy = e.CreatedBy,
                         CreatedOn = e.CreatedOn,
-                        UpdatedOn = e.UpdatedOn,
                     }).ToListAsync();
 
                 // creating new dto to send the info
-                PaginatedItemsDto<List<EmployeeDto>> res = new PaginatedItemsDto<List<EmployeeDto>>();
+                PaginatedItemsDto<List<EmployeePaginationInfo>> res = new PaginatedItemsDto<List<EmployeePaginationInfo>>();
 
                 res.Data = employees;
                 res.TotalPages = totalPages;
@@ -256,7 +249,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<PaginatedItemsDto<List<DepartmentDto>>> GetDepartments(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> GetDepartments(PaginatedDto paginatedDto)
         {
             try
             {
@@ -289,18 +282,16 @@ namespace EmployeeSystem.Provider.Services
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
                     .Select(
-                    d => new DepartmentDto
+                    d => new DepartmentPaginationInfo
                     {
                         Id = d.Id,
                         Name = d.Name,
                         CreatedOn = d.CreatedOn,
-                        UpdatedOn = d.UpdatedOn,
-                        CreatedBy = d.CreatedBy,
-                        UpdatedBy = d.UpdatedBy,
+                        CreatedBy = d.CreatedByName,
                     }).ToListAsync();
 
                 // creating new dto to send the info
-                PaginatedItemsDto<List<DepartmentDto>> res = new PaginatedItemsDto<List<DepartmentDto>>();
+                PaginatedItemsDto<List<DepartmentPaginationInfo>> res = new PaginatedItemsDto<List<DepartmentPaginationInfo>>();
 
                 res.Data =departments;
                 res.TotalPages = totalPages;
@@ -350,10 +341,8 @@ namespace EmployeeSystem.Provider.Services
                          Id = e.Id,
                          Name = e.Name,
                          Description = e.Description,
-                         CreatedBy = e.CreatedBy,
-                         UpdatedBy = e.UpdatedBy,
+                         CreatedBy = e.CreatedByName,
                          CreatedOn = e.CreatedOn,
-                         UpdatedOn = e.UpdatedOn,
                      }).ToListAsync();
 
                 // creating new dto to send the info
@@ -406,10 +395,10 @@ namespace EmployeeSystem.Provider.Services
                         Id = e.Id,
                         Name = e.Name,
                         Description = e.Description,
-                        CreatedBy = e.CreatedBy,
-                        UpdatedBy = e.UpdatedBy,
                         CreatedOn = e.CreatedOn,
-                        UpdatedOn = e.UpdatedOn,
+                        AssigneeName = e.Employee.Name,
+                        AssignerName = e.Admin.Name,
+                        Status = e.Status
                     }).ToListAsync();
 
                 // creating new dto to send the info

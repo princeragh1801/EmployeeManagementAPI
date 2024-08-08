@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Models;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -12,7 +13,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A JWT token as a string.
         /// </returns>
-        public string GeneratingToken(int userId, EmployeeDto emp);
+        public string GeneratingToken(int userId, Employee emp);
 
 
         //public Task<User?> Register(int userId, RegisterDto userDto);

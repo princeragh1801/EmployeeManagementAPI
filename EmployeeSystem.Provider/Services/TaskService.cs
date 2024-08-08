@@ -1,5 +1,6 @@
 ﻿
 using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -60,16 +61,11 @@ namespace EmployeeSystem.Provider.Services
                 {
                     Id = t.Id,
                     Name = t.Name,
-                    AssignedBy = t.AssignedBy,
-                    AssignedTo = t.AssignedTo,
                     Status = t.Status,
                     Description = t.Description,
                     AssigneeName = t.Employee.Name,
                     AssignerName = t.Admin.Name,
-                    CreatedBy = t.CreatedBy,
-                    UpdatedBy = t.UpdatedBy,
                     CreatedOn = t.CreatedOn,
-                    UpdatedOn = t.UpdatedOn,
 
                 }).ToListAsync();
 
@@ -93,16 +89,11 @@ namespace EmployeeSystem.Provider.Services
                     {
                         Id = t.Id,
                         Name = t.Name,
-                        AssignedBy = t.AssignedBy,
-                        AssignedTo = t.AssignedTo,
                         Status = t.Status,
                         Description = t.Description,
                         AssigneeName = t.Employee.Name,
                         AssignerName = t.Admin.Name,
-                        CreatedBy = t.CreatedBy,
-                        UpdatedBy = t.UpdatedBy,
                         CreatedOn = t.CreatedOn,
-                        UpdatedOn = t.UpdatedOn,
 
                     }).ToListAsync();
 
@@ -127,16 +118,11 @@ namespace EmployeeSystem.Provider.Services
                 {
                     Id = t.Id,
                     Name = t.Name,
-                    AssignedBy = t.AssignedBy,
-                    AssignedTo = t.AssignedTo,
                     Status = t.Status,
                     Description = t.Description,
                     AssigneeName = t.Employee.Name,
                     AssignerName = t.Admin.Name,
-                    CreatedBy = t.CreatedBy,
-                    UpdatedBy = t.UpdatedBy,
                     CreatedOn = t.CreatedOn,
-                    UpdatedOn = t.UpdatedOn,
 
                 }).FirstOrDefaultAsync(t => t.Id == id);
 
@@ -157,22 +143,7 @@ namespace EmployeeSystem.Provider.Services
 
                 // fetching the task details
                 var task = await _context.Tasks
-                    .Select(t => new TasksDto
-                    {
-                        Id = t.Id,
-                        Name = t.Name,
-                        AssignedBy = t.AssignedBy,
-                        AssignedTo = t.AssignedTo,
-                        Status = t.Status,
-                        Description = t.Description,
-                        AssigneeName = t.Employee.Name,
-                        AssignerName = t.Admin.Name,
-                        CreatedBy = t.CreatedBy,
-                        UpdatedBy = t.UpdatedBy,
-                        CreatedOn = t.CreatedOn,
-                        UpdatedOn = t.UpdatedOn,
-
-                    })
+                    
                     .FirstOrDefaultAsync(t => t.Id == id);
                     
                     
@@ -180,14 +151,24 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return null;
                 }
-
+                var user = await _context.Employees.FirstAsync(e=> e.Id == userId);
                 // updating the status
                 task.Status = taskStatus;
                 task.UpdatedOn = DateTime.Now;
                 task.UpdatedBy = userId;
+                task.UpdatedByName = user.Name;
                 await _context.SaveChangesAsync();
-
-                return task;
+                var taskDetails = new TasksDto
+                {
+                    Id = task.Id,
+                    Name = task.Name,
+                    Status = task.Status,
+                    Description = task.Description,
+                    AssigneeName = task.Employee.Name,
+                    AssignerName = task.Admin.Name,
+                    CreatedOn = task.CreatedOn,
+                };
+                return taskDetails;
             }
             catch (Exception ex)
             {

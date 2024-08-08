@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -38,10 +39,8 @@ namespace EmployeeSystem.Provider.Services
                             Id = e.ProjectId,
                             Name = e.Project.Name,
                             Description = e.Project.Description,
-                            CreatedBy = e.Project.CreatedBy,
-                            UpdatedBy = e.Project.UpdatedBy,
                             CreatedOn = e.Project.CreatedOn,
-                            UpdatedOn = e.Project.UpdatedOn,
+                            CreatedBy = e.Project.CreatedByName,
                             Status = e.Project.Status,
                         }).Distinct().ToListAsync();
                     return res;
@@ -55,10 +54,8 @@ namespace EmployeeSystem.Provider.Services
                         Id = e.Id,
                         Name = e.Name,
                         Description = e.Description,
-                        CreatedBy = e.CreatedBy,
-                        UpdatedBy = e.UpdatedBy,
                         CreatedOn = e.CreatedOn,
-                        UpdatedOn = e.UpdatedOn,
+                        CreatedBy = e.CreatedByName,
                         Status = e.Status,
                     }).ToListAsync();
                 
@@ -89,10 +86,8 @@ namespace EmployeeSystem.Provider.Services
                         Id = e.Project.Id,
                         Name = e.Project.Name,
                         Description = e.Project.Description,
-                        CreatedBy = e.Project.CreatedBy,
-                        UpdatedBy = e.Project.UpdatedBy,
+                        CreatedBy = e.Project.CreatedByName,
                         CreatedOn = e.Project.CreatedOn,
-                        UpdatedOn = e.Project.UpdatedOn,
                         Status = e.Project.Status,
                     }).ToListAsync();
 
@@ -122,11 +117,12 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // fetching the employees of the project
-                var projectEmployees = project.ProjectEmployees.Select(p => new ProjectEmployeeDto
-                {
-                    EmployeeId = p.EmployeeId,
-                    EmployeeeName = p.Employee.Name,
-                }).ToList();
+                var projectEmployees = project.ProjectEmployees
+                    .Select(p => new ProjectEmployeeDto
+                    {
+                        EmployeeId = p.EmployeeId,
+                        EmployeeName = p.Employee.Name,
+                    }).ToList();
 
                 // fetching the tasks of the project
                 var tasksDto = project.Tasks.Select(task => new TaskBasicDto
@@ -134,6 +130,7 @@ namespace EmployeeSystem.Provider.Services
                     Id = task.Id,
                     Name = task.Name,
                     Description = task.Description,
+                    Status = task.Status,
                 }).ToList();
 
                 // assemble all the details in project details dto to send
@@ -145,10 +142,8 @@ namespace EmployeeSystem.Provider.Services
                     Members = projectEmployees,
                     Tasks = tasksDto,
                     Status = project.Status,
-                    CreatedBy = project.CreatedBy,
-                    UpdatedBy = project.UpdatedBy,
+                    CreatedBy = project.CreatedByName,
                     CreatedOn = project.CreatedOn,
-                    UpdatedOn = project.UpdatedOn,
                 };
 
                 return projectDetails;
@@ -159,7 +154,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<int> Add(int userId, int adminId, AddProjectDto projectDto)
+        public async Task<int> Add(int adminId, AddProjectDto projectDto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -171,7 +166,7 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 await transaction.CreateSavepointAsync("Adding New Project");
-
+                var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
                 var project = new Project
                 {
@@ -180,7 +175,8 @@ namespace EmployeeSystem.Provider.Services
                     AdminId = adminId,
                     IsActive = true,
                     Status = projectDto.Status,
-                    CreatedBy = userId,
+                    CreatedBy = adminId,
+                    CreatedByName = admin.Name,
                     CreatedOn = DateTime.Now
                 };
 

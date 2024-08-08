@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using static EmployeeSystem.Contract.Enums.Enums;
 
-namespace EmployeeSystem.Contract.Dtos
+namespace EmployeeSystem.Contract.Dtos.Add
 {
     public class AddProjectDto
     {

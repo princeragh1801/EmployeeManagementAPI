@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -11,7 +12,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of EmployeeDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<EmployeeDto>>> GetEmployees(PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(PaginatedDto paginatedDto);
 
         /// <summary>
         /// Retrieves a paginated list of departments based on the specified pagination parameters.
@@ -20,7 +21,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of DepartmentDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<DepartmentDto>>> GetDepartments(PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> GetDepartments(PaginatedDto paginatedDto);
 
 
         /// <summary>

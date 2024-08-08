@@ -1,5 +1,8 @@
 ﻿
 using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.IdAndName;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +23,6 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<ApiResponse<List<EmployeeDto>?>>> GetEmployees()
         {
             try
@@ -50,15 +52,44 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [HttpGet("employeeIdAndName")]
+        public async Task<ActionResult<ApiResponse<List<EmployeeIdAndName>?>>> GetEmployeeIdAndName()
+        {
+            try
+            {
+
+                var employees = await _employeeService.GetEmployeeIdAndName();
+
+                var response = new ApiResponse<List<EmployeeIdAndName>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Employees details fetched",
+                    Data = employees
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<EmployeeIdAndName>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+        }
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<EmployeeDto?>>> GetEmployeeById(int id)
+        public async Task<ActionResult<ApiResponse<EmployeeInfo?>>> GetEmployeeById(int id)
         {
 
             try
             {
                 var employee = await _employeeService.GetById(id);
 
-                var response = new ApiResponse<EmployeeDto>
+                var response = new ApiResponse<EmployeeInfo>
                 {
                     Success = true,
                     Status = 200,
@@ -90,7 +121,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
                 Console.WriteLine("UserId : " +  userId);
                 var id = await _employeeService.Add(userId, employee);
 
@@ -131,7 +162,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
                 var added = await _employeeService.AddList(userId, employees);
                 var response = new ApiResponse<int>
@@ -201,16 +232,16 @@ namespace EmployeeSystemWebApi.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<EmployeeDto?>>> UpdateEmployee(int id, UpdateEmployeeDto employee)
+        public async Task<ActionResult<ApiResponse<EmployeeInfo?>>> UpdateEmployee(int id, UpdateEmployeeDto employee)
         {
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
                 var updatedEmployee = await _employeeService.Update(userId, id, employee);
 
-                var response = new ApiResponse<EmployeeDto>
+                var response = new ApiResponse<EmployeeInfo>
                 {
                     Success = true,
                     Status = 200,
@@ -265,13 +296,13 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpGet("department/{id}")]
-        public async Task<ActionResult<ApiResponse<List<EmployeeDto>?>>> GetEmployeeDepartmentWise(int id)
+        public async Task<ActionResult<ApiResponse<List<EmployeeIdAndName>?>>> GetEmployeeDepartmentWise(int id)
         {
             try
             {
                 var employees = await _employeeService.GetEmployeesWithDepartmentName(id);
 
-                var response = new ApiResponse<List<EmployeeDto>>
+                var response = new ApiResponse<List<EmployeeIdAndName>>
                 {
                     Success = true,
                     Status = 200,
@@ -282,7 +313,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ApiResponse<List<EmployeeDto>>
+                return BadRequest(new ApiResponse<List<EmployeeIdAndName>>
                 {
                     Success = false,
                     Status = 500,

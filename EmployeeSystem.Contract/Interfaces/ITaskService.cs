@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces

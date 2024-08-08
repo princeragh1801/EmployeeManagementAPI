@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;

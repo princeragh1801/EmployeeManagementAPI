@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -19,13 +20,13 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPost("employees")]
-        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeeDto>>>>> GetEmployees(PaginatedDto paginatedDto)
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>>> GetEmployees(PaginatedDto paginatedDto)
         {
             try
             {
                 var employees = await _paginatedService.GetEmployees(paginatedDto);
 
-                var response = new ApiResponse<PaginatedItemsDto<List<EmployeeDto>>>
+                var response = new ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>
                 {
                     Success = true,
                     Status = 200,
@@ -36,7 +37,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ApiResponse<List<EmployeeDto>>
+                return BadRequest(new ApiResponse<List<EmployeePaginationInfo>>
                 {
                     Success = false,
                     Status = 500,
@@ -47,13 +48,13 @@ namespace EmployeeSystemWebApi.Controllers
         }
         
         [HttpPost("departments")]
-        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<DepartmentDto>>>>> GetDepartments(PaginatedDto paginatedDto)
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>>> GetDepartments(PaginatedDto paginatedDto)
         {
             try
             {
                 var departments = await _paginatedService.GetDepartments(paginatedDto);
 
-                var response = new ApiResponse<PaginatedItemsDto<List<DepartmentDto>>>
+                var response = new ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>
                 {
                     Success = true,
                     Status = 200,
@@ -64,7 +65,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ApiResponse<List<DepartmentDto>>
+                return BadRequest(new ApiResponse<List<DepartmentPaginationInfo>>
                 {
                     Success = false,
                     Status = 500,

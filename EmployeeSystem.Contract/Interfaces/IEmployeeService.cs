@@ -1,4 +1,7 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.IdAndName;
+using EmployeeSystem.Contract.Dtos.Info;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -21,7 +24,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing an EmployeeDto if the employee is found, or null if not.
         /// </returns>
-        public Task<EmployeeDto?> GetById(int id);
+        public Task<EmployeeInfo?> GetById(int id);
 
 
         /// <summary>
@@ -68,7 +71,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing an EmployeeDto with the updated information, or null if the employee is not found.
         /// </returns>
-        public Task<EmployeeDto?> Update(int userId, int id, UpdateEmployeeDto employee);
+        public Task<EmployeeInfo?> Update(int userId, int id, UpdateEmployeeDto employee);
 
 
         /// <summary>
@@ -97,7 +100,14 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a list of EmployeeDto for the employees in the specified department, or null if no employees are found.
         /// </returns>
-        public Task<List<EmployeeDto>?> GetEmployeesWithDepartmentName(int id);
+        public Task<List<EmployeeIdAndName>?> GetEmployeesWithDepartmentName(int id);
 
+        /// <summary>
+        /// Retrieves the list of employees with the name and id.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a list of EmployeeIdAndName.
+        /// </returns>
+        public Task<List<EmployeeIdAndName>> GetEmployeeIdAndName();
     }
 }

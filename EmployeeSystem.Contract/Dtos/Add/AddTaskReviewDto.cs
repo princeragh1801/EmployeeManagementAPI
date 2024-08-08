@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EmployeeSystem.Contract.Dtos
+namespace EmployeeSystem.Contract.Dtos.Add
 {
     public class AddTaskReviewDto
     {

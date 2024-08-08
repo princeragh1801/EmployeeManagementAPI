@@ -1,4 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.IdAndName;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +23,7 @@ namespace EmployeeSystem.Provider.Services
             this.configuration = _configuration;
         }
 
-        public string GeneratingToken(int userId, EmployeeDto emp)
+        public string GeneratingToken(int userId, Employee emp)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
@@ -96,21 +98,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return null;
                 }
-                var query = _context.Employees.Include(e => e.User).Where(e=> e.User.Id == user.Id & e.IsActive);
-                var employee = await query
-                    .Include(e => e.Manager)
-                    .Include(e => e.Department)
-                    .Select(e => new EmployeeDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Salary = e.Salary,
-                        Role = e.Role,
-                        ManagerName = e.Manager.Name,
-                        DepartmentName = e.Department.Name,
-                        DepartmentId = e.DepartmentID,
-                        ManagerId = e.ManagerID
-                    }).FirstOrDefaultAsync();
+                var employee = await _context.Employees.Include(e => e.User).FirstOrDefaultAsync(e=> e.User.Id == user.Id & e.IsActive);
 
                 if (employee == null)
                 {
@@ -119,10 +107,16 @@ namespace EmployeeSystem.Provider.Services
 
                 var token = GeneratingToken(user.Id, employee);
 
+                var employeeInfo = new EmployeeLoginInfo
+                {
+                    Id = employee.Id,
+                    Name = employee.Name,
+                    Role = employee.Role,
+                };
                 var data = new LoginUserDto
                 {
                     Token = token,
-                    Employee = employee
+                    Employee = employeeInfo
                 };
 
 

@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Response;
 
 namespace EmployeeSystem.Contract.Interfaces

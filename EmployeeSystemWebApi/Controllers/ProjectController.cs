@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -119,10 +120,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
                 var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
-                var id = await _projectService.Add(userId, adminId, project);
+                var id = await _projectService.Add(adminId, project);
                 var response = new ApiResponse<int>
                 {
                     Success = true,

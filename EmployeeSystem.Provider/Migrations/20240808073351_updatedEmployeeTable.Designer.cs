@@ -4,6 +4,7 @@ using EmployeeSystem.Provider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeSystem.Provider.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240808073351_updatedEmployeeTable")]
+    partial class updatedEmployeeTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,9 +57,6 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedByName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
@@ -69,9 +69,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
@@ -95,9 +92,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("CreatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -123,10 +117,6 @@ namespace EmployeeSystem.Provider.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
@@ -135,9 +125,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
@@ -170,9 +157,6 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedByName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
@@ -192,9 +176,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
@@ -232,9 +213,6 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedByName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
@@ -249,9 +227,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
@@ -302,9 +277,6 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedByName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
@@ -319,9 +291,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
@@ -352,9 +321,6 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedByName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
@@ -377,9 +343,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
@@ -406,9 +369,6 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("CreatedByName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
@@ -418,9 +378,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
-
-                    b.Property<string>("UpdatedByName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");

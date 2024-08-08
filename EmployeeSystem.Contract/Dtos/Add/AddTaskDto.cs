@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using static EmployeeSystem.Contract.Enums.Enums;
 
-namespace EmployeeSystem.Contract.Dtos
+namespace EmployeeSystem.Contract.Dtos.Add
 {
     public class AddTaskDto
     {
@@ -16,7 +16,7 @@ namespace EmployeeSystem.Contract.Dtos
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Id of Assignee is required")]
-        [Range(1, Int32.MaxValue)]
+        [Range(1, int.MaxValue)]
         public int AssignedTo { get; set; }
 
         /*[Required(ErrorMessage = "Id of Assigner is required")]

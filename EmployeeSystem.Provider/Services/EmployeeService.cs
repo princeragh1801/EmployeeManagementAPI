@@ -1,7 +1,12 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.IdAndName;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -22,12 +27,12 @@ namespace EmployeeSystem.Provider.Services
                 int departmentId = DepartmentId ?? 0;
                 if (managerId != 0)
                 {
-                    var manager = await GetById(managerId);
+                    var manager = await _context.Employees.FirstAsync(e => e.Id == managerId);
                     if (manager == null)
                     {
                         return false;
                     }
-                    else if (departmentId != 0 && manager.DepartmentId != null && manager.DepartmentId != DepartmentId)
+                    else if (departmentId != 0 && manager.DepartmentID != null && manager.DepartmentID != DepartmentId)
                     {
                         return false;
                     }
@@ -130,7 +135,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // get employee by id
-        public async Task<EmployeeDto?> GetById(int id)
+        public async Task<EmployeeInfo?> GetById(int id)
         {
             try
             {
@@ -146,7 +151,7 @@ namespace EmployeeSystem.Provider.Services
                 var employee = await _context.Employees
                     .Include(e => e.Manager)
                     .Include(e => e.Department)
-                    .Select(e => new EmployeeDto
+                    .Select(e => new EmployeeInfo
                     {
                         Id = e.Id,
                         Name = e.Name,
@@ -154,19 +159,16 @@ namespace EmployeeSystem.Provider.Services
                         Role = e.Role,
                         ManagerName = e.Manager.Name,
                         DepartmentName = e.Department.Name,
-                        DepartmentId = e.DepartmentID,
-                        ManagerId = e.ManagerID,
-                        CreatedBy = e.CreatedBy,
-                        UpdatedBy = e.UpdatedBy,
+                        Phone = e.Phone,
+                        Email = e.Email,
+                        Address = e.Address,
+                        ImageUrl = e.ImageUrl,
                         CreatedOn = e.CreatedOn,
-                        UpdatedOn = e.UpdatedOn,
+                        CreatedBy = e.CreatedByName
                     }).FirstOrDefaultAsync(e => e.Id == id);
 
 
-                /*if (employee == null)
-                {
-                    throw new Exception("Employee doesn't exist");
-                }*/
+
                 return employee;
             }
             catch (Exception ex)
@@ -206,7 +208,8 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return 0;
                 }
-
+                var obj = await _context.Employees.FirstAsync(e => e.Id == userID);
+                var createdByName = obj.Name;
                 // creating user 
                 var user = new User
                 {
@@ -220,18 +223,28 @@ namespace EmployeeSystem.Provider.Services
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                // creating a employee model
+                var firstLetter = employeeDto.Name.ElementAt(0);
+                var lastLetter = employeeDto.Name.ElementAt(1);
+                var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
+                Console.WriteLine("First " + firstLetter);
+                Console.WriteLine("Last " + lastLetter);
+                Console.WriteLine("Url "+ imageUrl);
                 var employee = new Employee
                 {
                     Name = employeeDto.Name,
+                    Email = employeeDto.Email,
+                    Address = employeeDto.Address,
                     Salary = employeeDto.Salary,
+                    Phone = "+91-"+employeeDto.Phone,
                     Role = employeeDto.Role,
+                    ImageUrl = imageUrl,
                     DepartmentID = departmentId == 0 ? null : departmentId,
                     ManagerID = managerId == 0 ? null : managerId,
                     UserId = user.Id,
                     IsActive = true,
-                    CreatedBy = userID,
                     CreatedOn = DateTime.Now,
+                    CreatedBy = userID,
+                    CreatedByName = createdByName
                 };
 
                 // adding and saving to the database
@@ -254,6 +267,8 @@ namespace EmployeeSystem.Provider.Services
             {
                 // created a save point for roll back
                 await transaction.CreateSavepointAsync("Adding list");
+                var obj = await _context.Employees.FirstAsync(e => e.Id == userID);
+                var createdByName = obj.Name;
                 foreach (var employeeDto in employees)
                 {
                     int? managerId = employeeDto.ManagerID;
@@ -296,9 +311,17 @@ namespace EmployeeSystem.Provider.Services
                     // adding user to the db
                     _context.Users.Add(user);
 
+
+                    var firstLetter = employeeDto.Name.ElementAt(0);
+                    var lastLetter = employeeDto.Name.ElementAt(1);
+                    var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
+
                     var employee = new Employee
                     {
                         Name = employeeDto.Name,
+                        Email = employeeDto.Email,
+                        Address = employeeDto.Address,
+                        Phone = "+91-" + employeeDto.Phone,
                         Salary = employeeDto.Salary,
                         Role = employeeDto.Role,
                         DepartmentID = departmentId == 0 ? null : departmentId,
@@ -306,7 +329,8 @@ namespace EmployeeSystem.Provider.Services
                         UserId = user.Id,
                         IsActive = true,
                         CreatedOn = DateTime.Now,
-                        CreatedBy = userID
+                        CreatedBy = userID,
+                        CreatedByName = createdByName,
                     };
 
                     _context.Add(employee);
@@ -359,7 +383,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // update employee
-        public async Task<EmployeeDto?> Update(int userID, int id, UpdateEmployeeDto employeeDto)
+        public async Task<EmployeeInfo?> Update(int userID, int id, UpdateEmployeeDto employeeDto)
         {
             try
             {
@@ -400,13 +424,26 @@ namespace EmployeeSystem.Provider.Services
                     return null;
                     
                 }
+                var firstLetter = employeeDto.Name.ElementAt(0);
+                var lastLetter = employeeDto.Name.ElementAt(1);
+                
+                var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
+                var obj = await _context.Employees.FirstAsync(e => e.Id == userID);
+                var updatedByName = obj.Name;
+
                 employeeToUpdate.Name = employeeDto.Name;
+                employeeToUpdate.ImageUrl = imageUrl;
+                employeeToUpdate.Email = employeeDto.Email;
+                employeeToUpdate.Address = employeeDto.Address;
+                employeeToUpdate.Phone = "+91-" + employeeDto.Phone;
                 employeeToUpdate.Salary = employeeDto.Salary;
                 employeeToUpdate.Role = employeeDto.Role;
                 employeeToUpdate.DepartmentID = employeeDto.DepartmentID;
                 employeeToUpdate.ManagerID = employeeDto.ManagerID;
                 employeeToUpdate.UpdatedOn = DateTime.Now;
                 employeeToUpdate.UpdatedBy = userID;
+                employeeToUpdate.UpdatedByName = updatedByName;
+
                 await _context.SaveChangesAsync();
 
                 var employee = await GetById(id);
@@ -474,7 +511,7 @@ namespace EmployeeSystem.Provider.Services
         }
     
 
-        public async Task<List<EmployeeDto>?> GetEmployeesWithDepartmentName(int id)
+        public async Task<List<EmployeeIdAndName>?> GetEmployeesWithDepartmentName(int id)
         {
             try
             {
@@ -493,22 +530,11 @@ namespace EmployeeSystem.Provider.Services
 
                 // fetching the employees of the department with id-[x]
                 var employees = await _context.Employees
-                    .Include(e => e.Manager)
                     .Where(e => e.DepartmentID == res.Id & e.IsActive)
-                    .Select(e => new EmployeeDto
+                    .Select(e => new EmployeeIdAndName
                     {
                         Id = e.Id,
                         Name = e.Name,
-                        Salary = e.Salary,
-                        Role = e.Role,
-                        DepartmentName = e.Department.Name,
-                        ManagerName = e.Manager.Name,
-                        ManagerId= e.Manager.Id,
-                        DepartmentId = e.Department.Id,
-                        CreatedBy = e.CreatedBy,
-                        UpdatedBy = e.UpdatedBy,
-                        CreatedOn = e.CreatedOn,
-                        UpdatedOn = e.UpdatedOn,
                     }).ToListAsync();
 
                 return employees;
@@ -519,6 +545,24 @@ namespace EmployeeSystem.Provider.Services
             }
         }
         
+        public async Task<List<EmployeeIdAndName>> GetEmployeeIdAndName()
+        {
+            try
+            {
+                var employeeInfo = await _context.Employees
+                    .Include(e => e.Department)
+                    .Select(e => new EmployeeIdAndName
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        DepartmentName = e.Department.Name
+                    }).ToListAsync();
+                return employeeInfo;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 
 }

@@ -1,8 +1,11 @@
-﻿namespace EmployeeSystem.Contract.Dtos
+﻿using EmployeeSystem.Contract.Dtos.IdAndName;
+using EmployeeSystem.Contract.Dtos.Info;
+
+namespace EmployeeSystem.Contract.Dtos
 {
     public class LoginUserDto
     {
-        public EmployeeDto Employee { get; set; }
+        public EmployeeLoginInfo Employee { get; set; }
         public string Token { get; set; }
     }
 }
