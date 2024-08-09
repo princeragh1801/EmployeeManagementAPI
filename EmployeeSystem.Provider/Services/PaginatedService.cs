@@ -162,6 +162,32 @@ namespace EmployeeSystem.Provider.Services
             return query;
         }
 
+        public IQueryable<ProjectEmployee> GetOrdered(IQueryable<ProjectEmployee> query, string columnName, bool ace = true)
+        {
+            if (columnName.ToLower() == "name")
+            {
+                query = ace ? query.OrderBy(x => x.Project.Name) : query.OrderByDescending(x => x.Project.Name);
+            }
+            else if (columnName.ToLower() == "description")
+            {
+                query = ace ? query.OrderBy(x => x.Project.Description) : query.OrderByDescending(x => x.Project.Description);
+            }
+            else if (columnName.ToLower() == "createdon")
+            {
+                query = ace ? query.OrderBy(x => x.Project.CreatedOn) : query.OrderByDescending(x => x.Project.CreatedOn);
+            }
+            else if (columnName.ToLower() == "updatedon")
+            {
+                query = query.Where(e => e.Project.UpdatedOn != null);
+                query = ace ? query.OrderBy(x => x.Project.UpdatedOn) : query.OrderByDescending(x => x.Project.UpdatedOn);
+            }
+            else
+            {
+                query = ace ? query.OrderBy(x => x.Project.Id) : query.OrderByDescending(x => x.Project.Id);
+            }
+            return query;
+        }
+
         public IQueryable<Tasks> GetOrdered(IQueryable<Tasks> query, string columnName, bool ace = true)
         {
             if (columnName.ToLower() == "name")
@@ -188,7 +214,7 @@ namespace EmployeeSystem.Provider.Services
             return query;
         }
 
-        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto paginatedDto)
         {
             try
             {
@@ -196,11 +222,18 @@ namespace EmployeeSystem.Provider.Services
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
 
+                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
+
                 // including the details of the employee in query
                 var query = _context.Employees
                     .Include(e => e.Manager)
                     .Include(m => m.Department)
                     .Where(e => e.IsActive);
+
+                if(user.Role != Role.SuperAdmin)
+                {
+                    query = query.Where(e => e.ManagerID != null && e.ManagerID == userId );
+                }
 
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
@@ -208,7 +241,7 @@ namespace EmployeeSystem.Provider.Services
                     query = query.Where(e => e.Name.Contains(search) || e.Department.Name.Contains(search) || e.Manager.Name.Contains(search) || e.Phone.Contains(search));
                 }
 
-                query = GetOrdered(query, orderKey, true);
+                query = orderBy == SortedOrder.NoOrder  ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
                 var totalCount = query.Count(); 
@@ -230,7 +263,7 @@ namespace EmployeeSystem.Provider.Services
                         Role = e.Role,
                         ManagerName = e.Manager.Name,
                         DepartmentName = e.Department.Name,
-                        //CreatedBy = e.CreatedBy,
+                        Email = e.Email,
                         CreatedOn = e.CreatedOn,
                     }).ToListAsync();
 
@@ -304,10 +337,11 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(int userId, PaginatedDto paginatedDto)
         {
             try
             {
+                
                 // only selecting which is active
                 var query = _context.Projects.Where(d => d.IsActive);
 
@@ -315,6 +349,53 @@ namespace EmployeeSystem.Provider.Services
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
 
+
+                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
+
+                // role specific
+                if (user.Role != Role.SuperAdmin)
+                {
+                    var userQuery = _context.ProjectEmployees
+                        .Include(p => p.Employee).Include(p => p.Project)
+                        .Where(p => p.Project.IsActive && (p.EmployeeId == userId || p.Employee.ManagerID == userId))
+                        .Distinct();
+
+                    if (!string.IsNullOrEmpty(search))
+                    {
+                        userQuery = userQuery.Where(pe => pe.Project.Name.Contains(search));
+                    }
+
+                    userQuery = orderBy == SortedOrder.NoOrder ? userQuery : GetOrdered<ProjectEmployee>(userQuery, orderKey, (orderBy == SortedOrder.Ascending) ? true : false);
+
+                    // calculating the total count and pages
+                    var totalPage = userQuery.Count() / paginatedDto.PagedItemsCount;
+                    var totalCnt = userQuery.Count();
+                    if (userQuery.Count() % paginatedDto.PagedItemsCount != 0)
+                    {
+                        totalPage++;
+                    }
+
+                    // now extrating projects of the page-[x]
+                    var userProjects = await userQuery
+                        .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
+                        .Take(paginatedDto.PagedItemsCount)
+                        .Select(e => new ProjectDto
+                        {
+                            Id = e.Project.Id,
+                            Name = e.Project.Name,
+                            Description = e.Project.Description,
+                            CreatedBy = e.Project.CreatedByName,
+                            CreatedOn = e.Project.CreatedOn,
+                        }).ToListAsync();
+
+                    // creating new dto to send the info
+                    PaginatedItemsDto<List<ProjectDto>> resp = new PaginatedItemsDto<List<ProjectDto>>();
+
+                    resp.Data = userProjects;
+                    resp.TotalPages = totalPage;
+                    resp.TotalItems = totalCnt;
+                    return resp;
+                }
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -358,13 +439,17 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto paginatedDto)
         {
             try
             {
                 // only selecting which is active
                 var query = _context.Tasks.Where(d => d.IsActive);
-
+                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
+                if (user.Role != Role.SuperAdmin)
+                {
+                    query = query.Include(t => t.Employee).Where(t => t.Employee.ManagerID == userId || t.AssignedTo == userId);
+                }
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;

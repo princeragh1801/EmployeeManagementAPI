@@ -24,7 +24,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var employees = await _paginatedService.GetEmployees(paginatedDto);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var employees = await _paginatedService.GetEmployees(userId, paginatedDto);
 
                 var response = new ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>
                 {
@@ -46,7 +47,8 @@ namespace EmployeeSystemWebApi.Controllers
                 });
             }
         }
-        
+
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("departments")]
         public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>>> GetDepartments(PaginatedDto paginatedDto)
         {
@@ -80,7 +82,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var projects = await _paginatedService.GetProjects(paginatedDto);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var projects = await _paginatedService.GetProjects(userId, paginatedDto);
 
                 var response = new ApiResponse<PaginatedItemsDto<List<ProjectDto>>>
                 {
@@ -109,7 +112,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var tasks = await _paginatedService.GetTasks(paginatedDto);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var tasks = await _paginatedService.GetTasks(userId, paginatedDto);
 
                 var response = new ApiResponse<PaginatedItemsDto<List<TasksDto>>>
                 {

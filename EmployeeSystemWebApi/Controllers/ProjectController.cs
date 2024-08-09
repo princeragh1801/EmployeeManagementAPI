@@ -4,6 +4,8 @@ using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static EmployeeSystem.Contract.Enums.Enums;
+
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -56,6 +58,38 @@ namespace EmployeeSystemWebApi.Controllers
             {
                 
                 var projects = await _projectService.GetProjectsByEmployee(employeeId);
+                var response = new ApiResponse<List<ProjectDto>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Project Details fetched",
+                    Data = projects
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = new ApiResponse<List<ProjectDto>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                };
+                return BadRequest(response);
+            }
+
+        }
+
+        [HttpGet("StatusWise/{status}")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<ActionResult<ApiResponse<List<ProjectDto>>>> GetProjectStatusWise(ProjectStatus status)
+
+        {
+            try
+            {
+
+                var projects = await _projectService.GetProjectsStatusWise(status);
                 var response = new ApiResponse<List<ProjectDto>>
                 {
                     Success = true,
@@ -149,6 +183,48 @@ namespace EmployeeSystemWebApi.Controllers
             }
 
         }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<ActionResult<ApiResponse<int>>> Upate(int id, AddProjectDto project)
+        {
+            try
+            {
+                var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
+                var projectId = await _projectService.Update(id, adminId, project);
+                var response = new ApiResponse<int>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Project Updated",
+                    Data = projectId
+                };
+                if(id == -1)
+                {
+                    response.Status = 404;
+                    response.Message = "Project not found";
+                    return NotFound(response);
+                }
+                if (id == 0)
+                {
+                    response.Message = "Unauthorized request";
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = new ApiResponse<int>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                };
+                return BadRequest(response);
+            }
+
+        }
+
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "SuperAdmin")]

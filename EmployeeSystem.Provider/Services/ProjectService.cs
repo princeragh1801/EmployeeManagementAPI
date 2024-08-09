@@ -99,6 +99,29 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+        public async Task<List<ProjectDto>> GetProjectsStatusWise(ProjectStatus status)
+        {
+            try
+            {
+                var projects = await _context.Projects
+                    .Where(p => p.IsActive && p.Status == status)
+                    .Select(e => new ProjectDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        Description = e.Description,
+                        CreatedOn = e.CreatedOn,
+                        CreatedBy = e.CreatedByName,
+                        Status = e.Status,
+                    }).ToListAsync();
+
+                return projects;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
         public async Task<ProjectDetailsDto?> GetById(int id)
         {
@@ -209,6 +232,64 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+        public async Task<int> Update(int id, int adminId, AddProjectDto projectDto)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // check if total members in the project is less than 3
+                if (projectDto.Members.Count <= 2)
+                {
+                    return 0;
+                }
+
+                await transaction.CreateSavepointAsync("Adding New Project");
+                var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
+                // creating a new project model
+                var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id & p.IsActive);
+                if(project == null)
+                {
+                    return -1;
+                }
+
+                project.Name = projectDto.Name;
+                project.Description = projectDto.Description;
+                project.Status = projectDto.Status;
+                project.UpdatedBy = admin.Id;
+                project.UpdatedOn = DateTime.Now;
+                project.UpdatedByName = admin.Name;
+
+
+                // TODO:::
+                var projectEmployees = await _context.ProjectEmployees.Where(pe => pe.ProjectId == id).ToListAsync();
+                foreach(var pe in projectEmployees)
+                {
+                    _context.ProjectEmployees.Remove(pe);
+                }
+                await _context.SaveChangesAsync();
+
+                // now adding the employees to db
+                foreach (var p in projectDto.Members)
+                {
+                    var projectEmployee = new ProjectEmployee
+                    {
+                        EmployeeId = p.EmployeeId,
+                        ProjectId = project.Id
+                    };
+                    _context.ProjectEmployees.Add(projectEmployee);
+
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return project.Id;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackToSavepointAsync("Adding New Project");
+                //Console.WriteLine(ex.Message);
+                throw new Exception(ex.Message, ex);
+            }
+        }
         public async Task<bool> DeleteById(int id)
         {
             try

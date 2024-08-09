@@ -9,10 +9,11 @@ namespace EmployeeSystem.Contract.Interfaces
         /// Retrieves a paginated list of employees based on the specified pagination parameters.
         /// </summary>
         /// <param name="paginatedDto">An object containing pagination and query parameters.</param>
+        /// <param name="userId">User id.</param>
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of EmployeeDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto paginatedDto);
 
         /// <summary>
         /// Retrieves a paginated list of departments based on the specified pagination parameters.
@@ -31,7 +32,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of ProjectDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects( int userId, PaginatedDto paginatedDto);
 
 
         /// <summary>
@@ -41,7 +42,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of TasksDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto paginatedDto);
 
     }
 }

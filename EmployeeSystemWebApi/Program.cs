@@ -1,4 +1,5 @@
 using EmployeeSystem.Contract.Interfaces;
+using EmployeeSystem.Contract.Utils;
 using EmployeeSystem.Provider;
 using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -56,6 +57,11 @@ builder.Services.AddAuthorization(options =>
 var provider = builder.Services.BuildServiceProvider();
 var config = provider.GetRequiredService<IConfiguration>();
 
+var emailConfig = builder.Configuration
+        .GetSection("EmailConfiguration")
+        .Get<EmailConfiguration>();
+
+builder.Services.AddSingleton(emailConfig);
 
 
 // getting connection string and connection establishment
@@ -71,7 +77,7 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IAuthService, Authservice>();
 builder.Services.AddScoped<IPaginatedService, PaginatedService>();
-
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "EmployeeManagementAPI", Version = "v1" });
