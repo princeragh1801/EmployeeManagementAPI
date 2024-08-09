@@ -1,13 +1,7 @@
-using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Utils;
 using EmployeeSystem.Provider;
-using EmployeeSystem.Provider.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using EmployeeSystemWebApi.Extention;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,34 +22,12 @@ builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
 
 }));
 
-
-// added the jwt based authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(option =>
-    {
-        option.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-
-        };
-    });
-
-// Add role-based authorization
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("SuperAdminPolicy", policy => policy.RequireRole("SuperAdmin"));
-    options.AddPolicy("EmployeePolicy", policy => policy.RequireRole("Employee"));
-});
-
 // Database Connectivity
 var provider = builder.Services.BuildServiceProvider();
 var config = provider.GetRequiredService<IConfiguration>();
+
+// added authentication and authorization service
+builder.Services.AddAuthenticationAuthorizationServices(config);
 
 var emailConfig = builder.Configuration
         .GetSection("EmailConfiguration")
@@ -69,44 +41,10 @@ var connectionString = builder.Configuration.GetConnectionString("SqlServerConne
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
 // adding other services
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-builder.Services.AddScoped<ITaskService, TaskService>();
-builder.Services.AddScoped<ITaskReviewService, TaskReviewService>();
-builder.Services.AddScoped<IAttendanceService, AttendanceService>();
-builder.Services.AddScoped<IProjectService, ProjectService>();
-builder.Services.AddScoped<IAuthService, Authservice>();
-builder.Services.AddScoped<IPaginatedService, PaginatedService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddSwaggerGen(opt =>
-{
-    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "EmployeeManagementAPI", Version = "v1" });
-    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-    });
+builder.Services.AddCustomerServices();
 
-    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
-                }
-            },
-            new string[]{}
-        }
-    });
-
-});
+// added custom swagger gen services
+builder.Services.AddSwaggerGenService();
 
 var app = builder.Build();
 

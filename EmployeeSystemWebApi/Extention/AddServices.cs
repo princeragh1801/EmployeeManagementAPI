@@ -16,6 +16,8 @@ namespace EmployeeSystemWebApi.Extention
             services.AddScoped<IProjectService, ProjectService>();
             services.AddScoped<IAuthService, Authservice>();
             services.AddScoped<IPaginatedService, PaginatedService>();
+            services.AddScoped<IEmailService, EmailService>();
+
             return services;
         }
     }
