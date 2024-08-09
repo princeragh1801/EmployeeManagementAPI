@@ -105,6 +105,7 @@ namespace EmployeeSystem.Provider.Services
                     return null;
                 }
 
+                var isManager = await _context.Employees.FirstOrDefaultAsync(e => e.ManagerID == employee.Id);
                 var token = GeneratingToken(user.Id, employee);
 
                 var employeeInfo = new EmployeeLoginInfo
@@ -112,6 +113,7 @@ namespace EmployeeSystem.Provider.Services
                     Id = employee.Id,
                     Name = employee.Name,
                     Role = employee.Role,
+                    IsManager = isManager != null
                 };
                 var data = new LoginUserDto
                 {
