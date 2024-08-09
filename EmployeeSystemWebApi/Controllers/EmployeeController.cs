@@ -1,5 +1,4 @@
-﻿
-using EmployeeSystem.Contract.Dtos;
+﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
@@ -16,7 +15,6 @@ namespace EmployeeSystemWebApi.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
-
         public EmployeeController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
@@ -323,5 +321,26 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+
+        /*// patch
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> UpdatePatch(int id,[FromBody] JsonPatchDocument patch)
+        {
+            try
+            {
+                var fromDB = _context.Employees.FirstOrDefault(x => x.Id == id);
+                
+                return Ok();
+            }catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = false
+                });
+            }
+        }*/
     }
 }

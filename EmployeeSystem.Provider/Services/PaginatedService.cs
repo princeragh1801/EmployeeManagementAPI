@@ -19,7 +19,7 @@ namespace EmployeeSystem.Provider.Services
             _context = applicationDbContext;
         }
 
-        public static IQueryable<T> GetOrderedTemp<T>(IQueryable<T> query, string columnName, bool ascending = true)
+        public static IQueryable<T> GetOrdered<T>(IQueryable<T> query, string columnName, bool ascending = true)
         {
 
             // Find the matching property in a case-insensitive manner
@@ -40,15 +40,11 @@ namespace EmployeeSystem.Provider.Services
             return query.OrderBy(orderByString);
         }
 
-        public static IQueryable<T> GetOrdered<T>(IQueryable<T> query, string columnName, bool ascending = true)
+        /*public static IQueryable<T> GetOrdered<T>(IQueryable<T> query, string columnName, bool ascending = true)
         {
-            if (string.IsNullOrEmpty(columnName))
-            {
-                return query;
-            }
 
             var parameter = Expression.Parameter(typeof(T), "x");
-            Console.WriteLine("Parameter : " + parameter);
+            //Console.WriteLine("Parameter : " + parameter);
             
             var property = typeof(T).GetProperty(columnName, BindingFlags.IgnoreCase);
             
@@ -57,13 +53,13 @@ namespace EmployeeSystem.Provider.Services
             {
                 return query; // Property not found, return the original query
             }
-            Console.WriteLine("Property : " + property);
+            //Console.WriteLine("Property : " + property);
 
             var propertyAccess = Expression.MakeMemberAccess(parameter, property);
-            Console.WriteLine("propertyAccess : " + propertyAccess);
+            //Console.WriteLine("propertyAccess : " + propertyAccess);
 
             var orderByExp = Expression.Lambda(propertyAccess, parameter);
-            Console.WriteLine("orderByExp : " + orderByExp);
+            //Console.WriteLine("orderByExp : " + orderByExp);
 
             var orderByMethod = ascending ? "OrderBy" : "OrderByDescending";
 
@@ -71,12 +67,11 @@ namespace EmployeeSystem.Provider.Services
             var resultExp = Expression.Call(typeof(Queryable), orderByMethod, new Type[] { typeof(T), property.PropertyType }, query.Expression, Expression.Quote(orderByExp));
 
 
-            Console.WriteLine("resultExp : " + resultExp);
+            //Console.WriteLine("resultExp : " + resultExp);
             return query.Provider.CreateQuery<T>(resultExp);
         }
 
-
-        public IQueryable<Employee> GetOrdered(IQueryable<Employee> query, string columnName, bool ace = true)
+        /*public IQueryable<Employee> GetOrdered(IQueryable<Employee> query, string columnName, bool ace = true)
         {
             if (columnName.ToLower() == "name")
             {
@@ -161,6 +156,34 @@ namespace EmployeeSystem.Provider.Services
             }
             return query;
         }
+        
+        public IQueryable<Tasks> GetOrdered(IQueryable<Tasks> query, string columnName, bool ace = true)
+        {
+            if (columnName.ToLower() == "name")
+            {
+                query = ace ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
+            }
+            else if (columnName.ToLower() == "description")
+            {
+                query = ace ? query.OrderBy(x => x.Description) : query.OrderByDescending(x => x.Description);
+            }
+            else if (columnName.ToLower() == "createdon")
+            {
+                query = ace ? query.OrderBy(x => x.CreatedOn) : query.OrderByDescending(x => x.CreatedOn);
+            }
+            else if (columnName.ToLower() == "updatedon")
+            {
+                query = query.Where(e => e.UpdatedOn != null);
+                query = ace ? query.OrderBy(x => x.UpdatedOn) : query.OrderByDescending(x => x.UpdatedOn);
+            }
+            else
+            {
+                query = ace ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
+            }
+            return query;
+        }*/
+
+
 
         public IQueryable<ProjectEmployee> GetOrdered(IQueryable<ProjectEmployee> query, string columnName, bool ace = true)
         {
@@ -188,31 +211,7 @@ namespace EmployeeSystem.Provider.Services
             return query;
         }
 
-        public IQueryable<Tasks> GetOrdered(IQueryable<Tasks> query, string columnName, bool ace = true)
-        {
-            if (columnName.ToLower() == "name")
-            {
-                query = ace ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name);
-            }
-            else if (columnName.ToLower() == "description")
-            {
-                query = ace ? query.OrderBy(x => x.Description) : query.OrderByDescending(x => x.Description);
-            }
-            else if (columnName.ToLower() == "createdon")
-            {
-                query = ace ? query.OrderBy(x => x.CreatedOn) : query.OrderByDescending(x => x.CreatedOn);
-            }
-            else if (columnName.ToLower() == "updatedon")
-            {
-                query = query.Where(e => e.UpdatedOn != null);
-                query = ace ? query.OrderBy(x => x.UpdatedOn) : query.OrderByDescending(x => x.UpdatedOn);
-            }
-            else
-            {
-                query = ace ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
-            }
-            return query;
-        }
+        
 
         public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto paginatedDto)
         {
@@ -241,12 +240,12 @@ namespace EmployeeSystem.Provider.Services
                     query = query.Where(e => e.Name.Contains(search) || e.Department.Name.Contains(search) || e.Manager.Name.Contains(search) || e.Phone.Contains(search));
                 }
 
-                query = orderBy == SortedOrder.NoOrder  ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+                query = orderBy == SortedOrder.NoOrder  ? query : GetOrdered<Employee>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
                 var totalCount = query.Count(); 
-                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
-                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
                 {
                     totalPages++;
                 }
@@ -300,12 +299,12 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // now getting the order wise details
-                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered<Department>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
                 var totalCount = query.Count();
-                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
-                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
                 {
                     totalPages++;
                 }
@@ -368,9 +367,9 @@ namespace EmployeeSystem.Provider.Services
                     userQuery = orderBy == SortedOrder.NoOrder ? userQuery : GetOrdered<ProjectEmployee>(userQuery, orderKey, (orderBy == SortedOrder.Ascending) ? true : false);
 
                     // calculating the total count and pages
-                    var totalPage = userQuery.Count() / paginatedDto.PagedItemsCount;
                     var totalCnt = userQuery.Count();
-                    if (userQuery.Count() % paginatedDto.PagedItemsCount != 0)
+                    var totalPage = totalCnt / paginatedDto.PagedItemsCount;
+                    if (totalCnt % paginatedDto.PagedItemsCount != 0)
                     {
                         totalPage++;
                     }
@@ -403,12 +402,12 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // now getting the order wise details
-                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered<Project>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
-                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
                 var totalCount = query.Count();
-                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
                 {
                     totalPages++;
                 }
@@ -461,12 +460,12 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // now getting the order wise details
-                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered<Tasks>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
-                var totalPages = query.Count() / paginatedDto.PagedItemsCount;
                 var totalCount = query.Count();
-                if (query.Count() % paginatedDto.PagedItemsCount != 0)
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
                 {
                     totalPages++;
                 }
