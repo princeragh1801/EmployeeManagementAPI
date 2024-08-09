@@ -12,9 +12,11 @@ namespace EmployeeSystem.Provider.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly ApplicationDbContext _context;
-        public EmployeeService(ApplicationDbContext applicationDbContext)
+        private readonly IEmailService _emailService;
+        public EmployeeService(ApplicationDbContext applicationDbContext, IEmailService emailService)
         {
             _context = applicationDbContext;
+            _emailService = emailService;
         }
 
         public async Task<bool> CheckManagerAndEmployeeDepartment(int ?ManagerId, int? DepartmentId)
@@ -248,6 +250,13 @@ namespace EmployeeSystem.Provider.Services
                 // adding and saving to the database
                 _context.Employees.Add(employee);
                 await _context.SaveChangesAsync();
+
+                // Send the email with the username and password
+                /*string subject = "Welcome to the Employee Management system";
+                string body = $"Dear {employee.Name},\n\nYour account has been created.\n\nUsername: {user.Username}\nPassword: {user.Password}\n";
+
+                await _emailService.SendEmail(employee.Email, subject, body);*/
+
                 return employee.Id;
             }
             catch (Exception ex)
