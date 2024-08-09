@@ -72,7 +72,6 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IAuthService, Authservice>();
 builder.Services.AddScoped<IPaginatedService, PaginatedService>();
 
-
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "EmployeeManagementAPI", Version = "v1" });

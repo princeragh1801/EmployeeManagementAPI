@@ -205,7 +205,7 @@ namespace EmployeeSystem.Provider.Services
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {
-                    query = query.Where(e => e.Name.Contains(search) || e.Department.Name.Contains(search) || e.Manager.Name.Contains(search) );
+                    query = query.Where(e => e.Name.Contains(search) || e.Department.Name.Contains(search) || e.Manager.Name.Contains(search) || e.Phone.Contains(search));
                 }
 
                 query = GetOrdered(query, orderKey, true);

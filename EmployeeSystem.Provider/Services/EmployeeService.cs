@@ -5,8 +5,6 @@ using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Numerics;
-using System.Runtime.InteropServices;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
