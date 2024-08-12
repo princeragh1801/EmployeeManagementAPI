@@ -15,9 +15,7 @@ namespace EmployeeSystem.Contract.Dtos.Add
         [MinLength(10, ErrorMessage = "Name must be at least 10 characters long")]
         public string Description { get; set; }
 
-        [Required(ErrorMessage = "Id of Assignee is required")]
-        [Range(1, int.MaxValue)]
-        public int AssignedTo { get; set; }
+        public int ?AssignedTo { get; set; }
 
         /*[Required(ErrorMessage = "Id of Assigner is required")]
         [Range(1, Int32.MaxValue)]

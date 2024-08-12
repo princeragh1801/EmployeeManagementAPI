@@ -11,7 +11,7 @@ namespace EmployeeSystem.Contract.Models
 
         public required string Description { get; set; }
 
-        public int AssignedTo { get; set; }
+        public int? AssignedTo { get; set; }
 
         public int AssignedBy { get; set; }
 

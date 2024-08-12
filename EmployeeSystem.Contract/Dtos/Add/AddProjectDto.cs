@@ -21,7 +21,6 @@ namespace EmployeeSystem.Contract.Dtos.Add
         [Range(1, int.MaxValue)]
         public int AdminId { get; set; }*/
 
-        [Required]
-        public List<AddProjectEmployeeDto> Members { get; set; }
+        public List<AddProjectEmployeeDto>? Members { get; set; }
     }
 }

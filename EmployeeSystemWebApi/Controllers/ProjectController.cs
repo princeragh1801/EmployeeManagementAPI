@@ -160,7 +160,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Project Details fetched",
+                    Message = "Project Added",
                     Data = id
                 };
 

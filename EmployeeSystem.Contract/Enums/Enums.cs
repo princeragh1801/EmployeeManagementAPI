@@ -54,5 +54,12 @@
             Approved,
             Rejected
         }
+
+        public enum TaskType
+        {
+            Simple,
+            Project,
+            UserStory
+        }
     }
 }

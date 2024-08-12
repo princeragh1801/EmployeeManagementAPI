@@ -179,16 +179,9 @@ namespace EmployeeSystem.Provider.Services
 
         public async Task<int> Add(int adminId, AddProjectDto projectDto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // check if total members in the project is less than 3
-                if(projectDto.Members.Count <= 2)
-                {
-                    return 0;
-                }
 
-                await transaction.CreateSavepointAsync("Adding New Project");
                 var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
                 var project = new Project
@@ -207,34 +200,23 @@ namespace EmployeeSystem.Provider.Services
                 _context.Projects.Add(project);
                 await _context.SaveChangesAsync();
 
-                var projectEmployeesToAdd = projectDto.Members.Select(pe => new ProjectEmployee
+                if(projectDto.Members != null && projectDto.Members.Any())
                 {
-                    EmployeeId = pe.EmployeeId,
-                    ProjectId = project.Id
-                });
-
-                _context.ProjectEmployees.AddRange(projectEmployeesToAdd);
-               /* await _context.SaveChangesAsync();
-                // now adding the employees to db
-                foreach (var p in projectDto.Members)
-                {
-                    var projectEmployee = new ProjectEmployee
+                    var projectEmployeesToAdd = projectDto.Members.Select(pe => new ProjectEmployee
                     {
-                        EmployeeId = p.EmployeeId,
+                        EmployeeId = pe.EmployeeId,
                         ProjectId = project.Id
-                    };
-                    _context.ProjectEmployees.Add(projectEmployee);
-                    
-                }
+                    });
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    _context.ProjectEmployees.AddRange(projectEmployeesToAdd);
+                    await _context.SaveChangesAsync();
+                }
 
                 return project.Id;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackToSavepointAsync("Adding New Project");
+                
                 //Console.WriteLine(ex.Message);
                 throw new Exception(ex.Message, ex);
             }
@@ -245,13 +227,7 @@ namespace EmployeeSystem.Provider.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // check if total members in the project is less than 3
-                if (projectDto.Members.Count <= 2)
-                {
-                    return 0;
-                }
 
-                await transaction.CreateSavepointAsync("Adding New Project");
                 var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
                 var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id & p.IsActive);
@@ -267,37 +243,81 @@ namespace EmployeeSystem.Provider.Services
                 project.UpdatedOn = DateTime.Now;
                 project.UpdatedByName = admin.Name;
 
-
-                /*// TODO:::
-                var projectEmployees = await _context.ProjectEmployees.Where(pe => pe.ProjectId == id).ToListAsync();
-                foreach(var pe in projectEmployees)
-                {
-                    _context.ProjectEmployees.Remove(pe);
-                }
                 await _context.SaveChangesAsync();
 
-                // now adding the employees to db
-                foreach (var p in projectDto.Members)
+                if(projectDto.Members != null && projectDto.Members.Any())
                 {
-                    var projectEmployee = new ProjectEmployee
+                    var existingEmp = _context.ProjectEmployees
+                        .Where(pe => pe.ProjectId == id)
+                        .Select(pe => pe.EmployeeId)
+                        .ToList();
+
+                    var empToRemove = existingEmp.Except(projectDto.Members.Select(m => m.EmployeeId)).ToList();
+                    var empToAdd = projectDto.Members.Select(e => e.EmployeeId).Except(existingEmp).ToList();
+                    
+                    if(empToRemove.Any()) _context.ProjectEmployees.RemoveRange(_context.ProjectEmployees.Where(pe=> pe.ProjectId == id && empToRemove.Contains(pe.EmployeeId)));
+
+                    if (empToAdd.Any())
                     {
-                        EmployeeId = p.EmployeeId,
-                        ProjectId = project.Id
-                    };
-                    _context.ProjectEmployees.Add(projectEmployee);
+                        var projectEmployeesToAdd = empToAdd.Select(e => new ProjectEmployee
+                        {
+                            EmployeeId = e,
+                            ProjectId = id,
+                        });
+                        _context.ProjectEmployees.AddRange(projectEmployeesToAdd);
+                    }
 
+                    await _context.SaveChangesAsync();
                 }
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+
+                
+
                 return project.Id;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackToSavepointAsync("Adding New Project");
                 //Console.WriteLine(ex.Message);
                 throw new Exception(ex.Message, ex);
             }
         }
+
+        public async Task<bool> AddMembers(int projectId, List<int> employeesToAdd)
+        {
+            try
+            {
+                var projectEmployees = employeesToAdd.Select(e => new ProjectEmployee
+                {
+                    EmployeeId = e,
+                    ProjectId = projectId,
+                });
+                _context.ProjectEmployees.AddRange(projectEmployees);
+                await _context.SaveChangesAsync();
+                return true;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool> DeleteMembers(int projectId, List<int> employeesToAdd)
+        {
+            try
+            {
+                var projectEmployees = employeesToAdd.Select(e => new ProjectEmployee
+                {
+                    EmployeeId = e,
+                    ProjectId = projectId,
+                });
+                _context.ProjectEmployees.RemoveRange(projectEmployees);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<bool> DeleteById(int id)
         {
             try

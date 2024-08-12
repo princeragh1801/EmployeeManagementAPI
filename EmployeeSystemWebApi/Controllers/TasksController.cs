@@ -206,14 +206,14 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<TasksDto>>> UpdateTaskStatus(int id, TasksStatus status)
+        public async Task<ActionResult<ApiResponse<TasksDto>>> UpdateTaskStatus(int id, AddTaskDto taskDto)
         {
             try
             {
                 // fetching id from token
                 var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
 
-                var task = await _taskService.UpdateStatus(userId, id, status);
+                var task = await _taskService.Update(userId, id, taskDto);
                 var response = new ApiResponse<TasksDto>
                 {
                     Success = true,

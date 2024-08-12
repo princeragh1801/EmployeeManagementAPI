@@ -57,5 +57,19 @@ namespace EmployeeSystem.Provider.Services
             var msg = MessageResource.Create(messageOptions);
 
         }
+
+        // TODO::   
+        public async void Send()
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri("https://graph.facebook.com/v20.0/332056280002043/messages");
+                //client.DefaultRequestHeaders.Add("");
+            }catch (Exception ex)
+            {
+
+            }
+        }
     }
 }

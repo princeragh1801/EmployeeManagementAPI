@@ -145,7 +145,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<TasksDto?> UpdateStatus(int userId, int id, TasksStatus taskStatus)
+        public async Task<TasksDto?> Update(int userId, int id, AddTaskDto taskDto)
         {
             try
             {
@@ -162,8 +162,15 @@ namespace EmployeeSystem.Provider.Services
                     return null;
                 }
                 var user = await _context.Employees.FirstAsync(e=> e.Id == userId);
+                int assignedToId = taskDto.AssignedTo??0;
+                if(assignedToId != 0)
+                {
+                    task.AssignedTo = assignedToId;
+                }
                 // updating the status
-                task.Status = taskStatus;
+                task.Description = taskDto.Description;
+                task.Name = taskDto.Name;
+                task.Status = taskDto.Status;
                 task.UpdatedOn = DateTime.Now;
                 task.UpdatedBy = userId;
                 task.UpdatedByName = user.Name;
@@ -191,7 +198,26 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 int assignedById = adminId;
-                int assignedToId = taskDto.AssignedTo;
+                int assignedToId = taskDto.AssignedTo??0;
+
+                if(assignedToId == 0)
+                {
+                    var taskToAdd = new Tasks
+                    {
+                        Name = taskDto.Name,
+                        Description = taskDto.Description,
+                        AssignedBy = adminId,
+                        AssignedTo = assignedToId==0?null : assignedToId,
+                        Status = taskDto.Status,
+                        ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
+                        CreatedBy = userId,
+                        CreatedOn = DateTime.Now,
+                    };
+
+                    _context.Add(taskToAdd);
+                    await _context.SaveChangesAsync();
+                    return taskToAdd.Id;
+                }
 
                 // fetching the assigned user details
                 var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
@@ -266,7 +292,6 @@ namespace EmployeeSystem.Provider.Services
                     return false;
                 }
                 int assignedById = task.AssignedBy;
-                int assignedToId = task.AssignedTo;
 
                 // fetching employee
                 var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId & e.IsActive);
