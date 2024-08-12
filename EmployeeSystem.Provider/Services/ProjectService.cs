@@ -225,7 +225,7 @@ namespace EmployeeSystem.Provider.Services
                     };
                     _context.ProjectEmployees.Add(projectEmployee);
                     
-                }*/
+                }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -237,46 +237,6 @@ namespace EmployeeSystem.Provider.Services
                 await transaction.RollbackToSavepointAsync("Adding New Project");
                 //Console.WriteLine(ex.Message);
                 throw new Exception(ex.Message, ex);
-            }
-        }
-
-        public async Task<bool> AddMembers(int projectId, List<int> employeesToAdd)
-        {
-            try
-            {
-                foreach (var employee in employeesToAdd)
-                {
-                    var projectEmployee = new ProjectEmployee
-                    {
-                        EmployeeId = employee,
-                        ProjectId = projectId
-                    };
-                    _context.ProjectEmployees.Add(projectEmployee);
-                }
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<bool> DeleteMembers(int projectId, List<int> employeesToDelete)
-        {
-            try
-            {
-                foreach (var employee in employeesToDelete)
-                {
-                    var projectEmployee = await _context.ProjectEmployees.FirstOrDefaultAsync(pe => pe.EmployeeId == employee);
-                    if (projectEmployee != null) _context.ProjectEmployees.Remove(projectEmployee);
-                }
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
             }
         }
 
@@ -326,30 +286,6 @@ namespace EmployeeSystem.Provider.Services
                     };
                     _context.ProjectEmployees.Add(projectEmployee);
 
-                }
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return project.Id;*/
-
-                // employees enrolled in project
-                var emp = await _context.ProjectEmployees.Where(pe => pe.ProjectId == id).Select(pe => pe.EmployeeId).ToListAsync();
-                
-                var empToRemove =  emp.Except(projectDto.Members.Select(m => m.EmployeeId)).ToList();
-
-                var empToAdd = projectDto.Members.Select(m => m.EmployeeId).Except(emp).ToList();
-
-                if (empToRemove.Any())
-                {
-                    _context.ProjectEmployees.RemoveRange(_context.ProjectEmployees.Where(pe => pe.ProjectId == id && empToRemove.Contains(pe.EmployeeId)));
-                }
-                if(empToAdd.Any())
-                {
-                    var projectEmployeesToAdd = projectDto.Members.Select(pe => new ProjectEmployee
-                    {
-                        EmployeeId = pe.EmployeeId,
-                        ProjectId = project.Id
-                    }).ToList();
-                    _context.AddRange(projectEmployeesToAdd);
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

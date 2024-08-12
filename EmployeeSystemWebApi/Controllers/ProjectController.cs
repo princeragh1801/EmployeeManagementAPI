@@ -238,11 +238,6 @@ namespace EmployeeSystemWebApi.Controllers
                     Data = true
                 };
 
-                /*if (id == 0)
-                {
-                    response.Message = "Unauthorized request";
-                }*/
-
                 return Ok(response);
             }
             catch (Exception ex)
@@ -257,6 +252,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
 
         }
+
 
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
