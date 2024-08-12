@@ -1,17 +1,26 @@
 ﻿using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Utils;
-using System.Net.Mail;
+using Microsoft.Extensions.Configuration;
 using System.Net;
+using System.Net.Mail;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
 namespace EmployeeSystem.Provider.Services
 {
     public class EmailService : IEmailService
     {
         private readonly EmailConfiguration _emailConfig;
-
-        public EmailService(EmailConfiguration emailConfig)
+        private readonly string _accountSid = string.Empty;
+        private readonly string _authToken = string.Empty;
+        private readonly string _whatsAppFrom = string.Empty;
+        public EmailService(EmailConfiguration emailConfig, IConfiguration configuration)
         {
             _emailConfig = emailConfig;
+            _accountSid = configuration["Twilio:AccountSid"];
+            _authToken = configuration["Twilio:AuthToken"];
+            _whatsAppFrom = configuration["Twilio:WhatsAppFrom"];
         }
 
         public async Task SendEmail(string to, string subject, string body)
@@ -33,6 +42,20 @@ namespace EmployeeSystem.Provider.Services
             };
 
             await client.SendMailAsync(mailMessage);
+        }
+
+        public void SendWhatsAppMessage(string to, string message)
+        {
+            TwilioClient.Init(_accountSid, _authToken);
+
+            var messageOptions = new CreateMessageOptions(
+              new PhoneNumber($"whatsapp:{to}"));
+            messageOptions.From = new PhoneNumber(_whatsAppFrom);
+            messageOptions.Body = message;
+            
+
+            var msg = MessageResource.Create(messageOptions);
+
         }
     }
 }

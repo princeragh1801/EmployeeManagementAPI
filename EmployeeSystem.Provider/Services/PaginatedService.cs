@@ -155,8 +155,8 @@ namespace EmployeeSystem.Provider.Services
                 query = ace ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
             }
             return query;
-        }
-        
+        }*/
+
         public IQueryable<Tasks> GetOrdered(IQueryable<Tasks> query, string columnName, bool ace = true)
         {
             if (columnName.ToLower() == "name")
@@ -181,7 +181,7 @@ namespace EmployeeSystem.Provider.Services
                 query = ace ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
             }
             return query;
-        }*/
+        }
 
 
 
@@ -460,7 +460,7 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // now getting the order wise details
-                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered<Tasks>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+                query = orderBy == SortedOrder.NoOrder ? query : GetOrdered(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
                 var totalCount = query.Count();

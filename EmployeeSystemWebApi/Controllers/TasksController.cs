@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -76,14 +77,14 @@ namespace EmployeeSystemWebApi.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<TasksDto>>> GetTaskById(int id)
+        public async Task<ActionResult<ApiResponse<TaskInfo>>> GetTaskById(int id)
         {
             try
             {
                 // fetching id from token
                 var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
                 var task = await _taskService.GetById(userId, id);
-                var response = new ApiResponse<TasksDto>
+                var response = new ApiResponse<TaskInfo>
                 {
                     Success = true,
                     Status = 200,
@@ -98,7 +99,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ApiResponse<TasksDto?>
+                return BadRequest(new ApiResponse<TaskInfo?>
                 {
                     Success = false,
                     Status = 500,

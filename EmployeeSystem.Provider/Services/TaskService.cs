@@ -1,6 +1,7 @@
 ﻿
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,12 @@ namespace EmployeeSystem.Provider.Services
     public class TaskService : ITaskService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ITaskReviewService _reviewService;
 
-        public TaskService(ApplicationDbContext context)
+        public TaskService(ApplicationDbContext context, ITaskReviewService taskReviewService)
         {
             _context = context;
+            _reviewService = taskReviewService;
         }
 
         public IQueryable<Tasks> GetTasksInfo(int userId)
@@ -106,7 +109,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
 
-        public async Task<TasksDto?> GetById(int userId, int id)
+        public async Task<TaskInfo?> GetById(int userId, int id)
         {
             try
             {
@@ -114,7 +117,8 @@ namespace EmployeeSystem.Provider.Services
                 var query = GetTasksInfo(userId);
 
                 // check whether the task belongs to the list, then convert the task into task dto form
-                var task = await query.Select(t => new TasksDto
+                var task = await query
+                    .Select(t => new TasksDto
                 {
                     Id = t.Id,
                     Name = t.Name,
@@ -126,8 +130,14 @@ namespace EmployeeSystem.Provider.Services
 
                 }).FirstOrDefaultAsync(t => t.Id == id);
 
-                    
-                return task;
+                var reviews = await _reviewService.Get(id);
+
+                var taskInfo = new TaskInfo
+                {
+                    Task = task,
+                    Reviews = reviews
+                };
+                return taskInfo;
             }
             catch (Exception ex)
             {

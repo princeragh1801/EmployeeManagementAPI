@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Info;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
@@ -32,7 +33,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a TasksDto with the task information, or null if the task is not found.
         /// </returns>
-        public Task<TasksDto?> GetById(int userId, int id);
+        public Task<TaskInfo?> GetById(int userId, int id);
 
 
         /// <summary>
