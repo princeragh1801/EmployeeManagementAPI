@@ -132,7 +132,7 @@ namespace EmployeeSystem.Provider.Services
                      .Include(p => p.Tasks)
                      .Include(p => p.ProjectEmployees)
                          .ThenInclude(pe => pe.Employee)
-                     .FirstOrDefaultAsync(e => e.Id == id & e.IsActive);
+                     .FirstOrDefaultAsync(e => e.Id == id);
 
                 if (project == null)
                 {
@@ -148,10 +148,7 @@ namespace EmployeeSystem.Provider.Services
                     }).ToList();
 
                 // fetching the tasks of the project
-                var tasksDto = project.Tasks
-                    .Where(t => t.IsActive)
-                    .OrderByDescending(t => t.Id)
-                    .Select(task => new TaskBasicDto
+                var tasksDto = project.Tasks.Select(task => new TaskBasicDto
                 {
                     Id = task.Id,
                     Name = task.Name,
@@ -235,45 +232,6 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<bool> AddMembers(int projectId, List<int> employeesToAdd)
-        {
-            try
-            {
-                foreach (var employee in employeesToAdd)
-                {
-                    var projectEmployee = new ProjectEmployee
-                    {
-                        EmployeeId = employee,
-                        ProjectId = projectId
-                    };
-                    _context.ProjectEmployees.Add(projectEmployee);
-                }
-                await _context.SaveChangesAsync();
-                return true;
-            }catch(Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<bool> DeleteMembers(int projectId, List<int> employeesToDelete)
-        {
-            try
-            {
-                foreach (var employee in employeesToDelete)
-                {
-                    var projectEmployee = await _context.ProjectEmployees.FirstOrDefaultAsync(pe => pe.EmployeeId == employee);
-                    if(projectEmployee != null) _context.ProjectEmployees.Remove(projectEmployee);
-                }
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task<int> Update(int id, int adminId, AddProjectDto projectDto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -324,11 +282,6 @@ namespace EmployeeSystem.Provider.Services
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return project.Id;
-
-
-                //_context.ProjectEmployees.Where(pe => pe.ProjectId == id);
-
-
             }
             catch (Exception ex)
             {

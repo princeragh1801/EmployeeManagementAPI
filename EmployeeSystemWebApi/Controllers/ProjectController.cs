@@ -62,7 +62,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Projects fetched",
+                    Message = "Project Details fetched",
                     Data = projects
                 };
 
@@ -160,7 +160,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Project added",
+                    Message = "Project Details fetched",
                     Data = id
                 };
 
@@ -184,84 +184,9 @@ namespace EmployeeSystemWebApi.Controllers
 
         }
 
-        [HttpPost("addmembers{projectId}")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<bool>>> AddMembers(int projectId, List<int> employeesToAdd)
-        {
-            try
-            {
-                var add = await _projectService.AddMembers(projectId, employeesToAdd);
-                if (!add)
-                {
-                    return BadRequest("Error occured while adding");
-                }
-                var response = new ApiResponse<bool>
-                {
-                    Success = true,
-                    Status = 200,
-                    Message = "Members added",
-                    Data = true
-                };
-
-                /*if (id == 0)
-                {
-                    response.Message = "Unauthorized request";
-                }*/
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var response = new ApiResponse<int>
-                {
-                    Success = false,
-                    Status = 500,
-                    Message = ex.Message
-                };
-                return BadRequest(response);
-            }
-
-        }
-
-        [HttpDelete("deletemembers{projectId}")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<bool>>> DeleteMembers(int projectId, List<int> employeesToDelete)
-        {
-            try
-            {
-                var add = await _projectService.DeleteMembers(projectId, employeesToDelete);
-                var response = new ApiResponse<bool>
-                {
-                    Success = true,
-                    Status = 200,
-                    Message = "Members deleted",
-                    Data = true
-                };
-
-                /*if (id == 0)
-                {
-                    response.Message = "Unauthorized request";
-                }*/
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var response = new ApiResponse<int>
-                {
-                    Success = false,
-                    Status = 500,
-                    Message = ex.Message
-                };
-                return BadRequest(response);
-            }
-
-        }
-
-
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<int>>> Update(int id, AddProjectDto project)
+        public async Task<ActionResult<ApiResponse<int>>> Upate(int id, AddProjectDto project)
         {
             try
             {
@@ -312,7 +237,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Project Deleted",
+                    Message = "Project Details fetched",
                     Data = deleted
                 };
 

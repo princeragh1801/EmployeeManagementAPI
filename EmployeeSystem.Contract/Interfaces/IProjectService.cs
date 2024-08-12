@@ -53,10 +53,6 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<int> Add(int adminId, AddProjectDto project);
 
-        public Task<bool> AddMembers(int projectId, List<int> employeesToAdd);
-
-        public Task<bool> DeleteMembers(int projectId, List<int> employeesToDelete);
-
         /// <summary>
         /// Update project to the system and returns the ID of the updated project.
         /// This operation can only be performed by users with the super-admin role.
