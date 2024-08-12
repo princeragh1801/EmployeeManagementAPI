@@ -34,6 +34,7 @@ namespace EmployeeSystem.Provider.Services
                 var reviews = await _context.TaskReviews
                     .Include(tr => tr.Reviewer)
                     .Where(tr => tr.TaskID == taskId)
+                    .OrderByDescending(tr => tr.Id)
                     .Select(tr => new TaskReviewDto
                     {
                         Id = tr.Id,

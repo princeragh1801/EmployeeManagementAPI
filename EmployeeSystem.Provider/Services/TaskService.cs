@@ -31,7 +31,7 @@ namespace EmployeeSystem.Provider.Services
                 var query = _context.Tasks.Include(t => t.Employee).Include(t => t.Admin).Where(t => t.IsActive & (t.Employee.Id == user.Id || t.Employee.ManagerID == user.Id));
                 return query;
             }
-            return _context.Tasks;
+            return _context.Tasks.Where(t => t.IsActive);
         }
 
         public async Task<bool> CheckTaskValidAssign(int assignedTo, int assignedBy)
@@ -60,17 +60,18 @@ namespace EmployeeSystem.Provider.Services
                 var query = GetTasksInfo(userId);
 
                 // creating the task dto list
-                var tasks = await query.Where(t => t.IsActive).Select(t => new TasksDto
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    Status = t.Status,
-                    Description = t.Description,
-                    AssigneeName = t.Employee.Name,
-                    AssignerName = t.Admin.Name,
-                    CreatedOn = t.CreatedOn,
+                var tasks = await query
+                    .Select(t => new TasksDto
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        Status = t.Status,
+                        Description = t.Description,
+                        AssigneeName = t.Employee.Name,
+                        AssignerName = t.Admin.Name,
+                        CreatedOn = t.CreatedOn,
 
-                }).ToListAsync();
+                    }).ToListAsync();
 
                 return tasks;
             }catch (Exception ex)
