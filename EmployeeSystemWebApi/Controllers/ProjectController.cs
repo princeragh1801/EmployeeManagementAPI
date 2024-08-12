@@ -62,7 +62,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Projects fetched",
+                    Message = "Project Details fetched",
                     Data = projects
                 };
 
@@ -160,7 +160,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Project added",
+                    Message = "Project Details fetched",
                     Data = id
                 };
 
@@ -258,10 +258,9 @@ namespace EmployeeSystemWebApi.Controllers
 
         }
 
-
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<int>>> Update(int id, AddProjectDto project)
+        public async Task<ActionResult<ApiResponse<int>>> Upate(int id, AddProjectDto project)
         {
             try
             {
@@ -312,7 +311,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Project Deleted",
+                    Message = "Project Details fetched",
                     Data = deleted
                 };
 
