@@ -18,9 +18,9 @@ namespace EmployeeSystem.Provider.Services
         public EmailService(EmailConfiguration emailConfig, IConfiguration configuration)
         {
             _emailConfig = emailConfig;
-            _accountSid = configuration["Twilio:AccountSid"];
+            /*_accountSid = configuration["Twilio:AccountSid"];
             _authToken = configuration["Twilio:AuthToken"];
-            _whatsAppFrom = configuration["Twilio:WhatsAppFrom"];
+            _whatsAppFrom = configuration["Twilio:WhatsAppFrom"];*/
         }
 
         public async Task SendEmail(string to, string subject, string body)
