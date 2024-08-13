@@ -71,7 +71,7 @@ namespace EmployeeSystem.Provider.Services
                     AssigneeName = t.Employee.Name,
                     AssignerName = t.Admin.Name,
                     CreatedOn = t.CreatedOn,
-
+                    TaskType = t.TaskType
                 }).ToListAsync();
 
                 return tasks;
@@ -101,7 +101,7 @@ namespace EmployeeSystem.Provider.Services
                         AssigneeName = t.Employee.Name,
                         AssignerName = t.Admin.Name,
                         CreatedOn = t.CreatedOn,
-
+                        TaskType = t.TaskType
                     }).ToListAsync();
 
                 return tasks;
