@@ -181,8 +181,6 @@ namespace EmployeeSystem.Provider.Services
             return query;
         }
 
-
-
         public IQueryable<ProjectEmployee> GetOrdered(IQueryable<ProjectEmployee> query, string columnName, bool ace = true)
         {
             if (columnName.ToLower() == "name")
@@ -208,8 +206,6 @@ namespace EmployeeSystem.Provider.Services
             }
             return query;
         }
-
-        
 
         public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto paginatedDto)
         {

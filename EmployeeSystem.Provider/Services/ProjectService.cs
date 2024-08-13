@@ -133,7 +133,7 @@ namespace EmployeeSystem.Provider.Services
                      .Include(p => p.Tasks)
                      .Include(p => p.ProjectEmployees)
                          .ThenInclude(pe => pe.Employee)
-                     .FirstOrDefaultAsync(e => e.Id == id);
+                     .FirstOrDefaultAsync(e => e.Id == id & e.IsActive);
 
                 if (project == null)
                 {
@@ -146,18 +146,27 @@ namespace EmployeeSystem.Provider.Services
                     {
                         EmployeeId = p.EmployeeId,
                         EmployeeName = p.Employee.Name,
+                        ImageUrl = p.Employee.ImageUrl
                     }).ToList();
 
                 // fetching the tasks of the project
+                var tasks = project.Tasks.Where(t => t.IsActive);
+                var totalTasks = tasks.Count();
+                var pendingTasks =tasks.Where(t => t.Status == TasksStatus.Pending).Count();
+                var completedTasks = tasks.Where(t => t.Status == TasksStatus.Completed).Count();
+                var activeTasks = tasks.Where(t => t.Status == TasksStatus.Active).Count();
                 var tasksDto = project.Tasks
                     .Where(t => t.IsActive)
                     .Select(task => new TaskBasicDto
-                {
-                    Id = task.Id,
-                    Name = task.Name,
-                    Description = task.Description,
-                    Status = task.Status,
-                }).ToList();
+                    {
+                        Id = task.Id,
+                        Name = task.Name,
+                        Description = task.Description,
+                        Status = task.Status,
+                    }).ToList();
+
+                
+
 
                 // assemble all the details in project details dto to send
                 var projectDetails = new ProjectDetailsDto
@@ -170,6 +179,10 @@ namespace EmployeeSystem.Provider.Services
                     Status = project.Status,
                     CreatedBy = project.CreatedByName,
                     CreatedOn = project.CreatedOn,
+                    ActiveTasks = activeTasks,
+                    CompletedTasks = completedTasks,
+                    PendingTasks = pendingTasks,
+                    TotalTasks = totalTasks,
                 };
 
                 return projectDetails;

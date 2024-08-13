@@ -19,5 +19,10 @@ namespace EmployeeSystem.Contract.Dtos
         public List<TaskBasicDto> Tasks { get; set; }
 
         public List<ProjectEmployeeDto> Members { get; set; }
+
+        public int TotalTasks { get; set; }
+        public int CompletedTasks { get; set; }
+        public int ActiveTasks { get; set; }
+        public int PendingTasks { get; set; }
     }
 }
