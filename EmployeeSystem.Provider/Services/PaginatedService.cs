@@ -346,7 +346,17 @@ namespace EmployeeSystem.Provider.Services
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
 
+                var filter = paginatedDto.Filter;
 
+                if (filter != null)
+                {
+                    if (filter.Item1.ToLower() == "status")
+                    {
+                        var status = filter.Item2 == 0 ? ProjectStatus.Pending : filter.Item2 == 1 ? ProjectStatus.Active : ProjectStatus.Completed;
+
+                        query = query.Where(t => t.Status == status);
+                    }
+                }
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
 
                 // role specific
@@ -458,7 +468,7 @@ namespace EmployeeSystem.Provider.Services
                     {
                         var status = filter.Item2 == 0 ? TasksStatus.Pending : filter.Item2 == 1 ? TasksStatus.Active : TasksStatus.Completed;
 
-                        query.Where(t => t.Status == status);
+                        query = query.Where(t => t.Status == status);
                     }
                 }
                 // applying search filter on that
