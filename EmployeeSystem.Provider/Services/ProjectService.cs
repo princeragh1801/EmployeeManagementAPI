@@ -149,14 +149,15 @@ namespace EmployeeSystem.Provider.Services
                         ImageUrl = p.Employee.ImageUrl
                     }).ToList();
 
-                // fetching the tasks of the project
+                
                 var tasks = project.Tasks.Where(t => t.IsActive);
                 var totalTasks = tasks.Count();
                 var pendingTasks =tasks.Where(t => t.Status == TasksStatus.Pending).Count();
                 var completedTasks = tasks.Where(t => t.Status == TasksStatus.Completed).Count();
                 var activeTasks = tasks.Where(t => t.Status == TasksStatus.Active).Count();
-                var tasksDto = project.Tasks
-                    .Where(t => t.IsActive)
+
+                // fetching the tasks of the project
+                var tasksDto = tasks
                     .Select(task => new TaskBasicDto
                     {
                         Id = task.Id,

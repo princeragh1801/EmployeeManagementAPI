@@ -454,6 +454,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var epics = await _context.Tasks
+                    .Include(t => t.Employee)
                     .Where(t => t.IsActive && t.TaskType == TaskType.Epic)
                     .ToListAsync();
 
@@ -463,36 +464,47 @@ namespace EmployeeSystem.Provider.Services
                 {
                     var features = new List<EpicTaskDto> ();
                     var featureDto = await _context.Tasks
+                        .Include(t => t.Employee)
                         .Where(t => t.IsActive & t.TaskType == TaskType.Feature & t.ParentId == epic.Id)
                             .Select(t => new EpicTaskDto
                             {
                                 Id = t.Id,
                                 Name = t.Name,
                                 TaskType = t.TaskType,
+                                Status = t.Status,
+                                AssignedTo = t.Employee.Name,
+                                CreatedOn = t.CreatedOn
                             }).ToListAsync();
 
                     foreach (var feature in featureDto)
                     {
                         var userStories = new List<EpicTaskDto> ();
                         var userStoryDto = await _context.Tasks
+                            .Include(t => t.Employee)
                             .Where(t => t.IsActive & t.TaskType == TaskType.Userstory & t.ParentId == feature.Id)
                             .Select(t => new EpicTaskDto
                             {
-
                                 Id = t.Id,
                                 Name = t.Name,
                                 TaskType = t.TaskType,
+                                Status = t.Status,
+                                AssignedTo = t.Employee.Name,
+                                CreatedOn = t.CreatedOn
                             }).ToListAsync();
                         
                         foreach(var userStory in userStoryDto)
                         {
                             var taskAndBugsDto = await _context.Tasks
+                                .Include(t => t.Employee)
                                 .Where(t => t.IsActive && (t.TaskType == TaskType.Task || t.TaskType == TaskType.Bug) && t.ParentId == userStory.Id)
                                 .Select(t => new EpicTaskDto
                                 {
                                     Id = t.Id,
                                     Name = t.Name,
                                     TaskType = t.TaskType,
+                                    Status = t.Status,
+                                    AssignedTo = t.Employee.Name,
+                                    CreatedOn = t.CreatedOn
                                 }).ToListAsync();
 
                             var taskBugDto = new EpicTaskDto
@@ -500,6 +512,9 @@ namespace EmployeeSystem.Provider.Services
                                 Id = userStory.Id,
                                 Name = userStory.Name,
                                 TaskType = userStory.TaskType,
+                                AssignedTo = userStory.AssignedTo,
+                                CreatedOn = userStory.CreatedOn,
+                                Status = userStory.Status,
                                 SubItems = taskAndBugsDto
                             };
 
@@ -510,6 +525,9 @@ namespace EmployeeSystem.Provider.Services
                             Id = feature.Id,
                             Name = feature.Name,
                             TaskType = feature.TaskType,
+                            AssignedTo = feature.AssignedTo,
+                            Status = feature.Status,
+                            CreatedOn = feature.CreatedOn,
                             SubItems = userStories
                         };
 
@@ -521,6 +539,9 @@ namespace EmployeeSystem.Provider.Services
                         Id = epic.Id,
                         Name = epic.Name,
                         TaskType = epic.TaskType,
+                        Status = epic.Status,
+                        AssignedTo = epic.Employee.Name,
+                        CreatedOn = epic.CreatedOn,
                         SubItems = features
                     };
 
