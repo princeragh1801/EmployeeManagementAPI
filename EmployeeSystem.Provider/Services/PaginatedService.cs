@@ -1,12 +1,10 @@
 ﻿using EmployeeSystem.Contract.Dtos;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Linq.Dynamic.Core;
 using static EmployeeSystem.Contract.Enums.Enums;
-using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -452,7 +450,17 @@ namespace EmployeeSystem.Provider.Services
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
+                var filter = paginatedDto.Filter;
 
+                if(filter != null)
+                {
+                    if(filter.Item1.ToLower() == "status")
+                    {
+                        var status = filter.Item2 == 0 ? TasksStatus.Pending : filter.Item2 == 1 ? TasksStatus.Active : TasksStatus.Completed;
+
+                        query.Where(t => t.Status == status);
+                    }
+                }
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {

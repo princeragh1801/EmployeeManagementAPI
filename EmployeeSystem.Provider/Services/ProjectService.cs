@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -148,7 +149,9 @@ namespace EmployeeSystem.Provider.Services
                     }).ToList();
 
                 // fetching the tasks of the project
-                var tasksDto = project.Tasks.Select(task => new TaskBasicDto
+                var tasksDto = project.Tasks
+                    .Where(t => t.IsActive)
+                    .Select(task => new TaskBasicDto
                 {
                     Id = task.Id,
                     Name = task.Name,
@@ -336,6 +339,28 @@ namespace EmployeeSystem.Provider.Services
                 //_context.Projects.Remove(project);
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<EmployeeIdAndName>> GetProjectEmployees(int projectId)
+        {
+            try
+            {
+                // fetching the project details
+                var projectEmployees = await _context.ProjectEmployees
+                    .Include(pe => pe.Employee)
+                    .Where(pe => pe.ProjectId == projectId)
+                    .Select(pe => new EmployeeIdAndName
+                    {
+                        Id = pe.Employee.Id,
+                        Name = pe.Employee.Name,
+                        DepartmentName = pe.Employee.Department.Name
+                    }).ToListAsync();
+                return projectEmployees;
             }
             catch (Exception ex)
             {

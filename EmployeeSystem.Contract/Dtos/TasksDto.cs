@@ -10,7 +10,7 @@ namespace EmployeeSystem.Contract.Dtos
         public TasksStatus Status { get; set; }
 /*        public int AssignedBy { get; set; }
         public int AssignedTo { get; set; }*/
-        //public int? projectId { get; set; }
+        public int? ProjectId { get; set; }
 
         public string ?AssignerName { get; set; }
         public string ?AssigneeName { get; set; }

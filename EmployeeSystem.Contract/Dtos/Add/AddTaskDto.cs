@@ -17,6 +17,9 @@ namespace EmployeeSystem.Contract.Dtos.Add
 
         public int ?AssignedTo { get; set; }
 
+        public TaskType TaskType { get; set; }
+
+        public int ?ParentId { get; set; }
         /*[Required(ErrorMessage = "Id of Assigner is required")]
         [Range(1, Int32.MaxValue)]
         public int AssignedBy { get; set; }*/

@@ -58,7 +58,6 @@
         public enum TaskType
         {
             Simple,
-            Project,
             UserStory
         }
     }

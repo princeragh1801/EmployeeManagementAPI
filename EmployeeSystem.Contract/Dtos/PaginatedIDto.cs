@@ -10,8 +10,10 @@ namespace EmployeeSystem.Contract.Dtos
 
         public string OrderKey { get; set; } = string.Empty;
 
-        public  SortedOrder SortedOrder {  get; set; } = SortedOrder.Ascending;
+        public  SortedOrder SortedOrder {  get; set; } = SortedOrder.NoOrder;
 
         public string Search {  get; set; } = string.Empty;
+
+        public Tuple<string, int> ?Filter { get; set; }
     }
 }

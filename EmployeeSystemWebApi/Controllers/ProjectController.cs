@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -329,6 +330,34 @@ namespace EmployeeSystemWebApi.Controllers
                 return BadRequest(response);
             }
 
+        }
+
+        [HttpGet("projectEmployees{projectId}")]
+        public async Task<ActionResult<ApiResponse<List<EmployeeIdAndName>>>> GetProjectEmployees(int projectId)
+        {
+            try
+            {
+                var projectEmployees = await _projectService.GetProjectEmployees(projectId);
+                var response = new ApiResponse<List<EmployeeIdAndName>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Project Details fetched",
+                    Data = projectEmployees
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var response = new ApiResponse<List<EmployeeIdAndName>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                };
+                return BadRequest(response);
+            }
         }
     }
 }

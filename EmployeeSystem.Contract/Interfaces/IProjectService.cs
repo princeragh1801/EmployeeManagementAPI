@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.IdAndName;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
@@ -77,5 +78,6 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<bool> DeleteById(int id);
 
+        public Task<List<EmployeeIdAndName>> GetProjectEmployees(int projectId);
     }
 }

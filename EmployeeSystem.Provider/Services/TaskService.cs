@@ -31,7 +31,7 @@ namespace EmployeeSystem.Provider.Services
                 var query = _context.Tasks.Include(t => t.Employee).Include(t => t.Admin).Where(t => t.IsActive & (t.Employee.Id == user.Id || t.Employee.ManagerID == user.Id));
                 return query;
             }
-            return _context.Tasks;
+            return _context.Tasks.Where(t => t.IsActive);
         }
 
         public async Task<bool> CheckTaskValidAssign(int assignedTo, int assignedBy)
@@ -125,6 +125,7 @@ namespace EmployeeSystem.Provider.Services
                     Status = t.Status,
                     Description = t.Description,
                     AssigneeName = t.Employee.Name,
+                    ProjectId = t.ProjectId,
                     AssignerName = t.Admin.Name,
                     CreatedOn = t.CreatedOn,
 
@@ -193,7 +194,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<int> Add(int userId, int adminId, AddTaskDto taskDto)
+        public async Task<int> Add(int adminId, AddTaskDto taskDto)
         {
             try
             {
@@ -209,8 +210,10 @@ namespace EmployeeSystem.Provider.Services
                         AssignedBy = adminId,
                         AssignedTo = assignedToId==0?null : assignedToId,
                         Status = taskDto.Status,
+                        TaskType = taskDto.TaskType,
+                        ParentId = taskDto.ParentId,
                         ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
-                        CreatedBy = userId,
+                        CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
                     };
 
@@ -264,7 +267,7 @@ namespace EmployeeSystem.Provider.Services
                     AssignedTo = taskDto.AssignedTo,
                     Status = taskDto.Status,
                     ProjectId = taskDto.ProjectId == 0 ?null : taskDto.ProjectId,
-                    CreatedBy = userId,
+                    CreatedBy = adminId,
                     CreatedOn = DateTime.Now,
                 };
 
@@ -278,6 +281,102 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<bool> AddMany(int adminId, List<AddTaskDto> taskList)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                await transaction.CreateSavepointAsync("Adding list");
+                foreach (var taskDto in taskList)
+                {
+                    int assignedById = adminId;
+                    int assignedToId = taskDto.AssignedTo ?? 0;
+
+                    if (assignedToId == 0)
+                    {
+                        var taskToAdd = new Tasks
+                        {
+                            Name = taskDto.Name,
+                            Description = taskDto.Description,
+                            AssignedBy = adminId,
+                            AssignedTo = assignedToId == 0 ? null : assignedToId,
+                            Status = taskDto.Status,
+                            TaskType = taskDto.TaskType,
+                            ParentId = taskDto.ParentId,
+                            ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
+                            CreatedBy = adminId,
+                            CreatedOn = DateTime.Now,
+                        };
+
+                        _context.Add(taskToAdd);
+                        await _context.SaveChangesAsync();
+                        continue;
+                    }
+
+                    // fetching the assigned user details
+                    var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
+                    if (assignedUser == null)
+                    {
+                        return false;
+                    }
+
+                    // check for whether the task belongs to the project or not
+                    if (taskDto.ProjectId != null && taskDto.ProjectId != 0)
+                    {
+                        var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
+
+                        if (project == null)
+                        {
+                            return false;
+                        }
+
+                        // check whether the task whom to assign is belongs to that project 
+                        var checkProjectEmployee = await _context.ProjectEmployees
+                        .FirstOrDefaultAsync(p => p.ProjectId == taskDto.ProjectId
+                            && p.EmployeeId == assignedToId);
+                        // employee with given id is not in the project so can't assign the task
+                        if (checkProjectEmployee == null)
+                        {
+                            return false;
+                        }
+                    }
+
+
+                    // check for valid task assin
+                    var check = assignedById == assignedToId ? true : await CheckTaskValidAssign(assignedToId, assignedById);
+                    if (!check)
+                    {
+                        return false;
+                    }
+
+                    // creating the new task model
+                    var task = new Tasks
+                    {
+                        Name = taskDto.Name,
+                        Description = taskDto.Description,
+                        AssignedBy = adminId,
+                        AssignedTo = taskDto.AssignedTo,
+                        Status = taskDto.Status,
+                        ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
+                        CreatedBy = adminId,
+                        CreatedOn = DateTime.Now,
+                    };
+
+                    // adding and updating the database
+                    _context.Tasks.Add(task);
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackToSavepointAsync("Adding list");
+                throw new Exception(ex.Message);
+            }
+        }
+
 
         // check for assigner details
         public async Task<bool?> Delete(int userId, int id)

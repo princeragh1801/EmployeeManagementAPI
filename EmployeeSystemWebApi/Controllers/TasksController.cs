@@ -114,10 +114,9 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
                 var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
-                var id = await _taskService.Add(userId, adminId, taskDto);
+                var id = await _taskService.Add(adminId, taskDto);
                 var response = new ApiResponse<int>
                 {
                     Success = true,
@@ -159,6 +158,44 @@ namespace EmployeeSystemWebApi.Controllers
                 });
             }
         }
+
+        [HttpPost("addMany")]
+        public async Task<ActionResult<ApiResponse<bool>>> AddList(List<AddTaskDto> taskDto)
+        {
+            try
+            {
+                // fetching id from token
+                var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
+
+                var added = await _taskService.AddMany(adminId, taskDto);
+                var response = new ApiResponse<bool>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Task Added",
+                    Data = added
+                };
+                if (!added)
+                {
+                    response.Message = "Unauthorized request, The assigner doesn't has the authority to assign the task";
+                    response.Status = 401;
+                    return Unauthorized(response);
+                }
+                
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                });
+            }
+        }
+
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<bool>>> DeleteTask(int id)

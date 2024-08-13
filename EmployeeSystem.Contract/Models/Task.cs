@@ -17,10 +17,17 @@ namespace EmployeeSystem.Contract.Models
 
         public TasksStatus Status { get; set; } = TasksStatus.Pending;
 
+        public TaskType TaskType { get; set; } = TaskType.Simple;
+
+        public int? ParentId { get; set; }
+
         public int? ProjectId { get; set; } = null;
 
+        [ForeignKey(nameof(ParentId))]  
+        public Tasks ?Parent { get; set; }   
+
         [ForeignKey(nameof(AssignedTo))]
-        public Employee Employee { get; set; }
+        public Employee ?Employee { get; set; }
 
         [ForeignKey(nameof(AssignedBy))]
         public Employee Admin { get; set; }

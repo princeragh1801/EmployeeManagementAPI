@@ -57,9 +57,9 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing the ID of the newly created task.
         /// </returns>
-        public Task<int> Add(int userId, int adminId, AddTaskDto task);
+        public Task<int> Add(int adminId, AddTaskDto task);
 
-
+        public Task<bool> AddMany(int adminId, List<AddTaskDto> taskList);
         /// <summary>
         /// Deletes the task with the specified ID and returns a boolean indicating the success of the operation.
         /// </summary>
