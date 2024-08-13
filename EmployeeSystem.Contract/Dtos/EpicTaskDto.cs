@@ -9,7 +9,7 @@ namespace EmployeeSystem.Contract.Dtos
         public TaskType TaskType { get; set; }
         public DateTime CreatedOn { get; set; }
         public TasksStatus Status { get; set; }
-        public string AssignedTo { get; set; }
+        public string ?AssignedTo { get; set; }
         public List<EpicTaskDto> ?SubItems { get; set; }
     }
 }
