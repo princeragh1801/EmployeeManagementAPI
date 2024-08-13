@@ -1,7 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Info;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -79,6 +78,9 @@ namespace EmployeeSystem.Contract.Interfaces
         /// A task representing the asynchronous operation, containing a boolean value indicating whether the task exists.
         /// </returns>
         public Task<bool> TaskExist(int id);
+
+
+        public Task<List<EpicTaskDto>> GetEpics();
 
     }
 }

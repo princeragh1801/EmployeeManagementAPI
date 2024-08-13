@@ -57,8 +57,11 @@
 
         public enum TaskType
         {
-            Simple,
-            UserStory
+            Epic,
+            Feature,
+            Userstory,
+            Task,
+            Bug
         }
     }
 }

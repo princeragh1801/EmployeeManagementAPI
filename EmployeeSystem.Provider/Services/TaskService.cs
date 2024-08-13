@@ -1,6 +1,7 @@
 ﻿
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
@@ -46,7 +47,7 @@ namespace EmployeeSystem.Provider.Services
 
                 return ((assinger != null && assignee != null) && (assinger.Role == Role.SuperAdmin || assignee.ManagerID == assignedBy));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -65,6 +66,7 @@ namespace EmployeeSystem.Provider.Services
                     Id = t.Id,
                     Name = t.Name,
                     Status = t.Status,
+                    ProjectId = t.ProjectId,
                     Description = t.Description,
                     AssigneeName = t.Employee.Name,
                     AssignerName = t.Admin.Name,
@@ -73,7 +75,8 @@ namespace EmployeeSystem.Provider.Services
                 }).ToListAsync();
 
                 return tasks;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -83,7 +86,7 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-               
+
 
                 // creating the task dto list
                 var tasks = await _context.Tasks
@@ -94,6 +97,7 @@ namespace EmployeeSystem.Provider.Services
                         Name = t.Name,
                         Status = t.Status,
                         Description = t.Description,
+                        ProjectId = t.ProjectId,
                         AssigneeName = t.Employee.Name,
                         AssignerName = t.Admin.Name,
                         CreatedOn = t.CreatedOn,
@@ -119,24 +123,35 @@ namespace EmployeeSystem.Provider.Services
                 // check whether the task belongs to the list, then convert the task into task dto form
                 var task = await query
                     .Select(t => new TasksDto
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    Status = t.Status,
-                    Description = t.Description,
-                    AssigneeName = t.Employee.Name,
-                    ProjectId = t.ProjectId,
-                    AssignerName = t.Admin.Name,
-                    CreatedOn = t.CreatedOn,
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        Status = t.Status,
+                        Description = t.Description,
+                        AssigneeName = t.Employee.Name,
+                        ProjectId = t.ProjectId,
+                        AssignerName = t.Admin.Name,
+                        CreatedOn = t.CreatedOn,
+                        TaskType = t.TaskType
 
-                }).FirstOrDefaultAsync(t => t.Id == id);
+                    }).FirstOrDefaultAsync(t => t.Id == id);
 
                 var reviews = await _reviewService.Get(id);
+
+                var subTasks = await _context.Tasks
+                    .Where(t => t.IsActive & t.ParentId == id)
+                    .Select(t => new TaskIdAndName
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        TaskType = t.TaskType,
+                    }).ToListAsync();
 
                 var taskInfo = new TaskInfo
                 {
                     Task = task,
-                    Reviews = reviews
+                    Reviews = reviews,
+                    SubTasks = subTasks
                 };
                 return taskInfo;
             }
@@ -154,17 +169,17 @@ namespace EmployeeSystem.Provider.Services
 
                 // fetching the task details
                 var task = await _context.Tasks
-                    
+
                     .FirstOrDefaultAsync(t => t.Id == id);
-                    
-                    
+
+
                 if (task == null)
                 {
                     return null;
                 }
-                var user = await _context.Employees.FirstAsync(e=> e.Id == userId);
-                int assignedToId = taskDto.AssignedTo??0;
-                if(assignedToId != 0)
+                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
+                int assignedToId = taskDto.AssignedTo ?? 0;
+                if (assignedToId != 0)
                 {
                     task.AssignedTo = assignedToId;
                 }
@@ -181,6 +196,7 @@ namespace EmployeeSystem.Provider.Services
                     Id = task.Id,
                     Name = task.Name,
                     Status = task.Status,
+                    ProjectId = task.ProjectId,
                     Description = task.Description,
                     AssigneeName = task.Employee.Name,
                     AssignerName = task.Admin.Name,
@@ -199,16 +215,16 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 int assignedById = adminId;
-                int assignedToId = taskDto.AssignedTo??0;
+                int assignedToId = taskDto.AssignedTo ?? 0;
 
-                if(assignedToId == 0)
+                if (assignedToId == 0)
                 {
                     var taskToAdd = new Tasks
                     {
                         Name = taskDto.Name,
                         Description = taskDto.Description,
                         AssignedBy = adminId,
-                        AssignedTo = assignedToId==0?null : assignedToId,
+                        AssignedTo = assignedToId == 0 ? null : assignedToId,
                         Status = taskDto.Status,
                         TaskType = taskDto.TaskType,
                         ParentId = taskDto.ParentId,
@@ -224,13 +240,13 @@ namespace EmployeeSystem.Provider.Services
 
                 // fetching the assigned user details
                 var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
-                if(assignedUser == null)
+                if (assignedUser == null)
                 {
                     return -3;
                 }
 
                 // check for whether the task belongs to the project or not
-                if(taskDto.ProjectId != null && taskDto.ProjectId != 0)
+                if (taskDto.ProjectId != null && taskDto.ProjectId != 0)
                 {
                     var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
 
@@ -249,7 +265,7 @@ namespace EmployeeSystem.Provider.Services
                         return -1;
                     }
                 }
-                
+
 
                 // check for valid task assin
                 var check = assignedById == assignedToId ? true : await CheckTaskValidAssign(assignedToId, assignedById);
@@ -266,7 +282,7 @@ namespace EmployeeSystem.Provider.Services
                     AssignedBy = adminId,
                     AssignedTo = taskDto.AssignedTo,
                     Status = taskDto.Status,
-                    ProjectId = taskDto.ProjectId == 0 ?null : taskDto.ProjectId,
+                    ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
                     CreatedBy = adminId,
                     CreatedOn = DateTime.Now,
                 };
@@ -406,13 +422,14 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return null;
                 }
-               
+
                 // soft delete
                 task.IsActive = false;
                 // _context.Tasks.Remove(task);    
                 await _context.SaveChangesAsync();
                 return true;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -423,9 +440,98 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 // fetching the task
-                var task = await _context.Tasks.Where(t => t.Id ==id & t.IsActive).FirstOrDefaultAsync();
+                var task = await _context.Tasks.Where(t => t.Id == id & t.IsActive).FirstOrDefaultAsync();
                 return task != null;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<EpicTaskDto>> GetEpics()
+        {
+            try
+            {
+                var epics = await _context.Tasks
+                    .Where(t => t.IsActive && t.TaskType == TaskType.Epic)
+                    .ToListAsync();
+
+                var result = new List<EpicTaskDto>();
+
+                foreach (var epic in epics)
+                {
+                    var features = new List<EpicTaskDto> ();
+                    var featureDto = await _context.Tasks
+                        .Where(t => t.IsActive & t.TaskType == TaskType.Feature & t.ParentId == epic.Id)
+                            .Select(t => new EpicTaskDto
+                            {
+                                Id = t.Id,
+                                Name = t.Name,
+                                TaskType = t.TaskType,
+                            }).ToListAsync();
+
+                    foreach (var feature in featureDto)
+                    {
+                        var userStories = new List<EpicTaskDto> ();
+                        var userStoryDto = await _context.Tasks
+                            .Where(t => t.IsActive & t.TaskType == TaskType.Userstory & t.ParentId == feature.Id)
+                            .Select(t => new EpicTaskDto
+                            {
+
+                                Id = t.Id,
+                                Name = t.Name,
+                                TaskType = t.TaskType,
+                            }).ToListAsync();
+                        
+                        foreach(var userStory in userStoryDto)
+                        {
+                            var taskAndBugsDto = await _context.Tasks
+                                .Where(t => t.IsActive && (t.TaskType == TaskType.Task || t.TaskType == TaskType.Bug) && t.ParentId == userStory.Id)
+                                .Select(t => new EpicTaskDto
+                                {
+                                    Id = t.Id,
+                                    Name = t.Name,
+                                    TaskType = t.TaskType,
+                                }).ToListAsync();
+
+                            var taskBugDto = new EpicTaskDto
+                            {
+                                Id = userStory.Id,
+                                Name = userStory.Name,
+                                TaskType = userStory.TaskType,
+                                SubItems = taskAndBugsDto
+                            };
+
+                            userStories.Add(taskBugDto);
+                        }
+                        var userStoryToAdd = new EpicTaskDto
+                        {
+                            Id = feature.Id,
+                            Name = feature.Name,
+                            TaskType = feature.TaskType,
+                            SubItems = userStories
+                        };
+
+                        features.Add(userStoryToAdd);
+                    }
+
+                    var epicDto = new EpicTaskDto
+                    {
+                        Id = epic.Id,
+                        Name = epic.Name,
+                        TaskType = epic.TaskType,
+                        SubItems = features
+                    };
+
+                    result.Add(epicDto);
+                }
+
+
+                return result;
+
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

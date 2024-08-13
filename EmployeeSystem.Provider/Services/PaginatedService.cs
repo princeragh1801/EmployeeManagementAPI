@@ -446,6 +446,7 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto paginatedDto)
         {
             try
@@ -469,6 +470,10 @@ namespace EmployeeSystem.Provider.Services
                         var status = filter.Item2 == 0 ? TasksStatus.Pending : filter.Item2 == 1 ? TasksStatus.Active : TasksStatus.Completed;
 
                         query = query.Where(t => t.Status == status);
+                    }else if(filter.Item1.ToLower() == "projectid")
+                    {
+                        var id = filter.Item2;
+                        query = query.Where(t => t.ProjectId == id);
                     }
                 }
                 // applying search filter on that
@@ -498,9 +503,11 @@ namespace EmployeeSystem.Provider.Services
                         Name = e.Name,
                         Description = e.Description,
                         CreatedOn = e.CreatedOn,
+                        ProjectId = e.ProjectId,
                         AssigneeName = e.Employee.Name,
                         AssignerName = e.Admin.Name,
-                        Status = e.Status
+                        Status = e.Status,
+                        
                     }).ToListAsync();
 
                 // creating new dto to send the info

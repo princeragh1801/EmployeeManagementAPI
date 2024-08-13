@@ -17,7 +17,7 @@ namespace EmployeeSystem.Contract.Models
 
         public TasksStatus Status { get; set; } = TasksStatus.Pending;
 
-        public TaskType TaskType { get; set; } = TaskType.Simple;
+        public TaskType TaskType { get; set; } = TaskType.Epic;
 
         public int? ParentId { get; set; }
 
