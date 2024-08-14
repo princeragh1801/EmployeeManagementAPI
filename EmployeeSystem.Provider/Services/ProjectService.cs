@@ -164,6 +164,7 @@ namespace EmployeeSystem.Provider.Services
                         Name = task.Name,
                         Description = task.Description,
                         Status = task.Status,
+                        TaskType = task.TaskType,
                     }).ToList();
 
                 

@@ -216,7 +216,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 int assignedById = adminId;
                 int assignedToId = taskDto.AssignedTo ?? 0;
-
+               
                 if (assignedToId == 0)
                 {
                     var taskToAdd = new Tasks
@@ -227,7 +227,7 @@ namespace EmployeeSystem.Provider.Services
                         AssignedTo = assignedToId == 0 ? null : assignedToId,
                         Status = taskDto.Status,
                         TaskType = taskDto.TaskType,
-                        ParentId = taskDto.ParentId,
+                        ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                         ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
@@ -282,6 +282,7 @@ namespace EmployeeSystem.Provider.Services
                     AssignedBy = adminId,
                     AssignedTo = taskDto.AssignedTo,
                     Status = taskDto.Status,
+                    ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                     ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
                     CreatedBy = adminId,
                     CreatedOn = DateTime.Now,
@@ -319,7 +320,7 @@ namespace EmployeeSystem.Provider.Services
                             AssignedTo = assignedToId == 0 ? null : assignedToId,
                             Status = taskDto.Status,
                             TaskType = taskDto.TaskType,
-                            ParentId = taskDto.ParentId,
+                            ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                             ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
                             CreatedBy = adminId,
                             CreatedOn = DateTime.Now,
@@ -374,6 +375,7 @@ namespace EmployeeSystem.Provider.Services
                         AssignedBy = adminId,
                         AssignedTo = taskDto.AssignedTo,
                         Status = taskDto.Status,
+                        ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                         ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
