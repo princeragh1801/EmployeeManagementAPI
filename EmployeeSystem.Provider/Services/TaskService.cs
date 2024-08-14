@@ -559,5 +559,33 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+    
+        public async Task<List<TasksDto>> GetChilds(int id)
+        {
+            try
+            {
+                var subTasks = await _context.Tasks
+                    .Where(t => t.IsActive & t.ParentId == id)
+                    .Select(e => new TasksDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        //Description = e.Description,
+                        CreatedOn = e.CreatedOn,
+                        //ProjectId = e.ProjectId,
+                        TaskType = e.TaskType,
+                        AssigneeName = e.Employee.Name,
+                        //AssignerName = e.Admin.Name,
+                        Status = e.Status,
+
+                    }).ToListAsync();
+
+                return subTasks;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

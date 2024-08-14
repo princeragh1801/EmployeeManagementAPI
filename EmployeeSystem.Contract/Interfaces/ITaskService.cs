@@ -79,8 +79,8 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<bool> TaskExist(int id);
 
-
         public Task<List<EpicTaskDto>> GetEpics();
 
+        public Task<List<TasksDto>> GetChilds(int id);
     }
 }
