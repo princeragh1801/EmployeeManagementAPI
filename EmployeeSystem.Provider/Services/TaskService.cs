@@ -542,7 +542,7 @@ namespace EmployeeSystem.Provider.Services
                         Name = epic.Name,
                         TaskType = epic.TaskType,
                         Status = epic.Status,
-                        AssignedTo = epic.Employee.Name,
+                        AssignedTo = epic.Employee.Name??null,
                         CreatedOn = epic.CreatedOn,
                         SubItems = features
                     };

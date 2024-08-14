@@ -14,6 +14,6 @@ namespace EmployeeSystem.Contract.Dtos
 
         public string Search {  get; set; } = string.Empty;
 
-        public Tuple<string, int> ?Filter { get; set; }
+        public List<Tuple<string, int>> ?Filters { get; set; }
     }
 }

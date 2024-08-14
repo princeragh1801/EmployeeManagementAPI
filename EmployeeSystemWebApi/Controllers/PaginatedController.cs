@@ -135,5 +135,34 @@ namespace EmployeeSystemWebApi.Controllers
                 });
             }
         }
+
+        [HttpPost("projectTasks{projectId}")]
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<TasksDto>>>>> GetProjectTasks(int projectId, PaginatedDto paginatedDto)
+        {
+            try
+            {
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var tasks = await _paginatedService.GetProjectTasks(userId, projectId, paginatedDto);
+
+                var response = new ApiResponse<PaginatedItemsDto<List<TasksDto>>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Tasks fetched",
+                    Data = tasks
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<TasksDto>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+        }
     }
 }

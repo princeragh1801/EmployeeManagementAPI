@@ -5,6 +5,7 @@ using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using static EmployeeSystem.Contract.Enums.Enums;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -342,17 +343,29 @@ namespace EmployeeSystem.Provider.Services
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
 
-                var filter = paginatedDto.Filter;
-
-                if (filter != null)
+                var filters = paginatedDto.Filters;
+                if (filters != null)
                 {
-                    if (filter.Item1.ToLower() == "status")
+                    foreach (var filter in filters)
                     {
-                        var status = filter.Item2 == 0 ? ProjectStatus.Pending : filter.Item2 == 1 ? ProjectStatus.Active : ProjectStatus.Completed;
-
-                        query = query.Where(t => t.Status == status);
+                        var key = filter.Item1.ToLower();
+                        var value = filter.Item2;
+                        if (key == "status")
+                        {
+                            var status = ProjectStatus.Pending;
+                            if (value == 1)
+                            {
+                                status = ProjectStatus.Active;
+                            }
+                            if (value == 2)
+                            {
+                                status = ProjectStatus.Completed;
+                            }
+                            query = query.Where(t => t.Status == status);
+                        }
                     }
                 }
+
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
 
                 // role specific
@@ -457,21 +470,52 @@ namespace EmployeeSystem.Provider.Services
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
-                var filter = paginatedDto.Filter;
-
-                if(filter != null)
+                var filters = paginatedDto.Filters;
+                if (filters != null)
                 {
-                    if(filter.Item1.ToLower() == "status")
+                    foreach (var filter in filters)
                     {
-                        var status = filter.Item2 == 0 ? TasksStatus.Pending : filter.Item2 == 1 ? TasksStatus.Active : TasksStatus.Completed;
+                        var key = filter.Item1.ToLower();
+                        var value = filter.Item2;
+                        if (key == "Type")
+                        {
+                            var type = TaskType.Epic;
+                            if (value == 1)
+                            {
+                                type = TaskType.Feature;
+                            }
+                            if (value == 2)
+                            {
+                                type = TaskType.Userstory;
+                            }
+                            if (value == 3)
+                            {
+                                type = TaskType.Task;
+                            }
+                            if (value == 4)
+                            {
+                                type = TaskType.Bug;
+                            }
 
-                        query = query.Where(t => t.Status == status);
-                    }else if(filter.Item1.ToLower() == "projectid")
-                    {
-                        var id = filter.Item2;
-                        query = query.Where(t => t.ProjectId == id);
+                            query = query.Where(t => t.TaskType == type);
+
+                        }
+                        else if (key == "status")
+                        {
+                            var status = TasksStatus.Pending;
+                            if (value == 1)
+                            {
+                                status = TasksStatus.Active;
+                            }
+                            if (value == 2)
+                            {
+                                status = TasksStatus.Completed;
+                            }
+                            query = query.Where(t => t.Status == status);
+                        }
                     }
                 }
+
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -518,6 +562,118 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-    
+
+        public async Task<PaginatedItemsDto<List<TasksDto>>> GetProjectTasks(int userId, int projectId, PaginatedDto paginatedDto)
+        {
+            try
+            {
+                var tasksList = _context.Tasks.Where(t => t.ProjectId == projectId & t.IsActive);
+                var filters = paginatedDto.Filters;
+                if (filters != null)
+                {
+                    foreach (var filter in filters)
+                    {
+                        var key = filter.Item1.ToLower();
+                        var value = filter.Item2;
+                        if (key == "type")
+                        {
+                            var type = TaskType.Epic;
+                            if (value == 1)
+                            {
+                                type = TaskType.Feature;
+                            }
+                            if (value == 2)
+                            {
+                                type = TaskType.Userstory;
+                            }
+                            if (value == 3)
+                            {
+                                type = TaskType.Task;
+                            }
+                            if (value == 4)
+                            {
+                                type = TaskType.Bug;
+                            }
+
+                            tasksList = tasksList.Where(t => t.TaskType == type);
+
+                        }
+                        else if (key == "status")
+                        {
+                            var status = TasksStatus.Pending;
+                            if (value == 1)
+                            {
+                                status = TasksStatus.Active;
+                            }
+                            if (value == 2)
+                            {
+                                status = TasksStatus.Completed;
+                            }
+                            tasksList = tasksList.Where(t => t.Status == status);
+                        }
+                    }
+                }
+                else
+                {
+                    var epics = tasksList.Where(t => t.ProjectId == projectId & t.TaskType == TaskType.Epic);
+                    var features = tasksList.Where(t => t.ProjectId == projectId & t.TaskType == TaskType.Feature & t.ParentId == null);
+                    var userStories = tasksList.Where(t => t.TaskType == TaskType.Userstory & t.ParentId == null);
+                    var tasks = tasksList.Where(t => t.ProjectId == projectId & t.TaskType == TaskType.Task & t.ParentId == null);
+                    var bugs = tasksList.Where(t => t.IsActive & t.ProjectId == projectId & t.TaskType == TaskType.Bug & t.ParentId == null);
+                    epics.Concat(features).Concat(userStories).Concat(tasks).Concat(bugs);
+                    tasksList = epics;
+                }
+
+                var orderKey = paginatedDto.OrderKey ?? "Id";
+                var search = paginatedDto.Search;
+                var orderBy = paginatedDto.SortedOrder;
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    tasksList = tasksList.Where(t => t.Name.Contains(search));
+                }
+
+                tasksList = orderBy == SortedOrder.NoOrder ? tasksList : GetOrdered(tasksList, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+
+                // calculating the total count and pages
+                var totalCount = tasksList.Count();
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
+
+                // now extrating projects of the page-[x]
+                var tasksData = await tasksList
+                    .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
+                    .Take(paginatedDto.PagedItemsCount)
+                    .Select(e => new TasksDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        //Description = e.Description,
+                        CreatedOn = e.CreatedOn,
+                        //ProjectId = e.ProjectId,
+                        TaskType = e.TaskType,
+                        AssigneeName = e.Employee.Name,
+                        //AssignerName = e.Admin.Name,
+                        Status = e.Status,
+
+                    }).ToListAsync();
+
+                // creating new dto to send the info
+                PaginatedItemsDto<List<TasksDto>> res = new PaginatedItemsDto<List<TasksDto>>();
+                res.Data = tasksData;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }
