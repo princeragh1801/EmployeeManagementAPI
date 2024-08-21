@@ -156,7 +156,7 @@ namespace EmployeeSystem.Provider.Services
                 var completedTasks = tasks.Where(t => t.Status == TasksStatus.Completed).Count();
                 var activeTasks = tasks.Where(t => t.Status == TasksStatus.Active).Count();
 
-                // fetching the tasks of the project
+                /*// fetching the tasks of the project
                 var tasksDto = tasks
                     .Select(task => new TaskBasicDto
                     {
@@ -165,7 +165,7 @@ namespace EmployeeSystem.Provider.Services
                         Description = task.Description,
                         Status = task.Status,
                         TaskType = task.TaskType,
-                    }).ToList();
+                    }).ToList();*/
 
                 
 
@@ -177,7 +177,6 @@ namespace EmployeeSystem.Provider.Services
                     Name = project.Name,
                     Description = project.Description,
                     Members = projectEmployees,
-                    Tasks = tasksDto,
                     Status = project.Status,
                     CreatedBy = project.CreatedByName,
                     CreatedOn = project.CreatedOn,
@@ -242,10 +241,8 @@ namespace EmployeeSystem.Provider.Services
 
         public async Task<int> Update(int id, int adminId, AddProjectDto projectDto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-
                 var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
                 var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id & p.IsActive);

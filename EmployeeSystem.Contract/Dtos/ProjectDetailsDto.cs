@@ -16,8 +16,6 @@ namespace EmployeeSystem.Contract.Dtos
 
         public DateTime CreatedOn { get; set; }
 
-        public List<TaskBasicDto> Tasks { get; set; }
-
         public List<ProjectEmployeeDto> Members { get; set; }
 
         public int TotalTasks { get; set; }

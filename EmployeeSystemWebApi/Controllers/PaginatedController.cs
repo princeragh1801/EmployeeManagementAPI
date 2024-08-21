@@ -136,7 +136,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpPost("projectTasks{projectId}")]
+        [HttpPost("projectTasks/{projectId}")]
         public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<TasksDto>>>>> GetProjectTasks(int projectId, PaginatedDto paginatedDto)
         {
             try
