@@ -5,7 +5,6 @@ using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using static EmployeeSystem.Contract.Enums.Enums;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace EmployeeSystem.Provider.Services
 {

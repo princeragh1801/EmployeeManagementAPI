@@ -169,9 +169,7 @@ namespace EmployeeSystem.Provider.Services
 
                 // fetching the task details
                 var task = await _context.Tasks
-
                     .FirstOrDefaultAsync(t => t.Id == id);
-
 
                 if (task == null)
                 {
@@ -282,6 +280,7 @@ namespace EmployeeSystem.Provider.Services
                     AssignedBy = adminId,
                     AssignedTo = taskDto.AssignedTo,
                     Status = taskDto.Status,
+                    TaskType = taskDto.TaskType,
                     ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                     ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
                     CreatedBy = adminId,

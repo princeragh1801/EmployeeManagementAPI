@@ -130,6 +130,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 // fetching the project with given id
                 var project = await _context.Projects
+                    .Include(p => p.Admin)
                      .Include(p => p.Tasks)
                      .Include(p => p.ProjectEmployees)
                          .ThenInclude(pe => pe.Employee)
@@ -178,7 +179,7 @@ namespace EmployeeSystem.Provider.Services
                     Description = project.Description,
                     Members = projectEmployees,
                     Status = project.Status,
-                    CreatedBy = project.CreatedByName,
+                    CreatedBy = project.Admin.Name,
                     CreatedOn = project.CreatedOn,
                     ActiveTasks = activeTasks,
                     CompletedTasks = completedTasks,
