@@ -7,6 +7,10 @@ namespace EmployeeSystem.Contract.Models
     {
         public int Id { get; set; }
 
+        public string Username { get; set; }
+
+        public string Password { get; set; }
+
         public string Name { get; set; }
 
         public string Email { get; set; }
@@ -23,23 +27,15 @@ namespace EmployeeSystem.Contract.Models
 
         public int? ManagerID { get; set; }
 
-        public int UserId { get; set; }
-
         public  Role Role{ get; set; }
 
+        [ForeignKey(nameof(ManagerID))]
         public virtual Employee? Manager { get; set; }
 
+        [ForeignKey(nameof(DepartmentID))]
         public virtual Department? Department { get; set; }
 
-        [ForeignKey(nameof(UserId))]
-        public User User { get; set; }
-
         public bool IsActive { get; set; } = true;
-
-        public virtual ICollection<ProjectEmployee> ProjectEmployees { get; set; } = new List<ProjectEmployee>();
-
-        public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
-
        
     }
 }

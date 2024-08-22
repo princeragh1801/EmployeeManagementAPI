@@ -4,6 +4,7 @@ using EmployeeSystem.Provider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeSystem.Provider.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240821133306_addedTaskAndSprintRelation")]
+    partial class addedTaskAndSprintRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,8 +54,11 @@ namespace EmployeeSystem.Provider.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CreatedBy")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("int");
+
+                    b.Property<string>("CreatedByName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -67,14 +73,13 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
+                    b.Property<string>("UpdatedByName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("Departments");
                 });
@@ -91,8 +96,11 @@ namespace EmployeeSystem.Provider.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CreatedBy")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("int");
+
+                    b.Property<string>("CreatedByName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -118,10 +126,6 @@ namespace EmployeeSystem.Provider.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -135,22 +139,22 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
+                    b.Property<string>("UpdatedByName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("DepartmentID");
 
                     b.HasIndex("ManagerID");
 
-                    b.HasIndex("UpdatedBy");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Employees");
                 });
@@ -163,8 +167,14 @@ namespace EmployeeSystem.Provider.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CreatedBy")
+                    b.Property<int>("AdminId")
                         .HasColumnType("int");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatedByName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -186,14 +196,15 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
+                    b.Property<string>("UpdatedByName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("UpdatedBy");
+                    b.HasIndex("AdminId");
 
                     b.ToTable("Projects");
                 });
@@ -221,8 +232,11 @@ namespace EmployeeSystem.Provider.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CreatedBy")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("int");
+
+                    b.Property<string>("CreatedByName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -233,17 +247,21 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int>("RequestType")
                         .HasColumnType("int");
 
+                    b.Property<int>("RequestedBy")
+                        .HasColumnType("int");
+
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
+
+                    b.Property<string>("UpdatedByName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("UpdatedBy");
+                    b.HasIndex("RequestedBy");
 
                     b.ToTable("Requests");
                 });
@@ -280,12 +298,6 @@ namespace EmployeeSystem.Provider.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
@@ -296,20 +308,10 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("projectId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("UpdatedBy");
 
                     b.HasIndex("projectId");
 
@@ -328,8 +330,11 @@ namespace EmployeeSystem.Provider.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CreatedBy")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("int");
+
+                    b.Property<string>("CreatedByName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -337,22 +342,26 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<int>("ReviewedBy")
+                        .HasColumnType("int");
+
                     b.Property<int>("TaskID")
                         .HasColumnType("int");
 
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
+                    b.Property<string>("UpdatedByName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("ReviewedBy");
 
                     b.HasIndex("TaskID");
-
-                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("TaskReviews");
                 });
@@ -365,11 +374,17 @@ namespace EmployeeSystem.Provider.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AssignedBy")
+                        .HasColumnType("int");
+
                     b.Property<int?>("AssignedTo")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CreatedBy")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("int");
+
+                    b.Property<string>("CreatedByName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -403,14 +418,17 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
+                    b.Property<string>("UpdatedByName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedTo");
+                    b.HasIndex("AssignedBy");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("AssignedTo");
 
                     b.HasIndex("ParentId");
 
@@ -418,15 +436,52 @@ namespace EmployeeSystem.Provider.Migrations
 
                     b.HasIndex("SprintId");
 
-                    b.HasIndex("UpdatedBy");
-
                     b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("EmployeeSystem.Contract.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CreatedByName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UpdatedByName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Attendance", b =>
                 {
                     b.HasOne("EmployeeSystem.Contract.Models.Employee", "Employee")
-                        .WithMany()
+                        .WithMany("Attendances")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -434,27 +489,8 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("EmployeeSystem.Contract.Models.Department", b =>
-                {
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy");
-
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Updator")
-                        .WithMany()
-                        .HasForeignKey("UpdatedBy");
-
-                    b.Navigation("Creator");
-
-                    b.Navigation("Updator");
-                });
-
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Employee", b =>
                 {
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy");
-
                     b.HasOne("EmployeeSystem.Contract.Models.Department", "Department")
                         .WithMany("Employees")
                         .HasForeignKey("DepartmentID")
@@ -465,38 +501,34 @@ namespace EmployeeSystem.Provider.Migrations
                         .HasForeignKey("ManagerID")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Updator")
+                    b.HasOne("EmployeeSystem.Contract.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UpdatedBy");
-
-                    b.Navigation("Creator");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Department");
 
                     b.Navigation("Manager");
 
-                    b.Navigation("Updator");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Project", b =>
                 {
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Creator")
+                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Admin")
                         .WithMany()
-                        .HasForeignKey("CreatedBy");
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Updator")
-                        .WithMany()
-                        .HasForeignKey("UpdatedBy");
-
-                    b.Navigation("Creator");
-
-                    b.Navigation("Updator");
+                    b.Navigation("Admin");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.ProjectEmployee", b =>
                 {
                     b.HasOne("EmployeeSystem.Contract.Models.Employee", "Employee")
-                        .WithMany()
+                        .WithMany("ProjectEmployees")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -514,17 +546,13 @@ namespace EmployeeSystem.Provider.Migrations
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Request", b =>
                 {
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Creator")
+                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Employee")
                         .WithMany()
-                        .HasForeignKey("CreatedBy");
+                        .HasForeignKey("RequestedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Updator")
-                        .WithMany()
-                        .HasForeignKey("UpdatedBy");
-
-                    b.Navigation("Creator");
-
-                    b.Navigation("Updator");
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Salary", b =>
@@ -540,30 +568,20 @@ namespace EmployeeSystem.Provider.Migrations
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Sprint", b =>
                 {
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy");
-
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Updator")
-                        .WithMany()
-                        .HasForeignKey("UpdatedBy");
-
                     b.HasOne("EmployeeSystem.Contract.Models.Project", "Project")
                         .WithMany()
                         .HasForeignKey("projectId");
 
-                    b.Navigation("Creator");
-
                     b.Navigation("Project");
-
-                    b.Navigation("Updator");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.TaskReview", b =>
                 {
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Creator")
+                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Reviewer")
                         .WithMany()
-                        .HasForeignKey("CreatedBy");
+                        .HasForeignKey("ReviewedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("EmployeeSystem.Contract.Models.Tasks", "Task")
                         .WithMany()
@@ -571,27 +589,23 @@ namespace EmployeeSystem.Provider.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Updator")
-                        .WithMany()
-                        .HasForeignKey("UpdatedBy");
-
-                    b.Navigation("Creator");
+                    b.Navigation("Reviewer");
 
                     b.Navigation("Task");
-
-                    b.Navigation("Updator");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Tasks", b =>
                 {
+                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Admin")
+                        .WithMany()
+                        .HasForeignKey("AssignedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EmployeeSystem.Contract.Models.Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("AssignedTo")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy");
 
                     b.HasOne("EmployeeSystem.Contract.Models.Tasks", "Parent")
                         .WithMany()
@@ -606,11 +620,7 @@ namespace EmployeeSystem.Provider.Migrations
                         .WithMany()
                         .HasForeignKey("SprintId");
 
-                    b.HasOne("EmployeeSystem.Contract.Models.Employee", "Updator")
-                        .WithMany()
-                        .HasForeignKey("UpdatedBy");
-
-                    b.Navigation("Creator");
+                    b.Navigation("Admin");
 
                     b.Navigation("Employee");
 
@@ -619,13 +629,18 @@ namespace EmployeeSystem.Provider.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("Sprint");
-
-                    b.Navigation("Updator");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Department", b =>
                 {
                     b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("EmployeeSystem.Contract.Models.Employee", b =>
+                {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("ProjectEmployees");
                 });
 
             modelBuilder.Entity("EmployeeSystem.Contract.Models.Project", b =>

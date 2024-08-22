@@ -63,7 +63,7 @@ namespace EmployeeSystem.Provider.Services
 
         public async Task<bool> UserExist(string username)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(e => e.Username == username);
+            var user = await _context.Employees.FirstOrDefaultAsync(e => e.Username == username);
             return user != null;
         }
 
@@ -151,6 +151,7 @@ namespace EmployeeSystem.Provider.Services
                 var employee = await _context.Employees
                     .Include(e => e.Manager)
                     .Include(e => e.Department)
+                    .Include(e => e.Creator)
                     .Select(e => new EmployeeInfo
                     {
                         Id = e.Id,
@@ -164,7 +165,7 @@ namespace EmployeeSystem.Provider.Services
                         Address = e.Address,
                         ImageUrl = e.ImageUrl,
                         CreatedOn = e.CreatedOn,
-                        CreatedBy = e.CreatedByName
+                        CreatedBy = e.Creator.Name
                     }).FirstOrDefaultAsync(e => e.Id == id);
 
 
@@ -208,21 +209,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return 0;
                 }
-                var obj = await _context.Employees.FirstAsync(e => e.Id == userID);
-                var createdByName = obj.Name;
-                // creating user 
-                var user = new User
-                {
-                    Username = employeeDto.Username,
-                    Password = employeeDto.Password,
-                    CreatedBy = userID,
-                    CreatedOn = DateTime.Now
-                };
-
-                // adding user to the db
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
+                
                 var firstLetter = employeeDto.Name.ElementAt(0);
                 var lastLetter = employeeDto.Name.ElementAt(1);
                 var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
@@ -231,6 +218,8 @@ namespace EmployeeSystem.Provider.Services
                 Console.WriteLine("Url "+ imageUrl);
                 var employee = new Employee
                 {
+                    Username = employeeDto.Username,
+                    Password = employeeDto.Password,
                     Name = employeeDto.Name,
                     Email = employeeDto.Email,
                     Address = employeeDto.Address,
@@ -240,11 +229,9 @@ namespace EmployeeSystem.Provider.Services
                     ImageUrl = imageUrl,
                     DepartmentID = departmentId == 0 ? null : departmentId,
                     ManagerID = managerId == 0 ? null : managerId,
-                    UserId = user.Id,
                     IsActive = true,
                     CreatedOn = DateTime.Now,
                     CreatedBy = userID,
-                    CreatedByName = createdByName
                 };
 
                 // adding and saving to the database
@@ -274,50 +261,34 @@ namespace EmployeeSystem.Provider.Services
             {
                 // created a save point for roll back
                 await transaction.CreateSavepointAsync("Adding list");
-                var obj = await _context.Employees.FirstAsync(e => e.Id == userID);
-                var createdByName = obj.Name;
                 foreach (var employeeDto in employees)
                 {
-                    int? managerId = employeeDto.ManagerID;
-                    int? departmentId = employeeDto.DepartmentID;
-
-                    // checking the role
+                    // checking the role exist or not
                     bool checkRole = RoleExist(employeeDto.Role);
                     if (!checkRole)
                     {
-                        //await transaction.RollbackToSavepointAsync("Adding list");
                         return -1;
                     }
 
-                    // checking whether the user with given username is already exist
+                    // checking the user already exist or not
                     bool checkUser = await UserExist(employeeDto.Username);
 
                     if (checkUser)
                     {
-                        return -3;
-                    }
-
-                    // checking the employee and manager relation
-                    bool check = await CheckManagerAndEmployeeDepartment(managerId, departmentId);
-
-                    if (!check)
-                    {
-                       // await transaction.RollbackToSavepointAsync("Adding list");
                         return -2;
                     }
 
-                    // creating the user
-                    var user = new User
+                    int? managerId = employeeDto.ManagerID;
+                    int? departmentId = employeeDto.DepartmentID;
+
+                    // checking the manager belongs to the same department
+                    bool check = await CheckManagerAndEmployeeDepartment(managerId, departmentId);
+
+
+                    if (!check)
                     {
-                        Username = employeeDto.Username,
-                        Password = employeeDto.Password,
-                        CreatedBy = userID,
-                        CreatedOn = DateTime.Now,
-                    };
-
-                    // adding user to the db
-                    _context.Users.Add(user);
-
+                        return 0;
+                    }
 
                     var firstLetter = employeeDto.Name.ElementAt(0);
                     var lastLetter = employeeDto.Name.ElementAt(1);
@@ -325,23 +296,25 @@ namespace EmployeeSystem.Provider.Services
 
                     var employee = new Employee
                     {
+                        Username = employeeDto.Username,
+                        Password = employeeDto.Password,
                         Name = employeeDto.Name,
                         Email = employeeDto.Email,
                         Address = employeeDto.Address,
-                        Phone = "+91-" + employeeDto.Phone,
                         Salary = employeeDto.Salary,
+                        Phone = employeeDto.Phone,
                         Role = employeeDto.Role,
+                        ImageUrl = imageUrl,
                         DepartmentID = departmentId == 0 ? null : departmentId,
                         ManagerID = managerId == 0 ? null : managerId,
-                        UserId = user.Id,
                         IsActive = true,
                         CreatedOn = DateTime.Now,
                         CreatedBy = userID,
-                        CreatedByName = createdByName,
                     };
 
-                    _context.Add(employee);
-                    
+                    // adding and saving to the database
+                    _context.Employees.Add(employee);
+
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -449,7 +422,6 @@ namespace EmployeeSystem.Provider.Services
                 employeeToUpdate.ManagerID = employeeDto.ManagerID;
                 employeeToUpdate.UpdatedOn = DateTime.Now;
                 employeeToUpdate.UpdatedBy = userID;
-                employeeToUpdate.UpdatedByName = updatedByName;
 
                 await _context.SaveChangesAsync();
 

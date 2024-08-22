@@ -26,7 +26,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
                 var tasks = await _taskService.GetAllTasks(userId);
                 var response = new ApiResponse<List<TasksDto>>
                 {
@@ -317,5 +317,42 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [HttpPost("update-sprint/{sprintId}")]
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskSprint(int sprintId, int taskId)
+        {
+            try
+            {
+                // fetching id from token
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+
+                var updated = await _taskService.UpdateTaskSprint(sprintId, taskId);
+                var response = new ApiResponse<bool>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Task added to sprint",
+                    Data = true
+
+                };
+                if (!updated)
+                {
+                    response.Message = "Sprint or task not found or not belongs to the same project";
+                    response.Data = false;
+                    return NotFound(response);
+                }
+
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                });
+            }
+        }
     }
 }

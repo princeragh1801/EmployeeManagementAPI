@@ -53,6 +53,24 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [HttpGet("project/{id}")]
+        public async Task<ActionResult<ApiResponse<List<SprintInfo>>>> GetByProjectId(int id)
+        {
+            try
+            {
+                var res = await _sprintService.GetByProjectId(id);
+                var response = new ApiResponse<List<SprintInfo>>();
+                response.Message = "Sprint fetched";
+                response.Data = res;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> Post(AddSprintDto addSprintDto)
         {

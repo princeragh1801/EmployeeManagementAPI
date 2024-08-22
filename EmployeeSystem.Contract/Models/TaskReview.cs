@@ -10,13 +10,8 @@ namespace EmployeeSystem.Contract.Models
 
         public string Content { get; set; }
 
-        public int ReviewedBy { get; set; }
-
         [ForeignKey(nameof(TaskID))]
         public Tasks Task { get; set; }
-
-        [ForeignKey(nameof(ReviewedBy))]
-        public Employee Reviewer { get; set; }
 
         public bool IsActive { get; set; } = true;
 

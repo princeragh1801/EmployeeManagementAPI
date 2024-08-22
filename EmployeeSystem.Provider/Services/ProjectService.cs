@@ -30,6 +30,7 @@ namespace EmployeeSystem.Provider.Services
                     // creating the query if user is not super admin
                     var query = _context.ProjectEmployees
                         .Include(p => p.Employee).Include(p => p.Project)
+                        .ThenInclude(p => p.Creator)
                         .Where(p => p.Project.IsActive && (p.EmployeeId == id || p.Employee.ManagerID == id))
                         .Distinct();
 
@@ -41,7 +42,7 @@ namespace EmployeeSystem.Provider.Services
                             Name = e.Project.Name,
                             Description = e.Project.Description,
                             CreatedOn = e.Project.CreatedOn,
-                            CreatedBy = e.Project.CreatedByName,
+                            CreatedBy = e.Project.Creator.Name,
                             Status = e.Project.Status,
                         }).Distinct().ToListAsync();
                     return res;
@@ -49,6 +50,7 @@ namespace EmployeeSystem.Provider.Services
                 
                 // only fetching project details
                 var projects = await _context.Projects
+                    .Include(p => p.Creator)
                     .Where(p => p.IsActive)
                     .Select(e => new ProjectDto
                     {
@@ -56,7 +58,7 @@ namespace EmployeeSystem.Provider.Services
                         Name = e.Name,
                         Description = e.Description,
                         CreatedOn = e.CreatedOn,
-                        CreatedBy = e.CreatedByName,
+                        CreatedBy = e.Creator.Name,
                         Status = e.Status,
                     }).ToListAsync();
                 
@@ -74,6 +76,7 @@ namespace EmployeeSystem.Provider.Services
                 var query = _context.ProjectEmployees
                     .Include(p => p.Employee)
                     .Include(p => p.Project)
+                    .ThenInclude(p => p.Creator)
                     .Where(p => p.EmployeeId == employeeId)
                     .Distinct();
 
@@ -87,7 +90,7 @@ namespace EmployeeSystem.Provider.Services
                         Id = e.Project.Id,
                         Name = e.Project.Name,
                         Description = e.Project.Description,
-                        CreatedBy = e.Project.CreatedByName,
+                        CreatedBy = e.Project.Creator.Name,
                         CreatedOn = e.Project.CreatedOn,
                         Status = e.Project.Status,
                     }).ToListAsync();
@@ -112,7 +115,7 @@ namespace EmployeeSystem.Provider.Services
                         Name = e.Name,
                         Description = e.Description,
                         CreatedOn = e.CreatedOn,
-                        CreatedBy = e.CreatedByName,
+                        CreatedBy = e.Creator.Name,
                         Status = e.Status,
                     }).ToListAsync();
 
@@ -130,7 +133,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 // fetching the project with given id
                 var project = await _context.Projects
-                    .Include(p => p.Admin)
+                    .Include(p => p.Creator)
                      .Include(p => p.Tasks)
                      .Include(p => p.ProjectEmployees)
                          .ThenInclude(pe => pe.Employee)
@@ -179,7 +182,7 @@ namespace EmployeeSystem.Provider.Services
                     Description = project.Description,
                     Members = projectEmployees,
                     Status = project.Status,
-                    CreatedBy = project.Admin.Name,
+                    CreatedBy = project.Creator.Name,
                     CreatedOn = project.CreatedOn,
                     ActiveTasks = activeTasks,
                     CompletedTasks = completedTasks,
@@ -206,11 +209,9 @@ namespace EmployeeSystem.Provider.Services
                 {
                     Name = projectDto.Name,
                     Description = projectDto.Description,
-                    AdminId = adminId,
                     IsActive = true,
                     Status = projectDto.Status,
                     CreatedBy = adminId,
-                    CreatedByName = admin.Name,
                     CreatedOn = DateTime.Now
                 };
 
@@ -257,7 +258,6 @@ namespace EmployeeSystem.Provider.Services
                 project.Status = projectDto.Status;
                 project.UpdatedBy = admin.Id;
                 project.UpdatedOn = DateTime.Now;
-                project.UpdatedByName = admin.Name;
 
                 await _context.SaveChangesAsync();
 

@@ -39,7 +39,7 @@ namespace EmployeeSystem.Provider.Services
                     // extracting the last paid details
                     var salaryDetails = await _context.Salaries
                         .OrderByDescending(s => s.Id)
-                        .LastOrDefaultAsync(s => s.EmployeeId == reqDto.RequestedBy);
+                        .LastOrDefaultAsync(s => s.EmployeeId == reqDto.CreatedBy);
 
                     if (salaryDetails != null)
                     {
@@ -47,7 +47,7 @@ namespace EmployeeSystem.Provider.Services
                         if(salaryDetails.Status == SalaryStatus.AdvancePaid)
                         {
                             // check for the employee is eligible for the pay
-                            var checkEligibleAndPay = await _salaryService.Pay(reqDto.RequestedBy);
+                            var checkEligibleAndPay = await _salaryService.Pay(reqDto.CreatedBy??0);
                             if (checkEligibleAndPay)
                             {
                                 // approved:: updating the status
@@ -60,11 +60,11 @@ namespace EmployeeSystem.Provider.Services
                             
                         }
                         // approved ::
-                        await _salaryService.Pay(request.RequestedBy);
+                        await _salaryService.Pay(request.CreatedBy ?? 0);
                         request.RequestStatus = RequestStatus.Approved;
                         return true;
                     }
-                    await _salaryService.Pay(reqDto.RequestedBy);
+                    await _salaryService.Pay(reqDto.CreatedBy ?? 0);
                     request.RequestStatus = RequestStatus.Approved;
                     return true;
                 }
@@ -83,7 +83,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 // creating a query for all the request which are pending right now
                 var query = _context.Requests
-                    .Include(r => r.Employee)
+                    .Include(r => r.Creator)
                     .Where(r => r.RequestStatus == RequestStatus.Requested);
 
                 // creating a total count variable and storing the count of pending requests
@@ -94,8 +94,8 @@ namespace EmployeeSystem.Provider.Services
                     .Select(r => new RequestDto
                     {
                         Id = r.Id,
-                        Name = r.Employee.Name,
-                        RequestedBy = r.Employee.Id,
+                        Name = r.Creator.Name,
+                        RequestedBy = r.Creator.Id,
                         Status = r.RequestStatus,
                         CreatedOn = r.CreatedOn,
                         TotalPendingRequests = totalRequest,

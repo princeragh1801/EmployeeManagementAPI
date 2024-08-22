@@ -280,7 +280,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 // only selecting which is active
-                var query = _context.Departments.Where(d => d.IsActive);
+                var query = _context.Departments.Include(d => d.Creator).Where(d => d.IsActive);
 
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
@@ -313,7 +313,7 @@ namespace EmployeeSystem.Provider.Services
                         Id = d.Id,
                         Name = d.Name,
                         CreatedOn = d.CreatedOn,
-                        CreatedBy = d.CreatedByName,
+                        CreatedBy = d.Creator.Name,
                     }).ToListAsync();
 
                 // creating new dto to send the info
@@ -336,7 +336,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 
                 // only selecting which is active
-                var query = _context.Projects.Where(d => d.IsActive);
+                var query = _context.Projects.Include(p => p.Creator).Where(d => d.IsActive);
 
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
@@ -399,7 +399,7 @@ namespace EmployeeSystem.Provider.Services
                             Id = e.Project.Id,
                             Name = e.Project.Name,
                             Description = e.Project.Description,
-                            CreatedBy = e.Project.CreatedByName,
+                            CreatedBy = e.Project.Creator.Name,
                             CreatedOn = e.Project.CreatedOn,
                         }).ToListAsync();
 
@@ -437,7 +437,7 @@ namespace EmployeeSystem.Provider.Services
                          Id = e.Id,
                          Name = e.Name,
                          Description = e.Description,
-                         CreatedBy = e.CreatedByName,
+                         CreatedBy = e.Creator.Name,
                          CreatedOn = e.CreatedOn,
                      }).ToListAsync();
 
@@ -544,7 +544,7 @@ namespace EmployeeSystem.Provider.Services
                         CreatedOn = e.CreatedOn,
                         ProjectId = e.ProjectId,
                         AssigneeName = e.Employee.Name,
-                        AssignerName = e.Admin.Name,
+                        AssignerName = e.Creator.Name,
                         Status = e.Status,
                         
                     }).ToListAsync();
@@ -567,6 +567,13 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var tasksList = _context.Tasks.Where(t => t.ProjectId == projectId & t.IsActive);
+                var sprint = paginatedDto.Sprint;
+                if(sprint != null)
+                {
+                    var startDate = sprint.StartDate;
+                    var endDate = sprint.EndDate;   
+                    tasksList = tasksList.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
+                }
                 var filters = paginatedDto.Filters;
                 if (filters != null)
                 {

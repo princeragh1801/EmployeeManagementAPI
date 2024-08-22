@@ -23,7 +23,7 @@ namespace EmployeeSystem.Provider.Services
             this.configuration = _configuration;
         }
 
-        public string GeneratingToken(int userId, Employee emp)
+        public string GeneratingToken(Employee emp)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
@@ -31,7 +31,6 @@ namespace EmployeeSystem.Provider.Services
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, emp.Name),
-                new Claim("Id", userId.ToString()),
                 new Claim("UserId", emp.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, emp.Role.ToString()),
@@ -51,37 +50,6 @@ namespace EmployeeSystem.Provider.Services
             return tokenHandler.WriteToken(token);
         }
 
-
-        public async Task<User?> Register(int userId, RegisterDto userDto)
-        {
-            try
-            {
-
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == userDto.Username);
-
-                if (user != null)
-                {
-                    return null;
-                }
-
-                var newUser = new User
-                {
-                    Username = userDto.Username,
-                    Password = userDto.Password,
-                    CreatedBy = userId,
-                    CreatedOn = DateTime.Now,
-                };
-                _context.Users.Add(newUser);
-                await _context.SaveChangesAsync();
-
-                return newUser;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task<LoginUserDto?> Login(RegisterDto userDto)
         {
             try
@@ -89,25 +57,19 @@ namespace EmployeeSystem.Provider.Services
                 string userName = userDto.Username;
                 string password = userDto.Password;
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == userName);
-
-                if (user == null)
-                {
-                    return null;
-                }
-                if (user.Password != password)
-                {
-                    return null;
-                }
-                var employee = await _context.Employees.Include(e => e.User).FirstOrDefaultAsync(e=> e.User.Id == user.Id & e.IsActive);
+                var employee = await _context.Employees.FirstOrDefaultAsync(u => u.Username == userName);
 
                 if (employee == null)
                 {
                     return null;
                 }
+                if (employee.Password != password)
+                {
+                    return null;
+                }
 
                 var isManager = await _context.Employees.FirstOrDefaultAsync(e => e.ManagerID == employee.Id);
-                var token = GeneratingToken(user.Id, employee);
+                var token = GeneratingToken(employee);
 
                 var employeeInfo = new EmployeeLoginInfo
                 {
@@ -128,41 +90,6 @@ namespace EmployeeSystem.Provider.Services
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<bool> RegisterMany(int userId, List<RegisterDto> list)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                await transaction.CreateSavepointAsync("Adding list");
-                foreach (var userDto in list)
-                {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == userDto.Username);
-
-                    if (user != null)
-                    {
-                        return false;
-                    }
-
-                    var newUser = new User
-                    {
-                        Username = userDto.Username,
-                        Password = userDto.Password,
-                        CreatedBy = userId,
-                        CreatedOn = DateTime.Now,
-                    };
-                    _context.Users.Add(newUser);
-                }
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackToSavepointAsync("Adding list");
                 throw new Exception(ex.Message);
             }
         }

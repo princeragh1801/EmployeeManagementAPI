@@ -72,8 +72,8 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
-                var response = await _departmentService.Add(userId, departmentDto);
+                int employeeId = Convert.ToInt32(HttpContext.User.Claims.FirstOrDefault(e => e.Type == "UserId")?.Value);
+                var response = await _departmentService.Add(employeeId, departmentDto);
 
                 if (response.Status == 409)
                 {

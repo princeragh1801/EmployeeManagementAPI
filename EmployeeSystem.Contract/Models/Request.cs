@@ -9,9 +9,6 @@ namespace EmployeeSystem.Contract.Models
         [Key]
         public int Id { get; set; }
         public RequestType RequestType { get; set; }
-        public int RequestedBy { get; set; }
         public RequestStatus RequestStatus { get; set; } = RequestStatus.Requested;
-        [ForeignKey(nameof(RequestedBy))]
-        public Employee Employee { get; set; }
     }
 }

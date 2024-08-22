@@ -13,7 +13,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A JWT token as a string.
         /// </returns>
-        public string GeneratingToken(int userId, Employee emp);
+        public string GeneratingToken(Employee emp);
 
 
         //public Task<User?> Register(int userId, RegisterDto userDto);

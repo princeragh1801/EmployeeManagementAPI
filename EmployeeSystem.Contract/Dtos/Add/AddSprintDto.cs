@@ -7,7 +7,8 @@ namespace EmployeeSystem.Contract.Dtos.Add
         [Required]
         [MinLength(2)]
         public string Name { get; set; }
-        public DateOnly StartDate { get; set; }
-        public DateOnly EndDate { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int ?ProjectId { get; set; }
     }
 }

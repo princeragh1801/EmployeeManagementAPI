@@ -32,15 +32,15 @@ namespace EmployeeSystem.Provider.Services
 
                 // fetching the reviews and converting to taskreview dto list
                 var reviews = await _context.TaskReviews
-                    .Include(tr => tr.Reviewer)
+                    .Include(tr => tr.Creator)
                     .Where(tr => tr.TaskID == taskId)
                     .Select(tr => new TaskReviewDto
                     {
                         Id = tr.Id,
-                        ReviewedBy = tr.Reviewer.Name,
+                        ReviewedBy = tr.Creator.Name,
                         Content = tr.Content,
                         CreatedOn = tr.CreatedOn,
-                        ReviewerAvatarUrl = tr.Reviewer.ImageUrl,
+                        ReviewerAvatarUrl = tr.Creator.ImageUrl,
 
                     }).ToListAsync();
 
@@ -63,7 +63,6 @@ namespace EmployeeSystem.Provider.Services
                 var taskReview = new TaskReview
                 {
                     Content = taskReviewDto.Content,
-                    ReviewedBy = adminId,
                     TaskID = taskReviewDto.TaskID,
                     CreatedOn = DateTime.Now,
                     CreatedBy = userId

@@ -13,27 +13,27 @@ namespace EmployeeSystem.Contract.Models
 
         public int? AssignedTo { get; set; }
 
-        public int AssignedBy { get; set; }
-
         public TasksStatus Status { get; set; } = TasksStatus.Pending;
 
         public TaskType TaskType { get; set; } = TaskType.Epic;
 
         public int? ParentId { get; set; }
 
-        public int? ProjectId { get; set; } = null;
+        public int ProjectId { get; set; }
 
-        [ForeignKey(nameof(ParentId))]  
-        public Tasks ?Parent { get; set; }   
+        public int? SprintId { get; set; }
+
+        [ForeignKey(nameof(SprintId))]
+        public Sprint ?Sprint { get; set; }
+
+        [ForeignKey(nameof(ParentId))]
+        public Tasks? Parent { get; set; }
 
         [ForeignKey(nameof(AssignedTo))]
-        public Employee ?Employee { get; set; }
-
-        [ForeignKey(nameof(AssignedBy))]
-        public Employee Admin { get; set; }
+        public Employee? Employee { get; set; }
 
         [ForeignKey(nameof(ProjectId))]
-        public Project ?Project { get; set; }
+        public Project Project { get; set; }
         public bool IsActive { get; set; } = true;
     }
 }

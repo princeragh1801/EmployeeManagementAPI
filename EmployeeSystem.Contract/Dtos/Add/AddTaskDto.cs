@@ -24,8 +24,8 @@ namespace EmployeeSystem.Contract.Dtos.Add
         [Range(1, Int32.MaxValue)]
         public int AssignedBy { get; set; }*/
 
-        public int? ProjectId { get; set; } = null;
-
+        public int ProjectId { get; set; }
+        public int? SprintId { get; set; } = null;
         [Required]
         public TasksStatus Status { get; set; } = TasksStatus.Pending;
     }

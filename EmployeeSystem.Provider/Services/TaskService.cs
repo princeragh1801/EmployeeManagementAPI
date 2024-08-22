@@ -24,12 +24,15 @@ namespace EmployeeSystem.Provider.Services
         public IQueryable<Tasks> GetTasksInfo(int userId)
         {
             // fetching the user details
-            var user = _context.Employees.FirstOrDefault(e => e.UserId == userId);
+            var user = _context.Employees.FirstOrDefault(e => e.Id == userId);
 
             // checking whether the user is superadmin or not and creating the query according to the role
             if (user != null && user.Role != Role.SuperAdmin)
             {
-                var query = _context.Tasks.Include(t => t.Employee).Include(t => t.Admin).Where(t => t.IsActive & (t.Employee.Id == user.Id || t.Employee.ManagerID == user.Id));
+                var query = _context.Tasks
+                    .Include(t => t.Employee)
+                    .Include(t => t.Creator)
+                    .Where(t => t.IsActive & (t.Employee.Id == user.Id || t.Employee.ManagerID == user.Id));
                 return query;
             }
             return _context.Tasks.Where(t => t.IsActive);
@@ -69,7 +72,7 @@ namespace EmployeeSystem.Provider.Services
                     ProjectId = t.ProjectId,
                     Description = t.Description,
                     AssigneeName = t.Employee.Name,
-                    AssignerName = t.Admin.Name,
+                    AssignerName = t.Creator.Name,
                     CreatedOn = t.CreatedOn,
                     TaskType = t.TaskType
                 }).ToListAsync();
@@ -99,7 +102,7 @@ namespace EmployeeSystem.Provider.Services
                         Description = t.Description,
                         ProjectId = t.ProjectId,
                         AssigneeName = t.Employee.Name,
-                        AssignerName = t.Admin.Name,
+                        AssignerName = t.Creator.Name,
                         CreatedOn = t.CreatedOn,
                         TaskType = t.TaskType
                     }).ToListAsync();
@@ -130,7 +133,7 @@ namespace EmployeeSystem.Provider.Services
                         Description = t.Description,
                         AssigneeName = t.Employee.Name,
                         ProjectId = t.ProjectId,
-                        AssignerName = t.Admin.Name,
+                        AssignerName = t.Creator.Name,
                         CreatedOn = t.CreatedOn,
                         TaskType = t.TaskType
 
@@ -187,7 +190,6 @@ namespace EmployeeSystem.Provider.Services
                 task.Status = taskDto.Status;
                 task.UpdatedOn = DateTime.Now;
                 task.UpdatedBy = userId;
-                task.UpdatedByName = user.Name;
                 await _context.SaveChangesAsync();
                 var taskDetails = new TasksDto
                 {
@@ -197,7 +199,7 @@ namespace EmployeeSystem.Provider.Services
                     ProjectId = task.ProjectId,
                     Description = task.Description,
                     AssigneeName = task.Employee.Name,
-                    AssignerName = task.Admin.Name,
+                    AssignerName = task.Creator.Name,
                     CreatedOn = task.CreatedOn,
                 };
                 return taskDetails;
@@ -221,12 +223,11 @@ namespace EmployeeSystem.Provider.Services
                     {
                         Name = taskDto.Name,
                         Description = taskDto.Description,
-                        AssignedBy = adminId,
                         AssignedTo = assignedToId == 0 ? null : assignedToId,
                         Status = taskDto.Status,
                         TaskType = taskDto.TaskType,
                         ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                        ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
+                        ProjectId = taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
                     };
@@ -244,7 +245,7 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // check for whether the task belongs to the project or not
-                if (taskDto.ProjectId != null && taskDto.ProjectId != 0)
+                if (taskDto.ProjectId != 0)
                 {
                     var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
 
@@ -277,12 +278,12 @@ namespace EmployeeSystem.Provider.Services
                 {
                     Name = taskDto.Name,
                     Description = taskDto.Description,
-                    AssignedBy = adminId,
                     AssignedTo = taskDto.AssignedTo,
                     Status = taskDto.Status,
                     TaskType = taskDto.TaskType,
                     ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                    ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
+                    ProjectId = taskDto.ProjectId,
+                    SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
                     CreatedBy = adminId,
                     CreatedOn = DateTime.Now,
                 };
@@ -315,12 +316,12 @@ namespace EmployeeSystem.Provider.Services
                         {
                             Name = taskDto.Name,
                             Description = taskDto.Description,
-                            AssignedBy = adminId,
                             AssignedTo = assignedToId == 0 ? null : assignedToId,
                             Status = taskDto.Status,
                             TaskType = taskDto.TaskType,
                             ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                            ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
+                            ProjectId = taskDto.ProjectId,
+                            SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
                             CreatedBy = adminId,
                             CreatedOn = DateTime.Now,
                         };
@@ -371,11 +372,10 @@ namespace EmployeeSystem.Provider.Services
                     {
                         Name = taskDto.Name,
                         Description = taskDto.Description,
-                        AssignedBy = adminId,
                         AssignedTo = taskDto.AssignedTo,
                         Status = taskDto.Status,
                         ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                        ProjectId = taskDto.ProjectId == 0 ? null : taskDto.ProjectId,
+                        ProjectId = taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
                     };
@@ -407,10 +407,10 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return false;
                 }
-                int assignedById = task.AssignedBy;
+                int ?assignedById = task.CreatedBy;
 
                 // fetching employee
-                var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId & e.IsActive);
+                var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == userId & e.IsActive);
 
                 var check = false;
 
@@ -586,5 +586,31 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+        
+        public async Task<bool> UpdateTaskSprint(int sprintId, int taskId)
+        {
+            try
+            {
+                var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == sprintId);
+                if(sprint == null)
+                {
+                    return false;
+                }
+                var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskId & t.IsActive & sprint.projectId == t.ProjectId);
+
+                if(task == null)
+                {
+                    return false;
+                }
+
+                task.SprintId = sprintId;
+                await _context.SaveChangesAsync();
+                return true;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+    
     }
 }
