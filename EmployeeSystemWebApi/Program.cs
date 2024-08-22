@@ -1,5 +1,7 @@
+using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Utils;
 using EmployeeSystem.Provider;
+using EmployeeSystem.Provider.Services;
 using EmployeeSystemWebApi.Extention;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,9 +41,11 @@ builder.Services.AddSingleton(emailConfig);
 // getting connection string and connection establishment
 var connectionString = builder.Configuration.GetConnectionString("SqlServerConnectionString");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-
+builder.Services.AddScoped<ITestService, TestService>();
 // adding other services
 builder.Services.AddCustomerServices();
+
+
 
 // added custom swagger gen services
 builder.Services.AddSwaggerGenService();

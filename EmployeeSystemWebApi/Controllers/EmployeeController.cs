@@ -55,7 +55,7 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-
+                Console.WriteLine("Employee Object : " + _employeeService.GetHashCode());
                 var employees = await _employeeService.GetEmployeeIdAndName();
 
                 var response = new ApiResponse<List<EmployeeIdAndName>>
@@ -85,6 +85,7 @@ namespace EmployeeSystemWebApi.Controllers
 
             try
             {
+                Console.WriteLine("Employee Object : " + _employeeService.GetHashCode());
                 var employee = await _employeeService.GetById(id);
 
                 var response = new ApiResponse<EmployeeInfo>

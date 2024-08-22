@@ -80,6 +80,12 @@ namespace EmployeeSystemWebApi.Controllers
                 var response = new ApiResponse<int>();
                 response.Message = "Sprint added";
                 response.Data = res;
+                if(res == 0)
+                {
+                    response.Status = 409;
+                    response.Message = "Sprint with given name already exist";
+                    return Conflict(response);
+                }
                 return Ok(response);
             }
             catch (Exception ex)

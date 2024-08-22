@@ -567,13 +567,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var tasksList = _context.Tasks.Where(t => t.ProjectId == projectId & t.IsActive);
-                var sprint = paginatedDto.Sprint;
-                if(sprint != null)
-                {
-                    var startDate = sprint.StartDate;
-                    var endDate = sprint.EndDate;   
-                    tasksList = tasksList.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
-                }
+                
                 var filters = paginatedDto.Filters;
                 if (filters != null)
                 {
@@ -583,39 +577,51 @@ namespace EmployeeSystem.Provider.Services
                         var value = filter.Item2;
                         if (key == "type")
                         {
-                            var type = TaskType.Epic;
-                            if (value == 1)
+                            if(value <= 4)
                             {
-                                type = TaskType.Feature;
-                            }
-                            if (value == 2)
-                            {
-                                type = TaskType.Userstory;
-                            }
-                            if (value == 3)
-                            {
-                                type = TaskType.Task;
-                            }
-                            if (value == 4)
-                            {
-                                type = TaskType.Bug;
-                            }
+                                var type = TaskType.Epic;
 
-                            tasksList = tasksList.Where(t => t.TaskType == type);
+                                if (value == 1)
+                                {
+                                    type = TaskType.Feature;
+                                }
+                                else if (value == 2)
+                                {
+                                    type = TaskType.Userstory;
+                                }
+                                if (value == 3)
+                                {
+                                    type = TaskType.Task;
+                                }
+                                if (value == 4)
+                                {
+                                    type = TaskType.Bug;
+                                }
+
+                                tasksList = tasksList.Where(t => t.TaskType == type);
+
+                            }
 
                         }
                         else if (key == "status")
                         {
-                            var status = TasksStatus.Pending;
-                            if (value == 1)
+                            if(value <= 2)
                             {
-                                status = TasksStatus.Active;
+                                var status = TasksStatus.Pending;
+                                if (value == 1)
+                                {
+                                    status = TasksStatus.Active;
+                                }
+                                else if (value == 2)
+                                {
+                                    status = TasksStatus.Completed;
+                                }
+                                tasksList = tasksList.Where(t => t.Status == status);
                             }
-                            if (value == 2)
-                            {
-                                status = TasksStatus.Completed;
-                            }
-                            tasksList = tasksList.Where(t => t.Status == status);
+                        }
+                        else if(key == "sprint")
+                        {
+                            tasksList = tasksList.Where(s => s.SprintId == value);
                         }
                     }
                 }

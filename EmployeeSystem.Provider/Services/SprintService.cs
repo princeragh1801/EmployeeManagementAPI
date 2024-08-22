@@ -19,6 +19,11 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                var sprintExist = await _context.Sprints.FirstOrDefaultAsync(s => s.Name == addSprintDto.Name); 
+                if (sprintExist != null)
+                {
+                    return 0;
+                }
                 var sprint = new Sprint
                 {
                     Name = addSprintDto.Name,

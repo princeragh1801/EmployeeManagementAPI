@@ -16,6 +16,5 @@ namespace EmployeeSystem.Contract.Dtos
 
         public List<Tuple<string, int>> ?Filters { get; set; }
 
-        public DateRangeDto ?Sprint { get; set; }
     }
 }
