@@ -426,7 +426,7 @@ namespace EmployeeSystemWebApi.Controllers
 
                     return NotFound(response);
                 }
-                response.Message = "Status updated";
+                response.Message = "Parent updated";
                 return Ok(response);
             }
             catch (Exception ex)

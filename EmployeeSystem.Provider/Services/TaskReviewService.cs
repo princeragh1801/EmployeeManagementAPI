@@ -59,6 +59,7 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                var reviewer = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating new task review model
                 var taskReview = new TaskReview
                 {
@@ -67,15 +68,17 @@ namespace EmployeeSystem.Provider.Services
                     CreatedOn = DateTime.Now,
                     CreatedBy = adminId
                 };
-                var log = new TaskLog
-                {
-                    Message = $"{taskReview.Creator.Name} added a review at {taskReview.CreatedOn}",
-                    TaskId = taskId,
-                };
-                _context.TaskLogs.Add(log);
+                
                 // adding and updating the database info
                 _context.TaskReviews.Add(taskReview);
                 await _context.SaveChangesAsync();
+                
+                var log = new TaskLog
+                {
+                    Message = $"{reviewer.Name} added a review at {taskReview.CreatedOn}",
+                    TaskId = taskId,
+                };
+                _context.TaskLogs.Add(log);
                 return taskReview.TaskID;
             }catch (Exception ex)
             {
@@ -97,9 +100,10 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return false;
                 }
+                var reviewer = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 var log = new TaskLog
                 {
-                    Message = $"{review.Creator.Name} changed review content {review.Content} to {taskReviewDto.Content} at {DateTime.Now}",
+                    Message = $"{reviewer.Name} changed review content {review.Content} to {taskReviewDto.Content} at {DateTime.Now}",
                     TaskId = review.TaskID,
                 };
                 _context.TaskLogs.Add(log);
