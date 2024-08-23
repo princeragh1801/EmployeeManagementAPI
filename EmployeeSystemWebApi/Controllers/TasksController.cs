@@ -5,6 +5,7 @@ using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -74,6 +75,32 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [HttpGet("sprint/{sprintId}")]
+        public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetSprintTasks(int sprintId)
+        {
+            try
+            {
+
+                var tasks = await _taskService.GetSprintTask(sprintId);
+                var response = new ApiResponse<List<TasksDto>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Task fetched",
+                    Data = tasks
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<TasksDto>?>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                });
+            }
+        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<TaskInfo>>> GetTaskById(int id)
@@ -81,7 +108,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
                 var task = await _taskService.GetById(userId, id);
                 var response = new ApiResponse<TaskInfo>
                 {
@@ -143,6 +170,11 @@ namespace EmployeeSystemWebApi.Controllers
                     response.Message = "User with assigned to id is not exist";
                     response.Status = 404;
                     return NotFound(response);
+                }else if(id == -4)
+                {
+                    response.Message = "Invalid parent";
+                    response.Status = 422;
+                    return UnprocessableEntity(response);
                 }
 
                 return Ok(response);
@@ -202,7 +234,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
                 var deleted = await _taskService.Delete(userId, id);
                 var response = new ApiResponse<bool>
@@ -247,7 +279,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
                 var task = await _taskService.Update(userId, id, taskDto);
                 var response = new ApiResponse<TasksDto>
@@ -295,7 +327,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpGet("task{parentId}/childs")]
+        [HttpGet("task{parentId}/children")]
         public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetEpicTasks(int parentId)
         {
             try
@@ -323,7 +355,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
                 var updated = await _taskService.UpdateTaskSprint(sprintId, taskId);
                 var response = new ApiResponse<bool>
@@ -354,5 +386,54 @@ namespace EmployeeSystemWebApi.Controllers
                 });
             }
         }
+
+        [HttpPut("update-status/{taskId}")]
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskStatus(int taskId, TasksStatus status)
+        {
+            try
+            {
+                var updateStatus = await _taskService.UpdateTaskStatus(taskId, status);
+                var response = new ApiResponse<bool>();
+                response.Data = updateStatus;
+                if (!updateStatus)
+                {
+                    response.Message = "Task not found";
+                    response.Status = 404;
+
+                    return NotFound();
+                }
+                response.Message = "Status updated";
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("link-parent/{taskId}")]
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateParent(int taskId, int parentId)
+        {
+            try
+            {
+                var updateParent = await _taskService.UpdateTaskParent(taskId, parentId);
+                var response = new ApiResponse<bool>();
+                response.Data = updateParent;
+                if (!updateParent)
+                {
+                    response.Message = "Not valid assign";
+                    response.Status = 404;
+
+                    return NotFound(response);
+                }
+                response.Message = "Status updated";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
     }
 }

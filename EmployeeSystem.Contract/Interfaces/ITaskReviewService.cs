@@ -24,8 +24,9 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing the ID of the newly created task review.
         /// </returns>
-        public Task<int> Add(int userId, int adminId, AddTaskReviewDto taskReview);
+        public Task<int> Add(int taskId, int adminId, AddTaskReviewDto taskReview);
 
+        public Task<bool?> UpdateReview(int id, int adminId, AddTaskReviewDto taskReviewDto);
     }
 }
  

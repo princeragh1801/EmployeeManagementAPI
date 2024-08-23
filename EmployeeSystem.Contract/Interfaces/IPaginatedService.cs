@@ -44,7 +44,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto paginatedDto);
 
-        public Task<PaginatedItemsDto<List<TasksDto>>> GetProjectTasks(int userId, int projectId, PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<TasksDto>>> GetProjectTasks(int userId, int projectId, ProjectTasksDto paginatedDto);
 
     }
 }

@@ -14,7 +14,6 @@ namespace EmployeeSystem.Contract.Dtos
 
         public string Search {  get; set; } = string.Empty;
 
-        public List<Tuple<string, int>> ?Filters { get; set; }
-
+        public DateRangeDto? DateRange { get; set; }
     }
 }

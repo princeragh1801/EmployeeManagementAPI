@@ -1,6 +1,7 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Info;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -23,6 +24,12 @@ namespace EmployeeSystem.Contract.Interfaces
         /// A task representing the asynchronous operation, containing a list of TasksDto representing the accessible tasks.
         /// </returns>
         public Task<List<TasksDto>> GetEmployeeTask(int employeeId);
+
+        public Task<List<TasksDto>> GetSprintTask(int sprintId);
+
+        public Task<bool> UpdateTaskStatus(int id, TasksStatus status);
+
+        public Task<bool> UpdateTaskParent(int id, int parentId);
 
         /// <summary>
         /// Retrieves the task object with the specified ID for the given user.

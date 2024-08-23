@@ -55,7 +55,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
 
-        public async Task<int> Add(int userId, int adminId, AddTaskReviewDto taskReviewDto)
+        public async Task<int> Add(int taskId, int adminId, AddTaskReviewDto taskReviewDto)
         {
             try
             {
@@ -63,9 +63,9 @@ namespace EmployeeSystem.Provider.Services
                 var taskReview = new TaskReview
                 {
                     Content = taskReviewDto.Content,
-                    TaskID = taskReviewDto.TaskID,
+                    TaskID = taskId,
                     CreatedOn = DateTime.Now,
-                    CreatedBy = userId
+                    CreatedBy = adminId
                 };
 
                 // adding and updating the database info
@@ -73,6 +73,30 @@ namespace EmployeeSystem.Provider.Services
                 await _context.SaveChangesAsync();
                 return taskReview.TaskID;
             }catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<bool?> UpdateReview(int id, int adminId, AddTaskReviewDto taskReviewDto)
+        {
+            try
+            {
+                var review = await _context.TaskReviews.FirstOrDefaultAsync(r => r.Id == id);
+
+                if(review == null)
+                {
+                    return null;
+                }
+                if(review.CreatedBy != adminId)
+                {
+                    return false;
+                }
+                review.Content = taskReviewDto.Content;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

@@ -20,6 +20,7 @@ namespace EmployeeSystem.Provider
         public DbSet<ProjectEmployee> ProjectEmployees { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<Sprint> Sprints { get; set; }
+        public DbSet<TaskLog> TaskLogs { get; set; }
         /*public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             foreach (var entry in ChangeTracker.Entries<BaseEntity>())

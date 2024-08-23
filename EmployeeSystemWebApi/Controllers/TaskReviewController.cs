@@ -43,16 +43,14 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ApiResponse<int>>> AddNewReview(AddTaskReviewDto taskReviewDto)
+        [HttpPost("{taskId}")]
+        public async Task<ActionResult<ApiResponse<int>>> AddNewReview(int taskId, AddTaskReviewDto taskReviewDto)
         {
             try
             {
-                // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "Id").Value);
                 var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
-                var id =  await _taskReviewService.Add(userId, adminId, taskReviewDto);
+                var id =  await _taskReviewService.Add( taskId, adminId, taskReviewDto);
                 var response = new ApiResponse<int>
                 {
                     Success = true,
@@ -63,6 +61,46 @@ namespace EmployeeSystemWebApi.Controllers
                 
                 return Ok(response);
             }catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<int>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message
+                });
+            }
+        }
+        [HttpPut("{taskId}")]
+        public async Task<ActionResult<ApiResponse<bool?>>> UpdateReview(int taskId, AddTaskReviewDto taskReviewDto)
+        {
+            try
+            {
+                var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
+
+                var updated = await _taskReviewService.UpdateReview(taskId, adminId, taskReviewDto);
+                var response = new ApiResponse<bool?>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Review added",
+                    Data = updated
+                };
+                if (updated == null)
+                {
+                    response.Message = "Review not found";
+                    response.Status = 404;
+                    return NotFound(response);
+                }
+                else if (updated == false)
+                {
+                    response.Message = "Unauthorized user to update the review";
+                    response.Status = 401;
+                    return Unauthorized(response);
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new ApiResponse<int>
                 {
