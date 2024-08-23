@@ -67,7 +67,12 @@ namespace EmployeeSystem.Provider.Services
                     CreatedOn = DateTime.Now,
                     CreatedBy = adminId
                 };
-
+                var log = new TaskLog
+                {
+                    Message = $"{taskReview.Creator.Name} added a review at {taskReview.CreatedOn}",
+                    TaskId = taskId,
+                };
+                _context.TaskLogs.Add(log);
                 // adding and updating the database info
                 _context.TaskReviews.Add(taskReview);
                 await _context.SaveChangesAsync();
@@ -92,7 +97,15 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return false;
                 }
+                var log = new TaskLog
+                {
+                    Message = $"{review.Creator.Name} changed review content {review.Content} to {taskReviewDto.Content} at {DateTime.Now}",
+                    TaskId = review.TaskID,
+                };
+                _context.TaskLogs.Add(log);
+
                 review.Content = taskReviewDto.Content;
+                
                 await _context.SaveChangesAsync();
                 return true;
             }

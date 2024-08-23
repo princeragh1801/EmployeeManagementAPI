@@ -1,6 +1,7 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Models;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
@@ -91,5 +92,7 @@ namespace EmployeeSystem.Contract.Interfaces
         public Task<List<TasksDto>> GetChilds(int id);
 
         public Task<bool> UpdateTaskSprint(int sprintId, int taskId);
+
+        public Task<List<TaskLog>> GetLogs(int taskId);
     }
 }

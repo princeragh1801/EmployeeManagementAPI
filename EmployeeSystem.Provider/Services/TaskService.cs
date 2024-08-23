@@ -801,5 +801,17 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+        public async Task<List<TaskLog>> GetLogs(int taskId)
+        {
+            try
+            {
+               var logs = await _context.TaskLogs.Where(t => t.TaskId == taskId).ToListAsync();
+                return logs;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }

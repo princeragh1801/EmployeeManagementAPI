@@ -2,6 +2,7 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
+using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -434,6 +435,20 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-
+        [HttpGet("logs/{taskId}")]
+        public async Task<ActionResult<ApiResponse<List<TaskLog>>>> GetLogs(int taskId)
+        {
+            try
+            {
+                var logs = await _taskService.GetLogs(taskId);
+                var response = new ApiResponse<List<TaskLog>>();
+                response.Data = logs;
+                response.Message = "Task logs fetched";
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
