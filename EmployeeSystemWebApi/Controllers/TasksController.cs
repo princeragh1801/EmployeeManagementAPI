@@ -275,7 +275,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<TasksDto>>> UpdateTaskStatus(int id, AddTaskDto taskDto)
+        public async Task<ActionResult<ApiResponse<TasksDto>>> UpdateTask(int id, UpdateTaskDto taskDto)
         {
             try
             {
@@ -287,7 +287,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     Success = true,
                     Status = 200,
-                    Message = "Task status updated",
+                    Message = "Task details updated",
                     Data = task
                 };
                 if (task == null)
@@ -436,12 +436,12 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpGet("logs/{taskId}")]
-        public async Task<ActionResult<ApiResponse<List<TaskLog>>>> GetLogs(int taskId)
+        public async Task<ActionResult<ApiResponse<List<LogDto>>>> GetLogs(int taskId)
         {
             try
             {
                 var logs = await _taskService.GetLogs(taskId);
-                var response = new ApiResponse<List<TaskLog>>();
+                var response = new ApiResponse<List<LogDto>>();
                 response.Data = logs;
                 response.Message = "Task logs fetched";
                 return Ok(response);

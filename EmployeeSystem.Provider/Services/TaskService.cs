@@ -21,6 +21,27 @@ namespace EmployeeSystem.Provider.Services
             _reviewService = taskReviewService;
         }
 
+        private bool CheckValidParent(TaskType parent, TaskType child)
+        {
+            if (parent == TaskType.Epic && child != TaskType.Feature)
+            {
+                return false;
+            }
+            else if (parent == TaskType.Feature && child != TaskType.Userstory)
+            {
+                return false;
+            }
+            else if (parent == TaskType.Userstory && (child != TaskType.Task && child != TaskType.Bug))
+            {
+                return false;
+            }
+            else if (parent == TaskType.Task || parent == TaskType.Bug)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public IQueryable<Tasks> GetTasksInfo(int userId)
         {
             // fetching the user details
@@ -191,7 +212,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<TasksDto?> Update(int userId, int id, AddTaskDto taskDto)
+        public async Task<TasksDto?> Update(int userId, int id, UpdateTaskDto taskDto)
         {
             try
             {
@@ -207,17 +228,92 @@ namespace EmployeeSystem.Provider.Services
                 }
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
                 int assignedToId = taskDto.AssignedTo ?? 0;
+                
                 if (assignedToId != 0)
                 {
-                    task.AssignedTo = assignedToId;
+                    var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
+                    if(assignedUser != null)
+                    {
+                        task.AssignedTo = assignedToId;
+                        var assinedTolog = new TaskLog
+                        {
+                            Message = $"Task Assigned to {assignedUser.Name} by {user.Name}, on {task.UpdatedOn}",
+                            Id = task.Id,
+                        };
+
+                        _context.TaskLogs.Add(assinedTolog);
+                    }
                 }
                 // updating the status
-                task.Description = taskDto.Description;
-                task.Name = taskDto.Name;
-                task.Status = taskDto.Status;
+
+                if (!string.IsNullOrEmpty(taskDto.Description))
+                {
+                    task.Description = taskDto.Description;
+                    var log = new TaskLog
+                    {
+                        Message = $"Task description changed by {user.Name} at {DateTime.Now}",
+                        TaskId = id,
+                    };
+                    _context.TaskLogs.Add(log);
+                }
+
+                if (!string.IsNullOrEmpty(taskDto.Name))
+                {
+                    var log = new TaskLog
+                    {
+                        Message = $"Task Name changed by {user.Name} - {task.Name} to {taskDto.Name} at {DateTime.Now}",
+                        TaskId = id,
+                    };
+                    _context.TaskLogs.Add(log);
+                    task.Name = taskDto.Name;
+                }
+
+                if (taskDto.Status != null)
+                {
+                    var status = taskDto.Status??TasksStatus.Pending;
+                    var log = new TaskLog
+                    {
+                        Message = $"Task Status changed by {user.Name} - {task.Status} to {taskDto.Status} at {DateTime.Now}",
+                        TaskId = id,
+                    };
+                    _context.TaskLogs.Add(log);
+                    task.Status = status;
+                }
+
+                if(taskDto.TaskType != null)
+                {
+                    var log = new TaskLog
+                    {
+                        Message = $"Task Type changed by {user.Name} - {task.TaskType} to {taskDto.TaskType} at {DateTime.Now}",
+                        TaskId = id,
+                    };
+                    _context.TaskLogs.Add(log);
+                    task.TaskType = taskDto.TaskType??TaskType.Epic;
+                }
+
+                if(taskDto.ParentId != null)
+                {
+                    var parent = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskDto.ParentId);
+                    
+                    var checkValidParent = CheckValidParent(parent.TaskType, task.TaskType);
+
+                    if (!checkValidParent)
+                    {
+                        return null;
+                    }
+                    
+                    var log = new TaskLog
+                    {
+                        Message = $"Task Parent changed by {user.Name} New parent - {parent.Name} at {DateTime.Now}",
+                        TaskId = id,
+                    };
+                    _context.TaskLogs.Add(log);
+                    task.ParentId = taskDto.ParentId;
+                }
                 task.UpdatedOn = DateTime.Now;
                 task.UpdatedBy = userId;
                 await _context.SaveChangesAsync();
+
                 var taskDetails = new TasksDto
                 {
                     Id = task.Id,
@@ -230,15 +326,6 @@ namespace EmployeeSystem.Provider.Services
                     CreatedOn = task.CreatedOn,
                 };
 
-                var log = new TaskLog
-                {
-                    Message = $"Task Details updated by {task.Updator.Name}, on {task.UpdatedOn}",
-                    Id = task.Id,
-                };
-
-                _context.TaskLogs.Add(log);
-                await _context.SaveChangesAsync();
-
                 return taskDetails;
             }
             catch (Exception ex)
@@ -246,6 +333,7 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+        
 
         public async Task<int> Add(int adminId, AddTaskDto taskDto)
         {
@@ -384,19 +472,8 @@ namespace EmployeeSystem.Provider.Services
                     if (parentId != 0)
                     {
                         var parent = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == parentId);
-                        if (parent.TaskType == TaskType.Epic && taskDto.TaskType != TaskType.Feature)
-                        {
-                            return false;
-                        }
-                        else if (parent.TaskType == TaskType.Feature && taskDto.TaskType != TaskType.Userstory)
-                        {
-                            return false;
-                        }
-                        else if (parent.TaskType == TaskType.Userstory && (taskDto.TaskType != TaskType.Task && taskDto.TaskType != TaskType.Bug))
-                        {
-                            return false;
-                        }
-                        else if (parent.TaskType == TaskType.Task || parent.TaskType == TaskType.Bug)
+                        var checkValidParent = CheckValidParent(parent.TaskType, taskDto.TaskType);
+                        if (!checkValidParent)
                         {
                             return false;
                         }
@@ -801,11 +878,16 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<List<TaskLog>> GetLogs(int taskId)
+        public async Task<List<LogDto>> GetLogs(int taskId)
         {
             try
             {
-               var logs = await _context.TaskLogs.Where(t => t.TaskId == taskId).ToListAsync();
+               var logs = await _context.TaskLogs.Where(t => t.TaskId == taskId)
+                    .Select(t => new LogDto
+                    {
+                        Message = t.Message
+                    })
+                    .ToListAsync();
                 return logs;
             }catch(Exception ex)
             {

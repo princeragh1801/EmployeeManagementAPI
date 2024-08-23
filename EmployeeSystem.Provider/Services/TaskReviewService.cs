@@ -71,14 +71,15 @@ namespace EmployeeSystem.Provider.Services
                 
                 // adding and updating the database info
                 _context.TaskReviews.Add(taskReview);
-                await _context.SaveChangesAsync();
-                
                 var log = new TaskLog
                 {
                     Message = $"{reviewer.Name} added a review at {taskReview.CreatedOn}",
                     TaskId = taskId,
                 };
                 _context.TaskLogs.Add(log);
+                await _context.SaveChangesAsync();
+                
+                
                 return taskReview.TaskID;
             }catch (Exception ex)
             {
