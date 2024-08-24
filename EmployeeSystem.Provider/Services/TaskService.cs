@@ -4,9 +4,6 @@ using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
-using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using static EmployeeSystem.Contract.Enums.Enums;
 
@@ -774,7 +771,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
     
-        public async Task<List<TasksDto>> GetChilds(int id)
+        public async Task<List<TasksDto>> GetChildren(int id)
         {
             try
             {

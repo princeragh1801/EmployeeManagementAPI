@@ -71,12 +71,12 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<ActionResult<ApiResponse<int>>> Post(AddSprintDto addSprintDto)
+        [HttpPost("{id=0}")]
+        public async Task<ActionResult<ApiResponse<int>>> Upsert(int id, AddSprintDto addSprintDto)
         {
             try
             {
-                var res = await _sprintService.Add(addSprintDto);
+                var res = await _sprintService.Upsert(id, addSprintDto);
                 var response = new ApiResponse<int>();
                 response.Message = "Sprint added";
                 response.Data = res;

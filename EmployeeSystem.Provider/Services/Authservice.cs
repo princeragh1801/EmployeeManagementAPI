@@ -1,5 +1,4 @@
 ﻿using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;

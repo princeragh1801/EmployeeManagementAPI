@@ -89,7 +89,7 @@ namespace EmployeeSystem.Contract.Interfaces
 
         public Task<List<EpicTaskDto>> GetEpics();
 
-        public Task<List<TasksDto>> GetChilds(int id);
+        public Task<List<TasksDto>> GetChildren(int id);
 
         public Task<bool> UpdateTaskSprint(int sprintId, int taskId);
 

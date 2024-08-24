@@ -334,13 +334,13 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpGet("task{parentId}/children")]
-        public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetEpicTasks(int parentId)
+        public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetChildren(int parentId)
         {
             try
             {
                 var response = new ApiResponse<List<TasksDto>>();
 
-                response.Data = await _taskService.GetChilds(parentId);
+                response.Data = await _taskService.GetChildren(parentId);
                 response.Message = "Childs fetched";
                 return Ok(response);
             }

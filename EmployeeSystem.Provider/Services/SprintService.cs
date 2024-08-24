@@ -15,25 +15,36 @@ namespace EmployeeSystem.Provider.Services
             _context = applicationDbContext;
         }
 
-        public async Task<int> Add(AddSprintDto addSprintDto)
+        public async Task<int> Upsert(int id, AddSprintDto addSprintDto)
         {
             try
             {
-                var sprintExist = await _context.Sprints.FirstOrDefaultAsync(s => s.Name == addSprintDto.Name); 
-                if (sprintExist != null)
+                var sprintToUpdate = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id);
+                if (sprintToUpdate == null)
                 {
-                    return 0;
+                    var sprintExist = await _context.Sprints.FirstOrDefaultAsync(s => s.Name == addSprintDto.Name & s.projectId == addSprintDto.ProjectId);
+                    if (sprintExist != null)
+                    {
+                        return 0;
+                    }
+                    var sprint = new Sprint
+                    {
+                        Name = addSprintDto.Name,
+                        StartDate = addSprintDto.StartDate,
+                        EndDate = addSprintDto.EndDate,
+                        projectId = addSprintDto.ProjectId,
+                    };
+                    _context.Sprints.Add(sprint);
+
+                    await _context.SaveChangesAsync();
+                    return sprint.Id;
                 }
-                var sprint = new Sprint
-                {
-                    Name = addSprintDto.Name,
-                    StartDate = addSprintDto.StartDate,
-                    EndDate = addSprintDto.EndDate,
-                    projectId = addSprintDto.ProjectId,
-                };
-                _context.Sprints.Add(sprint);
+                sprintToUpdate.Name = addSprintDto.Name;
+                sprintToUpdate.StartDate = addSprintDto.StartDate;
+                sprintToUpdate.EndDate = addSprintDto.EndDate;
+                sprintToUpdate.projectId = addSprintDto.ProjectId;
                 await _context.SaveChangesAsync();
-                return sprint.Id;
+                return sprintToUpdate.Id;
             }catch(Exception ex)
             {
                 throw new Exception(ex.Message);
