@@ -6,7 +6,6 @@ using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
 using EmployeeSystem.Provider;
-using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;

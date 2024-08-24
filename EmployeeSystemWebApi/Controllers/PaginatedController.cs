@@ -20,7 +20,7 @@ namespace EmployeeSystemWebApi.Controllers
             _paginatedService = paginatedService;
         }
 
-        [HttpPost("employees")]
+        /*[HttpPost("employees")]
         public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>>> GetEmployees(PaginatedDto<Role?> paginatedDto)
         {
             try
@@ -165,6 +165,6 @@ namespace EmployeeSystemWebApi.Controllers
                 });
             }
         }
-    
+    */
     }
 }
