@@ -350,8 +350,8 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpPost("update-sprint/{sprintId}")]
-        public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskSprint(int sprintId, int taskId)
+        [HttpPost("link-task-sprint/{taskId}")]
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskSprint([FromBody] int sprintId, int taskId)
         {
             try
             {
@@ -389,7 +389,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPut("update-status/{taskId}")]
-        public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskStatus(int taskId, TasksStatus status)
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskStatus(int taskId, [FromBody] TasksStatus status)
         {
             try
             {
@@ -412,7 +412,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPut("link-parent/{taskId}")]
-        public async Task<ActionResult<ApiResponse<bool>>> UpdateParent(int taskId, int parentId)
+        public async Task<ActionResult<ApiResponse<bool>>> UpdateParent(int taskId, [FromBody] int parentId)
         {
             try
             {

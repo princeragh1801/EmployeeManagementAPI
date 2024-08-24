@@ -310,6 +310,28 @@ namespace EmployeeSystem.Provider.Services
                     _context.TaskLogs.Add(log);
                     task.ParentId = taskDto.ParentId;
                 }
+
+                if(taskDto.OriginalEstimateHours != null)
+                {
+                    var log = new TaskLog
+                    {
+                        Message = $"Original Estimate hours set to {taskDto.OriginalEstimateHours} by {user.Name} at {DateTime.Now}",
+                        TaskId = id,
+                    };
+                    _context.TaskLogs.Add(log);
+                    task.OriginalEstimateHours = taskDto.OriginalEstimateHours;
+                }
+                if(taskDto.RemainingEstimateHours != null)
+                {
+                    var log = new TaskLog
+                    {
+                        Message = $"Remaining Estimate hours changed - {task.OriginalEstimateHours} to {taskDto.RemainingEstimateHours} by {user.Name} at {DateTime.Now}",
+                        TaskId = id,
+                    };
+                    _context.TaskLogs.Add(log);
+                    task.RemainingEstimateHours = taskDto.RemainingEstimateHours;
+                }
+
                 task.UpdatedOn = DateTime.Now;
                 task.UpdatedBy = userId;
                 await _context.SaveChangesAsync();
@@ -333,7 +355,6 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-        
 
         public async Task<int> Add(int adminId, AddTaskDto taskDto)
         {
@@ -343,18 +364,8 @@ namespace EmployeeSystem.Provider.Services
                 if (parentId != 0)
                 {
                     var parent = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == parentId);
-                    if (parent.TaskType == TaskType.Epic && taskDto.TaskType != TaskType.Feature)
-                    {
-                        return -4;
-                    }
-                    else if (parent.TaskType == TaskType.Feature && taskDto.TaskType != TaskType.Userstory)
-                    {
-                        return -4;
-                    }
-                    else if (parent.TaskType == TaskType.Userstory && (taskDto.TaskType != TaskType.Task && taskDto.TaskType != TaskType.Bug))
-                    {
-                        return -4;
-                    }else if(parent.TaskType == TaskType.Task || parent.TaskType == TaskType.Bug)
+                    var checkValidParent = CheckValidParent(parent.TaskType, taskDto.TaskType);
+                    if (!checkValidParent)
                     {
                         return -4;
                     }
@@ -373,6 +384,8 @@ namespace EmployeeSystem.Provider.Services
                         TaskType = taskDto.TaskType,
                         SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
                         ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
+                        OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                        RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
                         ProjectId = taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
@@ -438,6 +451,8 @@ namespace EmployeeSystem.Provider.Services
                     ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                     ProjectId = taskDto.ProjectId,
                     SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
+                    OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                    RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
                     CreatedBy = adminId,
                     CreatedOn = DateTime.Now,
                 };
@@ -494,6 +509,8 @@ namespace EmployeeSystem.Provider.Services
                             ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                             ProjectId = taskDto.ProjectId,
                             SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
+                            OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                            RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
                             CreatedBy = adminId,
                             CreatedOn = DateTime.Now,
                         };
@@ -555,6 +572,8 @@ namespace EmployeeSystem.Provider.Services
                         Status = taskDto.Status,
                         SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
                         ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
+                        OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                        RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
                         ProjectId = taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
@@ -580,7 +599,6 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-
 
         // check for assigner details
         public async Task<bool?> Delete(int userId, int id)

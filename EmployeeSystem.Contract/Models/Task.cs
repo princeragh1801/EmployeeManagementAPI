@@ -23,6 +23,10 @@ namespace EmployeeSystem.Contract.Models
 
         public int? SprintId { get; set; }
 
+        public int? OriginalEstimateHours { get; set; }
+
+        public int? RemainingEstimateHours { get; set; }
+
         [ForeignKey(nameof(SprintId))]
         public Sprint ?Sprint { get; set; }
 

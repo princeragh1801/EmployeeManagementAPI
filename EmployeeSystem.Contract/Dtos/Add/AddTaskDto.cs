@@ -20,9 +20,8 @@ namespace EmployeeSystem.Contract.Dtos.Add
         public TaskType TaskType { get; set; }
 
         public int ?ParentId { get; set; }
-        /*[Required(ErrorMessage = "Id of Assigner is required")]
-        [Range(1, Int32.MaxValue)]
-        public int AssignedBy { get; set; }*/
+        
+        public int? OriginalEstimateHours { get; set; }
 
         public int ProjectId { get; set; }
         public int? SprintId { get; set; } = null;

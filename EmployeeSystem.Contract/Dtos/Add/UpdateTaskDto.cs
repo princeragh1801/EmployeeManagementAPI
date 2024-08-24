@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Dtos.Add
@@ -19,6 +14,10 @@ namespace EmployeeSystem.Contract.Dtos.Add
         public TaskType? TaskType { get; set; }
 
         public int? ParentId { get; set; }
+
+        public int? OriginalEstimateHours { get; set; }
+
+        public int? RemainingEstimateHours { get; set; }
 
         public int? SprintId { get; set; } = null;
         [Required]
