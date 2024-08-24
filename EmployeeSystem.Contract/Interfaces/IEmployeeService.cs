@@ -2,11 +2,14 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IEmployeeService
     {
+        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(int userId, PaginatedDto<Role?> paginatedDto);
         /// <summary>
         /// Retrieves a list of employees present in the system based on the user's accessibility.
         /// </summary>

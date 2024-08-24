@@ -2,10 +2,13 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
+using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -18,6 +21,34 @@ namespace EmployeeSystemWebApi.Controllers
         public EmployeeController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
+        }
+        [HttpPost("pagination")]
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>>> GetEmployees(PaginatedDto<Role?> paginatedDto)
+        {
+            try
+            {
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var employees = await _employeeService.Get(userId, paginatedDto);
+
+                var response = new ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Employees details fetched",
+                    Data = employees
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<EmployeePaginationInfo>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
         }
 
         [HttpGet]

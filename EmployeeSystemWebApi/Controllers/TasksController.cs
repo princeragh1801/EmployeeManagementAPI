@@ -1,10 +1,12 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
 using EmployeeSystem.Provider;
+using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +28,36 @@ namespace EmployeeSystemWebApi.Controllers
             _context = applicationDbContext;
             _taskLogService = taskLogService;   
         }
+
+        [HttpPost("pagination/{projectId}")]
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<TasksDto>>>>> GetProjectTasks(int projectId, ProjectTasksDto paginatedDto)
+        {
+            try
+            {
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var tasks = await _taskService.Get(userId, projectId, paginatedDto);
+
+                var response = new ApiResponse<PaginatedItemsDto<List<TasksDto>>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Tasks fetched",
+                    Data = tasks
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<TasksDto>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+        }
+
 
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetAllTasks()

@@ -1,9 +1,12 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
+using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -17,6 +20,34 @@ namespace EmployeeSystemWebApi.Controllers
         public DepartmentController(IDepartmentService departmentService)
         {
             _departmentService = departmentService;
+        }
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpPost("pagination")]
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>>> GetDepartments(PaginatedDto<Role?> paginatedDto)
+        {
+            try
+            {
+                var departments = await _departmentService.Get(paginatedDto);
+
+                var response = new ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Departments fetched",
+                    Data = departments
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<DepartmentPaginationInfo>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
         }
 
 

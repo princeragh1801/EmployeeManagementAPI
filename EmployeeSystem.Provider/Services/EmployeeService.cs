@@ -2,6 +2,7 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace EmployeeSystem.Provider.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
-        public EmployeeService(ApplicationDbContext applicationDbContext, IEmailService emailService)
+        private readonly IUtilityService _utilityService;
+        public EmployeeService(ApplicationDbContext applicationDbContext, IEmailService emailService, IUtilityService utilityService)
         {
             _context = applicationDbContext;
             _emailService = emailService;
+            _utilityService = utilityService;
         }
 
         public async Task<bool> CheckManagerAndEmployeeDepartment(int ?ManagerId, int? DepartmentId)
@@ -67,6 +70,87 @@ namespace EmployeeSystem.Provider.Services
             return user != null;
         }
 
+        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(int userId, PaginatedDto<Role?> paginatedDto)
+        {
+            try
+            {
+                var orderKey = paginatedDto.OrderKey ?? "Id";
+                var search = paginatedDto.Search;
+                var orderBy = paginatedDto.SortedOrder;
+                var role = paginatedDto.Status;
+                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
+
+                // including the details of the employee in query
+                var query = _context.Employees
+                    .Include(e => e.Manager)
+                    .Include(m => m.Department)
+                    .Where(e => e.IsActive);
+
+                if (user.Role != Role.SuperAdmin)
+                {
+                    query = query.Where(e => e.ManagerID != null && e.ManagerID == userId);
+                }
+
+                var range = paginatedDto.DateRange;
+
+                // range filter
+                if (range != null)
+                {
+                    var startDate = range.StartDate;
+                    var endDate = range.EndDate;
+
+                    query = query.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
+                }
+
+                if (role != null)
+                {
+                    query = query.Where(e => e.Role == role);
+                }
+                // applying search filter on that
+                if (!string.IsNullOrEmpty(search))
+                {
+                    query = query.Where(e => e.Name.Contains(search) || e.Department.Name.Contains(search) || e.Manager.Name.Contains(search) || e.Phone.Contains(search));
+                }
+
+                query = orderBy == SortedOrder.NoOrder ? query : _utilityService.GetOrdered<Employee>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+
+                // calculating the total count and pages
+                var totalCount = query.Count();
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
+
+                // now extrating employees of the page-[x]
+                var employees = await query.
+                    Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
+                    .Take(paginatedDto.PagedItemsCount)
+                    .Select(e => new EmployeePaginationInfo
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        Salary = e.Salary,
+                        Role = e.Role,
+                        ManagerName = e.Manager.Name,
+                        DepartmentName = e.Department.Name,
+                        Email = e.Email,
+                        CreatedOn = e.CreatedOn,
+                    }).ToListAsync();
+
+                // creating new dto to send the info
+                PaginatedItemsDto<List<EmployeePaginationInfo>> res = new PaginatedItemsDto<List<EmployeePaginationInfo>>();
+
+                res.Data = employees;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
         // get all employees
         public async Task<List<EmployeeDto>?> GetAll(int userId)

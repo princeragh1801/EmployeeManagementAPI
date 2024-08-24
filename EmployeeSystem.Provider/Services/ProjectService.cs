@@ -1,6 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
-using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -11,11 +10,131 @@ namespace EmployeeSystem.Provider.Services
     public class ProjectService : IProjectService
     {
         private readonly ApplicationDbContext _context;
-
-        public ProjectService(ApplicationDbContext applicationDbContext)
+        private readonly IUtilityService _utilityService;
+        public ProjectService(ApplicationDbContext applicationDbContext, IUtilityService utilityService)
         {
             _context = applicationDbContext;
+            _utilityService = utilityService;
         }
+
+        public async Task<PaginatedItemsDto<List<ProjectDto>>> Get(int userId, PaginatedDto<ProjectStatus?> paginatedDto)
+        {
+            try
+            {
+
+                // only selecting which is active
+                var query = _context.Projects.Include(p => p.Creator).Where(d => d.IsActive);
+
+                var orderKey = paginatedDto.OrderKey ?? "Id";
+                var search = paginatedDto.Search;
+                var orderBy = paginatedDto.SortedOrder;
+                var range = paginatedDto.DateRange;
+
+                // range filter
+                if (range != null)
+                {
+                    var startDate = range.StartDate;
+                    var endDate = range.EndDate;
+
+                    query = query.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
+                }
+
+                var status = paginatedDto.Status;
+                if (status != null)
+                {
+                    query = query.Where(t => t.Status == status);
+                }
+                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
+
+                // role specific
+                if (user.Role != Role.SuperAdmin)
+                {
+                    var userQuery = _context.ProjectEmployees
+                        .Include(p => p.Employee).Include(p => p.Project)
+                        .Where(p => p.Project.IsActive && (p.EmployeeId == userId || p.Employee.ManagerID == userId))
+                        .Distinct();
+
+
+                    if (!string.IsNullOrEmpty(search))
+                    {
+                        userQuery = userQuery.Where(pe => pe.Project.Name.Contains(search));
+                    }
+
+                    userQuery = orderBy == SortedOrder.NoOrder ? userQuery : _utilityService.GetOrdered<ProjectEmployee>(userQuery, orderKey, (orderBy == SortedOrder.Ascending) ? true : false);
+
+                    // calculating the total count and pages
+                    var totalCnt = userQuery.Count();
+                    var totalPage = totalCnt / paginatedDto.PagedItemsCount;
+                    if (totalCnt % paginatedDto.PagedItemsCount != 0)
+                    {
+                        totalPage++;
+                    }
+
+                    // now extrating projects of the page-[x]
+                    var userProjects = await userQuery
+                        .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
+                        .Take(paginatedDto.PagedItemsCount)
+                        .Select(e => new ProjectDto
+                        {
+                            Id = e.Project.Id,
+                            Name = e.Project.Name,
+                            Description = e.Project.Description,
+                            CreatedBy = e.Project.Creator.Name,
+                            CreatedOn = e.Project.CreatedOn,
+                        }).ToListAsync();
+
+                    // creating new dto to send the info
+                    PaginatedItemsDto<List<ProjectDto>> resp = new PaginatedItemsDto<List<ProjectDto>>();
+
+                    resp.Data = userProjects;
+                    resp.TotalPages = totalPage;
+                    resp.TotalItems = totalCnt;
+                    return resp;
+                }
+                // applying search filter on that
+                if (!string.IsNullOrEmpty(search))
+                {
+                    query = query.Where(d => d.Name.Contains(search));
+                }
+
+                // now getting the order wise details
+                query = orderBy == SortedOrder.NoOrder ? query : _utilityService.GetOrdered<Project>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+
+                // calculating the total count and pages
+                var totalCount = query.Count();
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
+
+                // now extrating projects of the page-[x]
+                var projects = await query
+                    .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
+                    .Take(paginatedDto.PagedItemsCount)
+                    .Select(e => new ProjectDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        Description = e.Description,
+                        CreatedBy = e.Creator.Name,
+                        CreatedOn = e.CreatedOn,
+                    }).ToListAsync();
+
+                // creating new dto to send the info
+                PaginatedItemsDto<List<ProjectDto>> res = new PaginatedItemsDto<List<ProjectDto>>();
+
+                res.Data = projects;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
 
         public async Task<List<ProjectDto>> GetAll(int id)
         {
@@ -297,7 +416,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<bool> AddMembers(int projectId, List<int> employeesToAdd)
+        /*public async Task<bool> AddMembers(int projectId, List<int> employeesToAdd)
         {
             try
             {
@@ -333,7 +452,8 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-
+*/
+        
         public async Task<bool> DeleteById(int id)
         {
             try
@@ -359,7 +479,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<List<EmployeeIdAndName>> GetProjectEmployees(int projectId)
+        /*public async Task<List<EmployeeIdAndName>> GetProjectEmployees(int projectId)
         {
             try
             {
@@ -380,5 +500,6 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+    */
     }
 }

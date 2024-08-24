@@ -3,6 +3,7 @@ using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
+using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static EmployeeSystem.Contract.Enums.Enums;
@@ -21,6 +22,36 @@ namespace EmployeeSystemWebApi.Controllers
         {
             _projectService = projectService;
         }
+
+        [HttpPost("pagination")]
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<ProjectDto>>>>> GetProjects(PaginatedDto<ProjectStatus?> paginatedDto)
+        {
+            try
+            {
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var projects = await _projectService.Get(userId, paginatedDto);
+
+                var response = new ApiResponse<PaginatedItemsDto<List<ProjectDto>>>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Projects fetched",
+                    Data = projects
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<List<ProjectDto>>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+        }
+
 
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<ProjectDto>>>> GetAll()
@@ -185,7 +216,7 @@ namespace EmployeeSystemWebApi.Controllers
 
         }
 
-        [HttpPost("addmembers{projectId}")]
+        /*[HttpPost("addmembers{projectId}")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<ApiResponse<bool>>> AddMembers(int projectId, List<int> employeesToAdd)
         {
@@ -204,10 +235,10 @@ namespace EmployeeSystemWebApi.Controllers
                     Data = true
                 };
 
-                /*if (id == 0)
+                *//*if (id == 0)
                 {
                     response.Message = "Unauthorized request";
-                }*/
+                }*//*
 
                 return Ok(response);
             }
@@ -253,7 +284,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
 
         }
-
+*/
 
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
@@ -332,7 +363,7 @@ namespace EmployeeSystemWebApi.Controllers
 
         }
 
-        [HttpGet("projectEmployees{projectId}")]
+        /*[HttpGet("projectEmployees{projectId}")]
         public async Task<ActionResult<ApiResponse<List<EmployeeIdAndName>>>> GetProjectEmployees(int projectId)
         {
             try
@@ -359,5 +390,7 @@ namespace EmployeeSystemWebApi.Controllers
                 return BadRequest(response);
             }
         }
+    */
+    
     }
 }

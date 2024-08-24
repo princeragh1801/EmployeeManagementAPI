@@ -1,12 +1,12 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
-using EmployeeSystem.Contract.Dtos.IdAndName;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IProjectService
     {
+        public Task<PaginatedItemsDto<List<ProjectDto>>> Get(int userId, PaginatedDto<ProjectStatus?> paginatedDto);
         /// <summary>
         /// Retrieves a list of projects present in the system based on accessibility.
         /// </summary>
@@ -54,9 +54,9 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<int> Add(int adminId, AddProjectDto project);
 
-        public Task<bool> AddMembers(int projectId, List<int> employeesToAdd);
+        /*public Task<bool> AddMembers(int projectId, List<int> employeesToAdd);
 
-        public Task<bool> DeleteMembers(int projectId, List<int> employeesToAdd);
+        public Task<bool> DeleteMembers(int projectId, List<int> employeesToAdd);*/
         /// <summary>
         /// Update project to the system and returns the ID of the updated project.
         /// This operation can only be performed by users with the super-admin role.
@@ -78,6 +78,6 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<bool> DeleteById(int id);
 
-        public Task<List<EmployeeIdAndName>> GetProjectEmployees(int projectId);
+        //public Task<List<EmployeeIdAndName>> GetProjectEmployees(int projectId);
     }
 }

@@ -2,6 +2,7 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,12 @@ namespace EmployeeSystem.Provider.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ITaskReviewService _reviewService;
-
-        public TaskService(ApplicationDbContext context, ITaskReviewService taskReviewService)
+        private readonly IUtilityService _utilityService;
+        public TaskService(ApplicationDbContext context, ITaskReviewService taskReviewService, IUtilityService utilityService)
         {
             _context = context;
             _reviewService = taskReviewService;
+            _utilityService = utilityService;
         }
 
         private bool CheckValidParent(TaskType parent, TaskType child)
@@ -75,6 +77,129 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<PaginatedItemsDto<List<TasksDto>>> Get(int userId, int projectId, ProjectTasksDto paginatedDto)
+        {
+            try
+            {
+                bool filter = false;
+                var tasksList = _context.Tasks.Where(t => t.ProjectId == projectId & t.IsActive);
+
+                var range = paginatedDto.DateRange;
+
+                // range filter
+                if (range != null)
+                {
+                    var startDate = range.StartDate;
+                    var endDate = range.EndDate;
+
+                    tasksList = tasksList.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
+                }
+
+                var sprint = paginatedDto.SprintId;
+
+                // sprint filter
+                if (sprint != null && sprint > 0)
+                {
+                    tasksList = tasksList.Where(t => t.SprintId == sprint);
+                }
+
+                var types = paginatedDto.Types;
+
+                // types filter
+                if (types != null && types.Count() > 0)
+                {
+                    filter = true;
+                    tasksList = tasksList.Where(t => types.Contains(t.TaskType));
+
+                }
+
+                var status = paginatedDto.Status;
+
+                // status filter
+                if (status != null && status.Count() > 0)
+                {
+                    tasksList = tasksList.Where(t => status.Contains(t.Status));
+                }
+
+                var assignedTo = paginatedDto.AssignedTo;
+
+                // assigned to filter
+                if (assignedTo != null && assignedTo.Count() > 0)
+                {
+                    tasksList = tasksList.Where(t => t.AssignedTo != null && assignedTo.Contains(t.AssignedTo ?? 0));
+                }
+
+                var assign = paginatedDto.Assign;
+
+                // assigned filter
+                if (assign != null)
+                {
+                    tasksList = tasksList.Where(t => ((assign == true) ? (t.AssignedTo != null) : (t.AssignedTo == null)));
+                }
+                if (filter == false)
+                {
+                    var epics = tasksList.Where(t => t.TaskType == TaskType.Epic);
+                    var features = tasksList.Where(t => t.TaskType == TaskType.Feature & t.ParentId == null);
+                    var userStories = tasksList.Where(t => t.TaskType == TaskType.Userstory & t.ParentId == null);
+                    var tasks = tasksList.Where(t => t.TaskType == TaskType.Task & t.ParentId == null);
+                    var bugs = tasksList.Where(t => t.TaskType == TaskType.Bug & t.ParentId == null);
+                    epics.Concat(features).Concat(userStories).Concat(tasks).Concat(bugs);
+                    tasksList = epics;
+                }
+
+
+                var orderKey = paginatedDto.OrderKey ?? "Id";
+                var search = paginatedDto.Search;
+                var orderBy = paginatedDto.SortedOrder;
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    tasksList = tasksList.Where(t => t.Name.Contains(search));
+                }
+
+                tasksList = orderBy == SortedOrder.NoOrder ? tasksList :_utilityService.GetOrdered(tasksList, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+
+                // calculating the total count and pages
+                var totalCount = tasksList.Count();
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
+
+                // now extrating projects of the page-[x]
+                var tasksData = await tasksList
+                    .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
+                    .Take(paginatedDto.PagedItemsCount)
+                    .Select(e => new TasksDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        //Description = e.Description,
+                        CreatedOn = e.CreatedOn,
+                        //ProjectId = e.ProjectId,
+                        TaskType = e.TaskType,
+                        AssigneeName = e.Employee.Name,
+                        //AssignerName = e.Admin.Name,
+                        Status = e.Status,
+
+                    }).ToListAsync();
+
+                // creating new dto to send the info
+                PaginatedItemsDto<List<TasksDto>> res = new PaginatedItemsDto<List<TasksDto>>();
+                res.Data = tasksData;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
 
         public async Task<List<TasksDto>> GetAllTasks(int userId)
         {
@@ -179,7 +304,9 @@ namespace EmployeeSystem.Provider.Services
                         Status = t.Status,
                         Description = t.Description,
                         AssigneeName = t.Employee.Name,
+                        AssignedTo = t.AssignedTo,
                         ProjectId = t.ProjectId,
+                        SprintId = t.SprintId,
                         AssignerName = t.Creator.Name,
                         CreatedOn = t.CreatedOn,
                         TaskType = t.TaskType

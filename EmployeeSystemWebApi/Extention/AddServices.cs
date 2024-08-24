@@ -19,6 +19,8 @@ namespace EmployeeSystemWebApi.Extention
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ISprintService, SprintService>();
             services.AddScoped<ITaskLogService, TaskLogsService>();
+            services.AddScoped<IProjectEmployeeService, ProjectEmployeeService>();
+            services.AddSingleton<IUtilityService, UtilityService>();
             return services;
         }
     }

@@ -1,20 +1,90 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
 using Microsoft.EntityFrameworkCore;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
 {
     public class DepartmentService : IDepartmentService
     {
         private readonly ApplicationDbContext _context;
-
-        public DepartmentService(ApplicationDbContext applicationDbContext)
+        private readonly IUtilityService _utilityService;
+        public DepartmentService(ApplicationDbContext applicationDbContext, IUtilityService utilityService)
         {
             _context = applicationDbContext;
+            _utilityService = utilityService;
         }
+
+        public async Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> Get(PaginatedDto<Role?> paginatedDto)
+        {
+            try
+            {
+                // only selecting which is active
+                var query = _context.Departments.Include(d => d.Creator).Where(d => d.IsActive);
+
+                var orderKey = paginatedDto.OrderKey ?? "Id";
+                var search = paginatedDto.Search;
+                var orderBy = paginatedDto.SortedOrder;
+
+                // applying search filter on that
+                if (!string.IsNullOrEmpty(search))
+                {
+                    query = query.Where(d => d.Name.Contains(search));
+                }
+
+                var range = paginatedDto.DateRange;
+
+                // range filter
+                if (range != null)
+                {
+                    var startDate = range.StartDate;
+                    var endDate = range.EndDate;
+
+                    query = query.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
+                }
+
+                // now getting the order wise details
+                query = orderBy == SortedOrder.NoOrder ? query : _utilityService.GetOrdered<Department>(query, orderKey, orderBy == SortedOrder.Ascending ? true : false);
+
+                // calculating the total count and pages
+                var totalCount = query.Count();
+                var totalPages = totalCount / paginatedDto.PagedItemsCount;
+                if (totalCount % paginatedDto.PagedItemsCount != 0)
+                {
+                    totalPages++;
+                }
+
+                // now extrating departments of the page-[x]
+                var departments = await query
+                    .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
+                    .Take(paginatedDto.PagedItemsCount)
+                    .Select(
+                    d => new DepartmentPaginationInfo
+                    {
+                        Id = d.Id,
+                        Name = d.Name,
+                        CreatedOn = d.CreatedOn,
+                        CreatedBy = d.Creator.Name,
+                    }).ToListAsync();
+
+                // creating new dto to send the info
+                PaginatedItemsDto<List<DepartmentPaginationInfo>> res = new PaginatedItemsDto<List<DepartmentPaginationInfo>>();
+
+                res.Data = departments;
+                res.TotalPages = totalPages;
+                res.TotalItems = totalCount;
+                return res;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
 
         public async Task<ApiResponse<List<DepartmentDto>>> GetAll()
         {
