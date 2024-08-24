@@ -4,7 +4,9 @@ using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
+using EmployeeSystem.Provider;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using static EmployeeSystem.Contract.Enums.Enums;
 
@@ -16,10 +18,13 @@ namespace EmployeeSystemWebApi.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITaskService _taskService;
-
-        public TasksController(ITaskService taskService)
+        private readonly ApplicationDbContext _context;
+        private readonly ITaskLogService _taskLogService;
+        public TasksController(ITaskService taskService, ApplicationDbContext applicationDbContext, ITaskLogService taskLogService)
         {
             _taskService = taskService;
+            _context = applicationDbContext;
+            _taskLogService = taskLogService;   
         }
 
         [HttpGet]
@@ -446,6 +451,95 @@ namespace EmployeeSystemWebApi.Controllers
                 response.Message = "Task logs fetched";
                 return Ok(response);
             }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<ApiResponse<bool>>> PatchUpdate(int id, [FromBody] JsonPatchDocument<UpdateTaskDto> patchDoc)
+        {
+            try
+            {
+                var name = HttpContext.User.Claims.First(e => e.Type == "Name").Value;
+                var response = new ApiResponse<bool>();
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
+                if (patchDoc == null)
+                {
+                    return BadRequest();
+                }
+                var task = await _taskService.GetById(id);
+                if (task == null)
+                {
+                    response.Message = "task not found";
+                    response.Status = 200;
+                    return NotFound(response);
+                }
+
+                var originalValues = _context.Entry(task).CurrentValues.Clone();
+
+                var taskToPatch = new UpdateTaskDto
+                {
+                    Name = task.Name,
+                    Description = task.Description,
+                    AssignedTo = task.AssignedTo,
+                    Status = task.Status,
+                    TaskType = task.TaskType,
+                    SprintId = task.SprintId,
+                    ParentId = task.ParentId,
+                    ProjectId = task.ProjectId,
+                    OriginalEstimateHours = task.OriginalEstimateHours,
+                    RemainingEstimateHours = task.RemainingEstimateHours,
+                };
+                patchDoc.ApplyTo(taskToPatch, ModelState);
+
+                if (!ModelState.IsValid)
+                {
+                    return ValidationProblem(ModelState);
+                }
+
+                task.Name = taskToPatch.Name;
+                task.Description = taskToPatch.Description;
+                task.AssignedTo = taskToPatch.AssignedTo;
+                task.Status = taskToPatch.Status ?? task.Status;
+                task.TaskType = taskToPatch.TaskType ?? task.TaskType;
+                task.SprintId = taskToPatch.SprintId;
+                task.ParentId = taskToPatch.ParentId;
+                task.ProjectId = taskToPatch.ProjectId ?? task.ProjectId;
+                task.OriginalEstimateHours = taskToPatch.OriginalEstimateHours;
+                task.RemainingEstimateHours = taskToPatch.RemainingEstimateHours;
+
+                var changedEntries = new List<string>();
+
+                foreach (var property in _context.Entry(task).Properties)
+                {
+                    var originalValue = originalValues[property.Metadata.Name]?.ToString();
+                    var currentValue = property.CurrentValue?.ToString();
+
+                    if (originalValue != currentValue)
+                    {
+                        changedEntries.Add($"{property.Metadata.Name}: '{originalValue}' -> '{currentValue}'");
+                    }
+                }
+                var count = changedEntries.Count();
+                Console.WriteLine("Changed Entries : " + count);
+                if (changedEntries.Any())
+                {
+                    var log = new TaskLog
+                    {
+                        TaskId = id,
+                        Message = $"Task updated by {name} on {DateTime.Now}. Changes: {string.Join(", ", changedEntries)}"
+                    };
+                    Console.WriteLine(log);
+                    await _taskLogService.Add(log);
+                }
+
+                await _taskService.UpdateTask(task);
+                response.Message = "Updated the task details";
+                response.Data = true;
+                return Ok(response);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

@@ -30,7 +30,7 @@ namespace EmployeeSystem.Provider.Services
             var credential = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, emp.Name),
+                new Claim("Name", emp.Name),
                 new Claim("UserId", emp.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, emp.Role.ToString()),

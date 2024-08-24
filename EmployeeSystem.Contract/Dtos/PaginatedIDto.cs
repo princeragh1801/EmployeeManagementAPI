@@ -2,7 +2,7 @@
 
 namespace EmployeeSystem.Contract.Dtos
 {
-    public class PaginatedDto
+    public class PaginatedDto<T>
     {
         public int PageIndex { get; set; }
 
@@ -15,5 +15,7 @@ namespace EmployeeSystem.Contract.Dtos
         public string Search {  get; set; } = string.Empty;
 
         public DateRangeDto? DateRange { get; set; }
+
+        public T? Status { get; set; }
     }
 }

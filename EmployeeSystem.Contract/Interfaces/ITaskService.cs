@@ -94,5 +94,9 @@ namespace EmployeeSystem.Contract.Interfaces
         public Task<bool> UpdateTaskSprint(int sprintId, int taskId);
 
         public Task<List<LogDto>> GetLogs(int taskId);
+
+        public Task<Tasks?> GetById(int id);
+
+        public Task UpdateTask(Tasks task);
     }
 }

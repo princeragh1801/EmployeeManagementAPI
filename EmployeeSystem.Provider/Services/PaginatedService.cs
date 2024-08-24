@@ -207,16 +207,16 @@ namespace EmployeeSystem.Provider.Services
             return query;
         }
 
-        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto<Role?> paginatedDto)
         {
             try
             {
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
-
+                var role = paginatedDto.Status;
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
-
+                
                 // including the details of the employee in query
                 var query = _context.Employees
                     .Include(e => e.Manager)
@@ -228,6 +228,21 @@ namespace EmployeeSystem.Provider.Services
                     query = query.Where(e => e.ManagerID != null && e.ManagerID == userId );
                 }
 
+                var range = paginatedDto.DateRange;
+
+                // range filter
+                if (range != null)
+                {
+                    var startDate = range.StartDate;
+                    var endDate = range.EndDate;
+
+                    query = query.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
+                }
+
+                if (role != null)
+                {
+                    query = query.Where(e => e.Role == role);
+                }
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -275,7 +290,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> GetDepartments(PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> GetDepartments(PaginatedDto<Role?> paginatedDto)
         {
             try
             {
@@ -290,6 +305,17 @@ namespace EmployeeSystem.Provider.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     query = query.Where(d => d.Name.Contains(search));
+                }
+
+                var range = paginatedDto.DateRange;
+
+                // range filter
+                if (range != null)
+                {
+                    var startDate = range.StartDate;
+                    var endDate = range.EndDate;
+
+                    query = query.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
                 }
 
                 // now getting the order wise details
@@ -330,7 +356,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(int userId, PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects(int userId, PaginatedDto<ProjectStatus?> paginatedDto)
         {
             try
             {
@@ -352,6 +378,11 @@ namespace EmployeeSystem.Provider.Services
                     query = query.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
                 }
 
+                var status = paginatedDto.Status;
+                if(status != null)
+                {
+                    query = query.Where(t => t.Status == status);
+                }
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
 
                 // role specific
@@ -443,7 +474,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto paginatedDto)
+        public async Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto<TasksStatus?> paginatedDto)
         {
             try
             {
@@ -458,7 +489,7 @@ namespace EmployeeSystem.Provider.Services
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
                 var range = paginatedDto.DateRange;
-
+                var status = paginatedDto.Status;
                 // range filter
                 if (range != null)
                 {
@@ -466,6 +497,11 @@ namespace EmployeeSystem.Provider.Services
                     var endDate = range.EndDate;
 
                     query = query.Where(t => t.CreatedOn >= startDate && t.CreatedOn <= endDate);
+                }
+
+                if(status != null)
+                {
+                    query = query.Where(t => t.Status == status);
                 }
 
                 // applying search filter on that

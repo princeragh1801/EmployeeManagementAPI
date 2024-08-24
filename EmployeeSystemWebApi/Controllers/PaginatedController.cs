@@ -4,6 +4,7 @@ using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -20,7 +21,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPost("employees")]
-        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>>> GetEmployees(PaginatedDto paginatedDto)
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>>> GetEmployees(PaginatedDto<Role?> paginatedDto)
         {
             try
             {
@@ -50,7 +51,7 @@ namespace EmployeeSystemWebApi.Controllers
 
         [Authorize(Roles = "SuperAdmin")]
         [HttpPost("departments")]
-        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>>> GetDepartments(PaginatedDto paginatedDto)
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>>> GetDepartments(PaginatedDto<Role?> paginatedDto)
         {
             try
             {
@@ -78,7 +79,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
         
         [HttpPost("projects")]
-        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<ProjectDto>>>>> GetProjects(PaginatedDto paginatedDto)
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<ProjectDto>>>>> GetProjects(PaginatedDto<ProjectStatus?> paginatedDto)
         {
             try
             {
@@ -108,7 +109,7 @@ namespace EmployeeSystemWebApi.Controllers
 
 
         [HttpPost("tasks")]
-        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<TasksDto>>>>> GetTasks(PaginatedDto paginatedDto)
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<TasksDto>>>>> GetTasks(PaginatedDto<TasksStatus?> paginatedDto)
         {
             try
             {

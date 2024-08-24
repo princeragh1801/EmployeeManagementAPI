@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.OpenApi.Models;
 
 namespace EmployeeSystemWebApi.Extention
 {
@@ -33,7 +34,20 @@ namespace EmployeeSystemWebApi.Extention
                         new string[]{}
                     }
                 });
-
+                opt.MapType<JsonPatchDocument>(() => new OpenApiSchema
+                {
+                    Type = "array",
+                    Items = new OpenApiSchema
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, OpenApiSchema>
+                        {
+                            ["op"] = new OpenApiSchema { Type = "string" },
+                            ["path"] = new OpenApiSchema { Type = "string" },
+                            ["value"] = new OpenApiSchema { Type = "object" }
+                        }
+                    }
+                });
             });
             return services;
         }

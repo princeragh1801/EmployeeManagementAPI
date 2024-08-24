@@ -1,10 +1,12 @@
-﻿
-using EmployeeSystem.Contract.Dtos;
+﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using static EmployeeSystem.Contract.Enums.Enums;
 
@@ -912,6 +914,31 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+        
+        public async Task<Tasks?> GetById(int id)
+        {
+            try
+            {
+                var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+                return task;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
+        public async Task UpdateTask(Tasks task)
+        {
+            try
+            {
+                _context.Tasks.Update(task);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

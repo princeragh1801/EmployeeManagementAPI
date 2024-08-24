@@ -7,11 +7,9 @@ using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Dtos.Info.PaginationInfo
 {
-    public class ProjectTasksDto : PaginatedDto
+    public class ProjectTasksDto : PaginatedDto<List<TasksStatus>?>
     {
         public List<TaskType>? Types { get; set; }
-
-        public List<TasksStatus>? Status { get; set; }
 
         public bool? Assign { get; set; }
 

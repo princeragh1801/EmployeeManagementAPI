@@ -15,6 +15,8 @@ namespace EmployeeSystem.Contract.Dtos.Add
 
         public int? ParentId { get; set; }
 
+        public int? ProjectId { get; set; }
+
         public int? OriginalEstimateHours { get; set; }
 
         public int? RemainingEstimateHours { get; set; }

@@ -18,6 +18,7 @@ namespace EmployeeSystemWebApi.Extention
             services.AddScoped<IPaginatedService, PaginatedService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ISprintService, SprintService>();
+            services.AddScoped<ITaskLogService, TaskLogsService>();
             return services;
         }
     }

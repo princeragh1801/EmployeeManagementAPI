@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -13,7 +14,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of EmployeeDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> GetEmployees(int userId, PaginatedDto<Role?> paginatedDto);
 
         /// <summary>
         /// Retrieves a paginated list of departments based on the specified pagination parameters.
@@ -22,7 +23,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of DepartmentDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> GetDepartments(PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> GetDepartments(PaginatedDto<Role?> paginatedDto);
 
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of ProjectDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects( int userId, PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<ProjectDto>>> GetProjects( int userId, PaginatedDto<ProjectStatus?> paginatedDto);
 
 
         /// <summary>
@@ -42,7 +43,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a PaginatedItemsDto with a list of TasksDto.
         /// </returns>
-        public Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto paginatedDto);
+        public Task<PaginatedItemsDto<List<TasksDto>>> GetTasks(int userId, PaginatedDto<TasksStatus?> paginatedDto);
 
         public Task<PaginatedItemsDto<List<TasksDto>>> GetProjectTasks(int userId, int projectId, ProjectTasksDto paginatedDto);
 
