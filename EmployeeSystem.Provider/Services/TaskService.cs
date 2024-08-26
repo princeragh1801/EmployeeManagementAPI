@@ -6,7 +6,6 @@ using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -374,7 +373,7 @@ namespace EmployeeSystem.Provider.Services
                 if (assignedToId != 0)
                 {
                     var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
-                    if(assignedUser != null)
+                    if(assignedUser != null && task.AssignedTo != assignedUser.Id)
                     {
                         task.AssignedTo = assignedToId;
                         var assinedTolog = new TaskLog
@@ -388,7 +387,7 @@ namespace EmployeeSystem.Provider.Services
                 }
                 // updating the status
 
-                if (!string.IsNullOrEmpty(taskDto.Description))
+                if (!string.IsNullOrEmpty(taskDto.Description) && task.Description != taskDto.Description)
                 {
                     task.Description = taskDto.Description;
                     var log = new TaskLog
@@ -399,7 +398,7 @@ namespace EmployeeSystem.Provider.Services
                     _context.TaskLogs.Add(log);
                 }
 
-                if (!string.IsNullOrEmpty(taskDto.Name))
+                if (!string.IsNullOrEmpty(taskDto.Name) && task.Name != taskDto.Name)
                 {
                     var log = new TaskLog
                     {
@@ -410,7 +409,7 @@ namespace EmployeeSystem.Provider.Services
                     task.Name = taskDto.Name;
                 }
 
-                if (taskDto.Status != null)
+                if (taskDto.Status != null && task.Status != taskDto.Status)
                 {
                     var status = taskDto.Status??TasksStatus.Pending;
                     var log = new TaskLog
@@ -422,7 +421,7 @@ namespace EmployeeSystem.Provider.Services
                     task.Status = status;
                 }
 
-                if(taskDto.TaskType != null)
+                if(taskDto.TaskType != null && task.TaskType != taskDto.TaskType)
                 {
                     var log = new TaskLog
                     {
@@ -433,7 +432,7 @@ namespace EmployeeSystem.Provider.Services
                     task.TaskType = taskDto.TaskType??TaskType.Epic;
                 }
 
-                if(taskDto.ParentId != null)
+                if(taskDto.ParentId != null && task.ParentId != taskDto.ParentId)
                 {
                     var parent = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskDto.ParentId);
                     
@@ -453,7 +452,7 @@ namespace EmployeeSystem.Provider.Services
                     task.ParentId = taskDto.ParentId;
                 }
 
-                if(taskDto.OriginalEstimateHours != null)
+                if(taskDto.OriginalEstimateHours != null && task.OriginalEstimateHours != taskDto.OriginalEstimateHours)
                 {
                     var log = new TaskLog
                     {
@@ -463,7 +462,7 @@ namespace EmployeeSystem.Provider.Services
                     _context.TaskLogs.Add(log);
                     task.OriginalEstimateHours = taskDto.OriginalEstimateHours;
                 }
-                if(taskDto.RemainingEstimateHours != null)
+                if(taskDto.RemainingEstimateHours != null && task.RemainingEstimateHours != taskDto.RemainingEstimateHours)
                 {
                     var log = new TaskLog
                     {
@@ -473,7 +472,15 @@ namespace EmployeeSystem.Provider.Services
                     _context.TaskLogs.Add(log);
                     task.RemainingEstimateHours = taskDto.RemainingEstimateHours;
                 }
+                if(taskDto.SprintId != null && task.SprintId != taskDto.SprintId)
+                {
+                    var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == taskDto.SprintId && s.projectId == task.ProjectId);
 
+                    if(sprint != null)
+                    {
+                        task.SprintId = sprint.Id;
+                    }
+                }
                 task.UpdatedOn = DateTime.Now;
                 task.UpdatedBy = userId;
                 await _context.SaveChangesAsync();

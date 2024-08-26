@@ -1,10 +1,6 @@
-﻿using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Response;
+﻿using EmployeeSystem.Contract.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
