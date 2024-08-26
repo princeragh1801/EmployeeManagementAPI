@@ -7,5 +7,6 @@ namespace EmployeeSystem.Contract.Dtos.Info
         public TasksDto Task { get; set; }
         public List<TaskReviewDto> ?Reviews { get; set; }
         public List<TaskIdAndName> ?SubTasks { get; set; }
+        public TaskIdAndName? Parent { get; set; }
     }
 }

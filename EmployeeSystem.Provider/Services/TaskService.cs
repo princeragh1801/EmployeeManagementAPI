@@ -6,6 +6,7 @@ using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -47,7 +48,7 @@ namespace EmployeeSystem.Provider.Services
         {
             // fetching the user details
             var user = _context.Employees.FirstOrDefault(e => e.Id == userId);
-
+                   
             // checking whether the user is superadmin or not and creating the query according to the role
             if (user != null && user.Role != Role.SuperAdmin)
             {
@@ -295,6 +296,7 @@ namespace EmployeeSystem.Provider.Services
                 // filter according to the role
                 var query = GetTasksInfo(userId);
 
+                query.Include(t => t.Parent);
                 // check whether the task belongs to the list, then convert the task into task dto form
                 var task = await query
                     .Select(t => new TasksDto
@@ -324,12 +326,26 @@ namespace EmployeeSystem.Provider.Services
                         TaskType = t.TaskType,
                     }).ToListAsync();
 
+                var parentId = await query.Where(t => t.Id == id).Select(t => t.ParentId).FirstAsync();
+
                 var taskInfo = new TaskInfo
                 {
                     Task = task,
                     Reviews = reviews,
                     SubTasks = subTasks
                 };
+                if (parentId != null)
+                {
+                    var parent = await _context.Tasks.Select(t => new TaskIdAndName
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        TaskType = t.TaskType
+                    }).FirstOrDefaultAsync(t => t.Id == parentId);
+                    taskInfo.Parent = parent;
+                }
+
+                
                 return taskInfo;
             }
             catch (Exception ex)
