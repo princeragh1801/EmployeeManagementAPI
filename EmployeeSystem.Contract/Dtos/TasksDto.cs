@@ -16,7 +16,8 @@ namespace EmployeeSystem.Contract.Dtos
         public string ?AssigneeName { get; set; }
         public int? SprintId { get; set; }
         public DateTime CreatedOn { get; set; }
-        
+        public int? OriginalEstimateHours { get; set; }
+        public int? RemainingEstimateHours { get; set; }
         /*public EmployeeDto? AssignerDetails { get; set; }
         public EmployeeDto? AssigneeDetails { get; set; }
         public ProjectDetailsDto? ProjectDetails { get; set; }

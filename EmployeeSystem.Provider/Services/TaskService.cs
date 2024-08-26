@@ -308,6 +308,8 @@ namespace EmployeeSystem.Provider.Services
                         AssignedTo = t.AssignedTo,
                         ProjectId = t.ProjectId,
                         SprintId = t.SprintId,
+                        OriginalEstimateHours = t.OriginalEstimateHours,
+                        RemainingEstimateHours = t.RemainingEstimateHours,
                         AssignerName = t.Creator.Name,
                         CreatedOn = t.CreatedOn,
                         TaskType = t.TaskType
