@@ -396,6 +396,13 @@ namespace EmployeeSystem.Provider.Services
                     originalEstimateHours = null;
                     remainingEstimateHours = null;
                 }
+                if(originalEstimateHours != null && remainingEstimateHours != null)
+                {
+                    if(remainingEstimateHours > originalEstimateHours)
+                    {
+                        remainingEstimateHours = originalEstimateHours;
+                    }
+                }
 
                 // updating the status
 
@@ -507,6 +514,8 @@ namespace EmployeeSystem.Provider.Services
                     AssigneeName = task.Employee.Name,
                     AssignerName = task.Creator.Name,
                     CreatedOn = task.CreatedOn,
+                    OriginalEstimateHours = task.OriginalEstimateHours,
+                    RemainingEstimateHours = task.RemainingEstimateHours,
                 };
 
                 return taskDetails;
@@ -539,6 +548,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     originalEstimateHours = null;
                 }
+                
                 if (assignedToId == 0)
                 {
                     var taskToAdd = new Tasks
