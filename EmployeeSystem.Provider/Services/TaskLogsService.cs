@@ -1,4 +1,5 @@
-﻿using EmployeeSystem.Contract.Dtos.Info;
+﻿using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -30,16 +31,45 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-        public async Task Add(TaskLog log)
+        public async Task Add(AddTaskLogDto log)
         {
             try
             {
-                _context.TaskLogs.Add(log);
-                Console.WriteLine("Log id : " + log.Id);
+                var logToAdd = new TaskLog
+                {
+                    Message = log.Message,
+                    TaskId = log.TaskId,
+                };
+                _context.TaskLogs.Add(logToAdd);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task AddMany(List<AddTaskLogDto> logs)
+        {
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                await transaction.CreateSavepointAsync("Adding multiple logs");
+                foreach(var log in logs)
+                {
+                    var logToAdd = new TaskLog
+                    {
+                        Message = log.Message,
+                        TaskId = log.TaskId,
+                    };
+                    _context.TaskLogs.Add(logToAdd);
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackToSavepointAsync("Adding multiple logs");
                 throw new Exception(ex.Message);
             }
         }

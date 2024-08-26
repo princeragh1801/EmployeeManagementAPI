@@ -15,11 +15,13 @@ namespace EmployeeSystem.Provider.Services
         private readonly ApplicationDbContext _context;
         private readonly ITaskReviewService _reviewService;
         private readonly IUtilityService _utilityService;
-        public TaskService(ApplicationDbContext context, ITaskReviewService taskReviewService, IUtilityService utilityService)
+        private readonly ITaskLogService _logService;
+        public TaskService(ApplicationDbContext context, ITaskReviewService taskReviewService, IUtilityService utilityService, ITaskLogService logService)
         {
             _context = context;
             _reviewService = taskReviewService;
             _utilityService = utilityService;
+            _logService = logService;
         }
 
         private bool CheckValidParent(TaskType parent, TaskType child)
@@ -355,10 +357,11 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<TasksDto?> Update(int userId, int id, UpdateTaskDto taskDto)
+        public async Task<bool?> Update(int userId, int id, UpdateTaskDto taskDto)
         {
             try
             {
+                List<AddTaskLogDto> logs = new List<AddTaskLogDto>();
                 // we can apply check first
 
                 // fetching the task details
@@ -378,13 +381,13 @@ namespace EmployeeSystem.Provider.Services
                     if(assignedUser != null && task.AssignedTo != assignedUser.Id)
                     {
                         task.AssignedTo = assignedToId;
-                        var assinedTolog = new TaskLog
+                        var assinedTolog = new AddTaskLogDto
                         {
                             Message = $"Task Assigned to {assignedUser.Name} by {user.Name}, on {task.UpdatedOn}",
-                            Id = task.Id,
+                            TaskId = task.Id,
                         };
 
-                        _context.TaskLogs.Add(assinedTolog);
+                        logs.Add(assinedTolog);
                     }
                 }
 
@@ -409,45 +412,45 @@ namespace EmployeeSystem.Provider.Services
                 if (!string.IsNullOrEmpty(taskDto.Description) && task.Description != taskDto.Description)
                 {
                     task.Description = taskDto.Description;
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Task description changed by {user.Name} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
                 }
 
                 if (!string.IsNullOrEmpty(taskDto.Name) && task.Name != taskDto.Name)
                 {
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Task Name changed by {user.Name} - {task.Name} to {taskDto.Name} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
                     task.Name = taskDto.Name;
                 }
 
                 if (taskDto.Status != null && task.Status != taskDto.Status)
                 {
                     var status = taskDto.Status??TasksStatus.Pending;
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Task Status changed by {user.Name} - {task.Status} to {taskDto.Status} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
                     task.Status = status;
                 }
 
                 if(taskDto.TaskType != null && task.TaskType != taskDto.TaskType)
                 {
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Task Type changed by {user.Name} - {task.TaskType} to {taskDto.TaskType} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
                     task.TaskType = taskDto.TaskType??TaskType.Epic;
                 }
 
@@ -462,63 +465,56 @@ namespace EmployeeSystem.Provider.Services
                         return null;
                     }
                     
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Task Parent changed by {user.Name} New parent - {parent.Name} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
                     task.ParentId = taskDto.ParentId;
                 }
 
                 if(taskDto.OriginalEstimateHours != null && task.OriginalEstimateHours != taskDto.OriginalEstimateHours)
                 {
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Original Estimate hours set to {taskDto.OriginalEstimateHours} by {user.Name} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
                     task.OriginalEstimateHours = originalEstimateHours;
                 }
                 if(taskDto.RemainingEstimateHours != null && task.RemainingEstimateHours != taskDto.RemainingEstimateHours)
                 {
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Remaining Estimate hours changed - {task.OriginalEstimateHours} to {taskDto.RemainingEstimateHours} by {user.Name} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
                     task.RemainingEstimateHours = remainingEstimateHours;
                 }
                 if(taskDto.SprintId != null && task.SprintId != taskDto.SprintId)
                 {
                     var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == taskDto.SprintId && s.projectId == task.ProjectId);
 
-                    if(sprint != null)
+                    if(sprint != null && task.SprintId != taskDto.SprintId)
                     {
+                        var log = new AddTaskLogDto
+                        {
+                            Message = $"Remaining Estimate hours changed - {task.SprintId} to {taskDto.SprintId} by {user.Name} at {DateTime.Now}",
+                            TaskId = id,
+                        };
                         task.SprintId = sprint.Id;
+                        logs.Add(log);
                     }
                 }
                 task.UpdatedOn = DateTime.Now;
                 task.UpdatedBy = userId;
                 await _context.SaveChangesAsync();
+                await _logService.AddMany(logs);
 
-                var taskDetails = new TasksDto
-                {
-                    Id = task.Id,
-                    Name = task.Name,
-                    Status = task.Status,
-                    ProjectId = task.ProjectId,
-                    Description = task.Description,
-                    AssigneeName = task.Employee.Name,
-                    AssignerName = task.Creator.Name,
-                    CreatedOn = task.CreatedOn,
-                    OriginalEstimateHours = task.OriginalEstimateHours,
-                    RemainingEstimateHours = task.RemainingEstimateHours,
-                };
-
-                return taskDetails;
+                return true;
             }
             catch (Exception ex)
             {
@@ -567,15 +563,16 @@ namespace EmployeeSystem.Provider.Services
                         CreatedOn = DateTime.Now,
                     };
 
-                    _context.Add(taskToAdd);
+                    _context.Tasks.Add(taskToAdd);
                     await _context.SaveChangesAsync();
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"A new task created by {taskToAdd.Creator.Name} at {taskToAdd.CreatedOn}",
                         TaskId = taskToAdd.Id
                     };
-                    _context.TaskLogs.Add(log);
+                    
                     await _context.SaveChangesAsync();
+                    await _logService.Add(log);
                     return taskToAdd.Id;
                 }
 
@@ -656,6 +653,7 @@ namespace EmployeeSystem.Provider.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                List<AddTaskLogDto> logs = new List<AddTaskLogDto>();
                 await transaction.CreateSavepointAsync("Adding list");
                 foreach (var taskDto in taskList)
                 {
@@ -696,14 +694,14 @@ namespace EmployeeSystem.Provider.Services
                             CreatedOn = DateTime.Now,
                         };
 
-                        _context.Add(taskToAdd);
+                        _context.Tasks.Add(taskToAdd);
                         await _context.SaveChangesAsync();
-                        var taskLog = new TaskLog
+                        var taskLog = new AddTaskLogDto
                         {
                             Message = $"A new task created by {taskToAdd.Creator.Name} at {taskToAdd.CreatedOn} ",
                             TaskId = taskToAdd.Id
                         };
-                        _context.TaskLogs.Add(taskLog);
+                        logs.Add(taskLog);
                         //await _context.SaveChangesAsync();
                         continue;
                     }
@@ -716,7 +714,7 @@ namespace EmployeeSystem.Provider.Services
                     }
 
                     // check for whether the task belongs to the project or not
-                    if (taskDto.ProjectId != null && taskDto.ProjectId != 0)
+                    if (taskDto.ProjectId != 0)
                     {
                         var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
 
@@ -762,16 +760,17 @@ namespace EmployeeSystem.Provider.Services
 
                     // adding and updating the database
                     _context.Tasks.Add(task);
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"A new task created by {task.Creator.Name} at {task.CreatedOn}",
                         TaskId = task.Id
                     };
-                    _context.TaskLogs.Add(log);
+                    logs.Add(log);
 
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await _logService.AddMany(logs);
                 return true;
             }
             catch (Exception ex)
@@ -813,15 +812,14 @@ namespace EmployeeSystem.Provider.Services
                 // soft delete
                 task.IsActive = false;
 
-                var log = new TaskLog
+                var log = new AddTaskLogDto
                 {
                     Message = $"Task Removed by {employee.Name} at {DateTime.Now}",
                     TaskId = id
                 };
-                _context.TaskLogs.Add(log);
                 await _context.SaveChangesAsync();
-                // _context.Tasks.Remove(task);    
-                await _context.SaveChangesAsync();
+                await _logService.Add(log);
+
                 return true;
             }
             catch (Exception ex)
@@ -999,13 +997,13 @@ namespace EmployeeSystem.Provider.Services
 
                 task.SprintId = sprintId;
 
-                var log = new TaskLog
+                var log = new AddTaskLogDto
                 {
                     Message = $"Task added to sprint - {sprint.Name} at {DateTime.Now}",
                     TaskId = taskId,
                 };
-                _context.TaskLogs.Add(log);
                 await _context.SaveChangesAsync();
+                await _logService.Add(log);
                 return true;
             }catch(Exception ex)
             {
@@ -1024,7 +1022,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return false;
                 }
-                var log = new TaskLog
+                var log = new AddTaskLogDto
                 {
                     Message = $"Task status changed - {task.Status} to {status} at {DateTime.Now}",
                     TaskId = id,
@@ -1032,9 +1030,9 @@ namespace EmployeeSystem.Provider.Services
 
                 task.Status = status;
                 
-                _context.TaskLogs.Add(log);
                 // _context.Tasks.Remove(task);    
                 await _context.SaveChangesAsync();
+                await _logService.Add(log);
                 return true;
             }
             catch (Exception ex)
@@ -1059,13 +1057,13 @@ namespace EmployeeSystem.Provider.Services
                 if((task.TaskType == TaskType.Feature && parent.TaskType == TaskType.Epic) || (task.TaskType == TaskType.Userstory && parent.TaskType == TaskType.Feature) || ((task.TaskType == TaskType.Task || task.TaskType == TaskType.Bug) && parent.TaskType == TaskType.Userstory))
                 {
                     task.ParentId = parentId;
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         Message = $"Task parent updated, Parent Name - {parent.Name} at {DateTime.Now}",
                         TaskId = id,
                     };
-                    _context.TaskLogs.Add(log);
                     await _context.SaveChangesAsync();
+                    await _logService.Add(log);
                     return true;
                 }
                 // _context.Tasks.Remove(task);    

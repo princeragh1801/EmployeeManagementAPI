@@ -311,7 +311,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<TasksDto>>> UpdateTask(int id, UpdateTaskDto taskDto)
+        public async Task<ActionResult<ApiResponse<bool?>>> UpdateTask(int id, UpdateTaskDto taskDto)
         {
             try
             {
@@ -319,7 +319,7 @@ namespace EmployeeSystemWebApi.Controllers
                 var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
                 var task = await _taskService.Update(userId, id, taskDto);
-                var response = new ApiResponse<TasksDto>
+                var response = new ApiResponse<bool?>
                 {
                     Success = true,
                     Status = 200,
@@ -334,7 +334,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ApiResponse<TasksDto?>
+                return BadRequest(new ApiResponse<bool?>
                 {
                     Success = false,
                     Status = 500,
@@ -556,7 +556,7 @@ namespace EmployeeSystemWebApi.Controllers
                 Console.WriteLine("Changed Entries : " + count);
                 if (changedEntries.Any())
                 {
-                    var log = new TaskLog
+                    var log = new AddTaskLogDto
                     {
                         TaskId = id,
                         Message = $"Task updated by {name} on {DateTime.Now}. Changes: {string.Join(", ", changedEntries)}"
