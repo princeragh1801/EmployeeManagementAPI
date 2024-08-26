@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
@@ -202,6 +203,62 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+
+        public async Task<TaskCount> GetCount()
+        {
+            try
+            {
+                var query = _context.Tasks.Where(t => t.IsActive);
+                var total = await query.CountAsync();
+                var epic = await query.Where(t => t.TaskType == TaskType.Epic).CountAsync();
+                var feature = await query.Where(t => t.TaskType == TaskType.Feature).CountAsync();
+                var userstory = await query.Where(t => t.TaskType == TaskType.Userstory).CountAsync();
+                var task = await query.Where(t => t.TaskType == TaskType.Task).CountAsync();
+                var bug = await query.Where(t => t.TaskType == TaskType.Bug).CountAsync();
+
+                var type = new TaskTypeCount
+                {
+                    Epic = epic,
+                    Feature = feature,
+                    UserStory = userstory,
+                    Task = task,
+                    Bug = bug
+                };
+
+                var pending = await query.Where(t => t.Status == TasksStatus.Pending).CountAsync();
+                var active = await query.Where(t => t.Status == TasksStatus.Active).CountAsync();
+                var completed = await query.Where(t => t.Status == TasksStatus.Completed).CountAsync();
+
+                var status = new TaskStatusCount
+                {
+                    Pending = pending,
+                    Active = active,
+                    Completed = completed
+                };
+
+                var assign = await query.Where(t => t.AssignedTo != null).CountAsync();
+                var unAssign = await query.Where(t => t.AssignedTo == null).CountAsync();
+
+                var assigned = new AssignCount
+                {
+                    Assigned = assign,
+                    UnAssigned = unAssign
+                };
+
+                var count = new TaskCount
+                {
+                    Total = total,
+                    TypeCount = type,
+                    StatusCount = status,
+                    AssignCount = assigned
+                };
+                return count;
+
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
         public async Task<List<TasksDto>> GetAllTasks(int userId)
         {

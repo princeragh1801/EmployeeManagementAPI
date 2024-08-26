@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
@@ -22,6 +23,23 @@ namespace EmployeeSystemWebApi.Controllers
         {
             _employeeService = employeeService;
         }
+
+        [HttpGet("Count")]
+        public async Task<ActionResult<ApiResponse<EmployeeCount>>> GetCount()
+        {
+            try
+            {
+                var count = await _employeeService.GetCounts();
+                var response = new ApiResponse<EmployeeCount>();
+                response.Data = count;
+                response.Message = "Details fetched";
+                return Ok(count);
+            }catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("pagination")]
         public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>>> GetEmployees(PaginatedDto<Role?> paginatedDto)
         {

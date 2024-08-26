@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
@@ -9,6 +10,8 @@ namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IEmployeeService
     {
+        public Task<EmployeeCount> GetCounts();
+
         public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(int userId, PaginatedDto<Role?> paginatedDto);
         /// <summary>
         /// Retrieves a list of employees present in the system based on the user's accessibility.

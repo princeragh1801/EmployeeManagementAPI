@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Models;
@@ -9,6 +10,8 @@ namespace EmployeeSystem.Contract.Interfaces
 {
     public interface ITaskService
     {
+        public Task<TaskCount> GetCount();
+
         public Task<PaginatedItemsDto<List<TasksDto>>> Get(int userId, int projectId, ProjectTasksDto paginatedDto);
         /// <summary>
         /// Retrieves a list of tasks based on the accessibility role of the specified user.

@@ -20,6 +20,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 var logs = await _context.TaskLogs
                     .Where(t => t.TaskId == taskId)
+                    .OrderByDescending(t => t.Id)
                     .Select(t => new LogDto
                     {
                         Message = t.Message,
@@ -31,6 +32,7 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task Add(AddTaskLogDto log)
         {
             try

@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
@@ -145,6 +146,31 @@ namespace EmployeeSystem.Provider.Services
                 res.TotalPages = totalPages;
                 res.TotalItems = totalCount;
                 return res;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        public async Task<EmployeeCount> GetCounts()
+        {
+            try
+            {
+                var query = _context.Employees.Where(t => t.IsActive);
+                var totalActive = await query.CountAsync();
+                var superAdmin = await query.Where(t => t.Role == Role.SuperAdmin).CountAsync();
+                var admin = await query.Where(t => t.Role == Role.Admin).CountAsync();
+                var employee = await query.Where(t => t.Role == Role.Employee).CountAsync();
+                var count = new EmployeeCount
+                {
+                    Employee = employee,
+                    Admin = admin,
+                    SuperAdmin = superAdmin,
+                    Total = totalActive,
+                };
+                return count;
             }
             catch (Exception ex)
             {

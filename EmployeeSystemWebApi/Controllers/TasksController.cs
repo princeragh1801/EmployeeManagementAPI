@@ -1,11 +1,13 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using EmployeeSystem.Contract.Response;
 using EmployeeSystem.Provider;
+using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +28,23 @@ namespace EmployeeSystemWebApi.Controllers
             _taskService = taskService;
             _context = applicationDbContext;
             _taskLogService = taskLogService;   
+        }
+
+        [HttpGet("Count")]
+        public async Task<ActionResult<ApiResponse<EmployeeCount>>> GetCount()
+        {
+            try
+            {
+                var count = await _taskService.GetCount();
+                var response = new ApiResponse<TaskCount>();
+                response.Data = count;
+                response.Message = "Details fetched";
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("pagination/{projectId}")]
