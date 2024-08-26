@@ -385,6 +385,16 @@ namespace EmployeeSystem.Provider.Services
                         _context.TaskLogs.Add(assinedTolog);
                     }
                 }
+
+                int? originalEstimateHours = taskDto.OriginalEstimateHours;
+                int? remainingEstimateHours = taskDto.RemainingEstimateHours;
+                var type = taskDto.TaskType;
+                if (type == TaskType.Epic || type == TaskType.Feature || type == TaskType.Userstory)
+                {
+                    originalEstimateHours = null;
+                    remainingEstimateHours = null;
+                }
+
                 // updating the status
 
                 if (!string.IsNullOrEmpty(taskDto.Description) && task.Description != taskDto.Description)
@@ -460,7 +470,7 @@ namespace EmployeeSystem.Provider.Services
                         TaskId = id,
                     };
                     _context.TaskLogs.Add(log);
-                    task.OriginalEstimateHours = taskDto.OriginalEstimateHours;
+                    task.OriginalEstimateHours = originalEstimateHours;
                 }
                 if(taskDto.RemainingEstimateHours != null && task.RemainingEstimateHours != taskDto.RemainingEstimateHours)
                 {
@@ -470,7 +480,7 @@ namespace EmployeeSystem.Provider.Services
                         TaskId = id,
                     };
                     _context.TaskLogs.Add(log);
-                    task.RemainingEstimateHours = taskDto.RemainingEstimateHours;
+                    task.RemainingEstimateHours = remainingEstimateHours;
                 }
                 if(taskDto.SprintId != null && task.SprintId != taskDto.SprintId)
                 {
@@ -521,7 +531,12 @@ namespace EmployeeSystem.Provider.Services
                 }
                 int assignedById = adminId;
                 int assignedToId = taskDto.AssignedTo ?? 0;
-               
+                int? originalEstimateHours = taskDto.OriginalEstimateHours;
+                var type = taskDto.TaskType;
+                if(type == TaskType.Epic || type == TaskType.Feature || type == TaskType.Userstory)
+                {
+                    originalEstimateHours = null;
+                }
                 if (assignedToId == 0)
                 {
                     var taskToAdd = new Tasks
@@ -533,8 +548,8 @@ namespace EmployeeSystem.Provider.Services
                         TaskType = taskDto.TaskType,
                         SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
                         ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                        OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
-                        RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                        OriginalEstimateHours = originalEstimateHours,
+                        RemainingEstimateHours = originalEstimateHours,
                         ProjectId = taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
@@ -600,8 +615,8 @@ namespace EmployeeSystem.Provider.Services
                     ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                     ProjectId = taskDto.ProjectId,
                     SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
-                    OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
-                    RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                    OriginalEstimateHours = originalEstimateHours,
+                    RemainingEstimateHours = originalEstimateHours,
                     CreatedBy = adminId,
                     CreatedOn = DateTime.Now,
                 };
@@ -645,7 +660,12 @@ namespace EmployeeSystem.Provider.Services
 
                     int assignedById = adminId;
                     int assignedToId = taskDto.AssignedTo ?? 0;
-
+                    int? originalEstimateHours = taskDto.OriginalEstimateHours;
+                    var type = taskDto.TaskType;
+                    if (type == TaskType.Epic || type == TaskType.Feature || type == TaskType.Userstory)
+                    {
+                        originalEstimateHours = null;
+                    }
                     if (assignedToId == 0)
                     {
                         var taskToAdd = new Tasks
@@ -658,8 +678,8 @@ namespace EmployeeSystem.Provider.Services
                             ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
                             ProjectId = taskDto.ProjectId,
                             SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
-                            OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
-                            RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                            OriginalEstimateHours = originalEstimateHours,
+                            RemainingEstimateHours = originalEstimateHours,
                             CreatedBy = adminId,
                             CreatedOn = DateTime.Now,
                         };
@@ -721,8 +741,8 @@ namespace EmployeeSystem.Provider.Services
                         Status = taskDto.Status,
                         SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
                         ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                        OriginalEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
-                        RemainingEstimateHours = taskDto.OriginalEstimateHours == 0 ? null : taskDto.OriginalEstimateHours,
+                        OriginalEstimateHours = originalEstimateHours,
+                        RemainingEstimateHours = originalEstimateHours,
                         ProjectId = taskDto.ProjectId,
                         CreatedBy = adminId,
                         CreatedOn = DateTime.Now,
