@@ -11,9 +11,9 @@ namespace EmployeeSystem.Contract.Dtos.Info.PaginationInfo
     {
         public int? Id { get; set; }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public string CreatedBy { get; set; }
+        public required string CreatedBy { get; set; }
 
         public DateTime CreatedOn { get; set; }
     }

@@ -13,6 +13,6 @@ namespace EmployeeSystem.Contract.Models
         //public AttendanceStatus Status { get; set; } = AttendanceStatus.Absent;
 
         [ForeignKey(nameof(EmployeeId))]
-        public Employee Employee { get; set; }
+        public Employee ?Employee { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace EmployeeSystem.Contract.Dtos.Add
 
         [Required(ErrorMessage = "Content is required")]
         [MinLength(2)]
-        public string Content { get; set; }
+        public required string Content { get; set; }
 
         /*[Required(ErrorMessage = "Reviewer id is required") ]
         [Range(1, int.MaxValue)]

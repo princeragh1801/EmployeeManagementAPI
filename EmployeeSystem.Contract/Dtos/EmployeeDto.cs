@@ -5,7 +5,7 @@ namespace EmployeeSystem.Contract.Dtos
     {
         public int ?Id { get; set; }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public string? DepartmentName { get; set; }
         public string? ManagerName { get; set; }
         public  Role Role { get; set; } = Role.Employee;
