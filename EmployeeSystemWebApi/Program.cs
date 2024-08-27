@@ -1,4 +1,5 @@
 using EmployeeSystem.Contract.Interfaces;
+using EmployeeSystem.Contract.Prof;
 using EmployeeSystem.Contract.Utils;
 using EmployeeSystem.Provider;
 using EmployeeSystem.Provider.Services;
@@ -6,7 +7,7 @@ using EmployeeSystemWebApi.Extention;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 
 // Add services to the container.
@@ -46,8 +47,8 @@ var connectionString = builder.Configuration.GetConnectionString("SqlServerConne
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<ITestService, TestService>();
 // adding other services
-builder.Services.AddCustomerServices();
 
+builder.Services.AddCustomerServices();
 
 
 // added custom swagger gen services

@@ -1,4 +1,6 @@
-﻿using EmployeeSystem.Contract.Dtos.IdAndName;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,21 +10,18 @@ namespace EmployeeSystem.Provider.Services
     public class ProjectEmployeeService : IProjectEmployeeService
     {
         private readonly ApplicationDbContext _context;
-
-        public ProjectEmployeeService(ApplicationDbContext applicationDbContext) 
+        private readonly IMapper _mapper;
+        public ProjectEmployeeService(ApplicationDbContext applicationDbContext, IMapper mapper) 
         {
             _context = applicationDbContext;
+            _mapper = mapper;
         }
 
         public async Task<List<EmployeeIdAndName>> GetAll(int projectId)
         {
             try
             {
-                var employees = await _context.ProjectEmployees.Include(e => e.Employee).Where(e => e.ProjectId == projectId).Select(pe => new EmployeeIdAndName
-                {
-                    Id = pe.EmployeeId,
-                    Name = pe.Employee.Name,
-                }).ToListAsync();
+                var employees = await _context.ProjectEmployees.Include(e => e.Employee).Where(e => e.ProjectId == projectId).ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider).ToListAsync();
                 return employees;
             }catch (Exception ex)
             {

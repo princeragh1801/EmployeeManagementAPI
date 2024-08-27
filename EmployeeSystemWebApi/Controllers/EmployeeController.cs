@@ -280,7 +280,7 @@ namespace EmployeeSystemWebApi.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<EmployeeInfo?>>> UpdateEmployee(int id, UpdateEmployeeDto employee)
+        public async Task<ActionResult<ApiResponse<bool?>>> UpdateEmployee(int id, UpdateEmployeeDto employee)
         {
             try
             {
@@ -289,7 +289,7 @@ namespace EmployeeSystemWebApi.Controllers
 
                 var updatedEmployee = await _employeeService.Update(userId, id, employee);
 
-                var response = new ApiResponse<EmployeeInfo>
+                var response = new ApiResponse<bool?>
                 {
                     Success = true,
                     Status = 200,

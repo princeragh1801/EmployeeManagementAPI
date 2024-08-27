@@ -1,4 +1,6 @@
-﻿using EmployeeSystem.Contract.Dtos;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
@@ -11,10 +13,12 @@ namespace EmployeeSystem.Provider.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IUtilityService _utilityService;
-        public ProjectService(ApplicationDbContext applicationDbContext, IUtilityService utilityService)
+        private readonly IMapper _mapper;
+        public ProjectService(ApplicationDbContext applicationDbContext, IUtilityService utilityService, IMapper mapper)
         {
             _context = applicationDbContext;
             _utilityService = utilityService;
+            _mapper = mapper;
         }
 
         public async Task<PaginatedItemsDto<List<ProjectDto>>> Get(int userId, PaginatedDto<ProjectStatus?> paginatedDto)
@@ -112,14 +116,7 @@ namespace EmployeeSystem.Provider.Services
                 var projects = await query
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
-                    .Select(e => new ProjectDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Description = e.Description,
-                        CreatedBy = e.Creator.Name,
-                        CreatedOn = e.CreatedOn,
-                    }).ToListAsync();
+                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider).ToListAsync();
 
                 // creating new dto to send the info
                 PaginatedItemsDto<List<ProjectDto>> res = new PaginatedItemsDto<List<ProjectDto>>();
@@ -155,15 +152,8 @@ namespace EmployeeSystem.Provider.Services
 
                     // fetching project based on the query
                     var res = await query
-                        .Select(e => new ProjectDto
-                        {
-                            Id = e.ProjectId,
-                            Name = e.Project.Name,
-                            Description = e.Project.Description,
-                            CreatedOn = e.Project.CreatedOn,
-                            CreatedBy = e.Project.Creator.Name,
-                            Status = e.Project.Status,
-                        }).Distinct().ToListAsync();
+                        .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider)
+                        .Distinct().ToListAsync();
                     return res;
                 }
                 
@@ -171,15 +161,8 @@ namespace EmployeeSystem.Provider.Services
                 var projects = await _context.Projects
                     .Include(p => p.Creator)
                     .Where(p => p.IsActive)
-                    .Select(e => new ProjectDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Description = e.Description,
-                        CreatedOn = e.CreatedOn,
-                        CreatedBy = e.Creator.Name,
-                        Status = e.Status,
-                    }).ToListAsync();
+                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
                 
                 return projects;
             }catch (Exception ex)
@@ -204,15 +187,7 @@ namespace EmployeeSystem.Provider.Services
                 // only fetching project details
                 var projects = await query
                     .Where(p => p.Project.IsActive)
-                    .Select(e => new ProjectDto
-                    {
-                        Id = e.Project.Id,
-                        Name = e.Project.Name,
-                        Description = e.Project.Description,
-                        CreatedBy = e.Project.Creator.Name,
-                        CreatedOn = e.Project.CreatedOn,
-                        Status = e.Project.Status,
-                    }).ToListAsync();
+                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider).ToListAsync();
 
                 return projects;
             }
@@ -228,15 +203,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 var projects = await _context.Projects
                     .Where(p => p.IsActive && p.Status == status)
-                    .Select(e => new ProjectDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Description = e.Description,
-                        CreatedOn = e.CreatedOn,
-                        CreatedBy = e.Creator.Name,
-                        Status = e.Status,
-                    }).ToListAsync();
+                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider).ToListAsync();
 
                 return projects;
             }
@@ -264,15 +231,9 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // fetching the employees of the project
-                var projectEmployees = project.ProjectEmployees
-                    .Select(p => new ProjectEmployeeDto
-                    {
-                        EmployeeId = p.EmployeeId,
-                        EmployeeName = p.Employee.Name,
-                        ImageUrl = p.Employee.ImageUrl
-                    }).ToList();
+                var projectEmployees = _mapper.Map<List<ProjectEmployeeDto>>(project.ProjectEmployees);
 
-                
+
                 var tasks = project.Tasks.Where(t => t.IsActive);
                 var totalTasks = tasks.Count();
                 var pendingTasks =tasks.Where(t => t.Status == TasksStatus.Pending).Count();
@@ -324,15 +285,8 @@ namespace EmployeeSystem.Provider.Services
 
                 var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
-                var project = new Project
-                {
-                    Name = projectDto.Name,
-                    Description = projectDto.Description,
-                    IsActive = true,
-                    Status = projectDto.Status,
-                    CreatedBy = adminId,
-                    CreatedOn = DateTime.Now
-                };
+                var project = _mapper.Map<Project>(projectDto);
+                project.CreatedBy = adminId;
 
                 // added the new project in db
                 _context.Projects.Add(project);

@@ -1,4 +1,5 @@
-﻿using EmployeeSystem.Contract.Dtos;
+﻿using AutoMapper;
+using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info;
@@ -20,18 +21,20 @@ namespace EmployeeSystemWebApi.Controllers
     [ApiController]
     public class TasksController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly ITaskService _taskService;
         private readonly ApplicationDbContext _context;
         private readonly ITaskLogService _taskLogService;
-        public TasksController(ITaskService taskService, ApplicationDbContext applicationDbContext, ITaskLogService taskLogService)
+        public TasksController(ITaskService taskService, ApplicationDbContext applicationDbContext, ITaskLogService taskLogService, IMapper mapper)
         {
             _taskService = taskService;
             _context = applicationDbContext;
             _taskLogService = taskLogService;   
+            _mapper = mapper;
         }
 
         [HttpGet("Count")]
-        public async Task<ActionResult<ApiResponse<EmployeeCount>>> GetCount()
+        public async Task<ActionResult<ApiResponse<TaskCount>>> GetCount()
         {
             try
             {
@@ -528,19 +531,8 @@ namespace EmployeeSystemWebApi.Controllers
 
                 var originalValues = _context.Entry(task).CurrentValues.Clone();
 
-                var taskToPatch = new UpdateTaskDto
-                {
-                    Name = task.Name,
-                    Description = task.Description,
-                    AssignedTo = task.AssignedTo,
-                    Status = task.Status,
-                    TaskType = task.TaskType,
-                    SprintId = task.SprintId,
-                    ParentId = task.ParentId,
-                    ProjectId = task.ProjectId,
-                    OriginalEstimateHours = task.OriginalEstimateHours,
-                    RemainingEstimateHours = task.RemainingEstimateHours,
-                };
+                var taskToPatch = _mapper.Map<UpdateTaskDto>(task);
+
                 patchDoc.ApplyTo(taskToPatch, ModelState);
 
                 if (!ModelState.IsValid)
@@ -548,16 +540,7 @@ namespace EmployeeSystemWebApi.Controllers
                     return ValidationProblem(ModelState);
                 }
 
-                task.Name = taskToPatch.Name;
-                task.Description = taskToPatch.Description;
-                task.AssignedTo = taskToPatch.AssignedTo;
-                task.Status = taskToPatch.Status ?? task.Status;
-                task.TaskType = taskToPatch.TaskType ?? task.TaskType;
-                task.SprintId = taskToPatch.SprintId;
-                task.ParentId = taskToPatch.ParentId;
-                task.ProjectId = taskToPatch.ProjectId ?? task.ProjectId;
-                task.OriginalEstimateHours = taskToPatch.OriginalEstimateHours;
-                task.RemainingEstimateHours = taskToPatch.RemainingEstimateHours;
+                _mapper.Map(taskToPatch, task);
 
                 var changedEntries = new List<string>();
 

@@ -1,4 +1,6 @@
-﻿using EmployeeSystem.Contract.Dtos;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
@@ -13,16 +15,18 @@ namespace EmployeeSystem.Provider.Services
 {
     public class TaskService : ITaskService
     {
+        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly ITaskReviewService _reviewService;
         private readonly IUtilityService _utilityService;
         private readonly ITaskLogService _logService;
-        public TaskService(ApplicationDbContext context, ITaskReviewService taskReviewService, IUtilityService utilityService, ITaskLogService logService)
+        public TaskService(ApplicationDbContext context, ITaskReviewService taskReviewService, IUtilityService utilityService, ITaskLogService logService, IMapper mapper)
         {
             _context = context;
             _reviewService = taskReviewService;
             _utilityService = utilityService;
             _logService = logService;
+            _mapper = mapper;
         }
 
         private bool CheckValidParent(TaskType parent, TaskType child)
@@ -268,18 +272,10 @@ namespace EmployeeSystem.Provider.Services
                 var query = GetTasksInfo(userId);
 
                 // creating the task dto list
-                var tasks = await query.Where(t => t.IsActive).Select(t => new TasksDto
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    Status = t.Status,
-                    ProjectId = t.ProjectId,
-                    Description = t.Description,
-                    AssigneeName = t.Employee.Name,
-                    AssignerName = t.Creator.Name,
-                    CreatedOn = t.CreatedOn,
-                    TaskType = t.TaskType
-                }).ToListAsync();
+                var tasks = await query
+                    .Where(t => t.IsActive)
+                    .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
 
                 return tasks;
             }
@@ -298,18 +294,8 @@ namespace EmployeeSystem.Provider.Services
                 // creating the task dto list
                 var tasks = await _context.Tasks
                     .Where(t => t.IsActive & t.AssignedTo == employeeId)
-                    .Select(t => new TasksDto
-                    {
-                        Id = t.Id,
-                        Name = t.Name,
-                        Status = t.Status,
-                        Description = t.Description,
-                        ProjectId = t.ProjectId,
-                        AssigneeName = t.Employee.Name,
-                        AssignerName = t.Creator.Name,
-                        CreatedOn = t.CreatedOn,
-                        TaskType = t.TaskType
-                    }).ToListAsync();
+                    .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
 
                 return tasks;
             }
@@ -326,18 +312,8 @@ namespace EmployeeSystem.Provider.Services
                 // creating the task dto list
                 var tasks = await _context.Tasks
                     .Where(t => t.IsActive & t.SprintId == sprintId)
-                    .Select(t => new TasksDto
-                    {
-                        Id = t.Id,
-                        Name = t.Name,
-                        Status = t.Status,
-                        Description = t.Description,
-                        ProjectId = t.ProjectId,
-                        AssigneeName = t.Employee.Name,
-                        AssignerName = t.Creator.Name,
-                        CreatedOn = t.CreatedOn,
-                        TaskType = t.TaskType
-                    }).ToListAsync();
+                    .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
 
                 return tasks;
             }
@@ -354,9 +330,9 @@ namespace EmployeeSystem.Provider.Services
                 // filter according to the role
                 var query = GetTasksInfo(userId);
 
-                query.Include(t => t.Parent);
+                query.Include(t => t.Parent).Include(t => t.Employee).Include(t => t.Creator);
                 // check whether the task belongs to the list, then convert the task into task dto form
-                var task = await query
+                /*var task = await query
                     .Select(t => new TasksDto
                     {
                         Id = t.Id,
@@ -373,18 +349,22 @@ namespace EmployeeSystem.Provider.Services
                         CreatedOn = t.CreatedOn,
                         TaskType = t.TaskType
 
-                    }).FirstOrDefaultAsync(t => t.Id == id);
+                    }).FirstOrDefaultAsync(t => t.Id == id);*/
+
+                var taskEntity = await query.Include(t => t.Employee).FirstOrDefaultAsync(t => t.Id == id);
+                if(taskEntity == null)
+                {
+                    return null;
+                }
+
+                var task = _mapper.Map<TasksDto>(taskEntity);
+
 
                 var reviews = await _reviewService.Get(id);
 
                 var subTasks = await _context.Tasks
                     .Where(t => t.IsActive & t.ParentId == id)
-                    .Select(t => new TaskIdAndName
-                    {
-                        Id = t.Id,
-                        Name = t.Name,
-                        TaskType = t.TaskType,
-                    }).ToListAsync();
+                    .ProjectTo<TaskIdAndName>(_mapper.ConfigurationProvider).ToListAsync();
 
                 var parentId = await query.Where(t => t.Id == id).Select(t => t.ParentId).FirstAsync();
 
@@ -396,12 +376,9 @@ namespace EmployeeSystem.Provider.Services
                 };
                 if (parentId != null)
                 {
-                    var parent = await _context.Tasks.Select(t => new TaskIdAndName
-                    {
-                        Id = t.Id,
-                        Name = t.Name,
-                        TaskType = t.TaskType
-                    }).FirstOrDefaultAsync(t => t.Id == parentId);
+                    var parent = await _context.Tasks
+                        .ProjectTo<TaskIdAndName>(_mapper.ConfigurationProvider)
+                        .FirstOrDefaultAsync(t => t.Id == parentId);
                     taskInfo.Parent = parent;
                 }
 
@@ -604,21 +581,11 @@ namespace EmployeeSystem.Provider.Services
                 
                 if (assignedToId == 0)
                 {
-                    var taskToAdd = new Tasks
-                    {
-                        Name = taskDto.Name,
-                        Description = taskDto.Description,
-                        AssignedTo = assignedToId == 0 ? null : assignedToId,
-                        Status = taskDto.Status,
-                        TaskType = taskDto.TaskType,
-                        SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
-                        ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                        OriginalEstimateHours = originalEstimateHours,
-                        RemainingEstimateHours = originalEstimateHours,
-                        ProjectId = taskDto.ProjectId,
-                        CreatedBy = adminId,
-                        CreatedOn = DateTime.Now,
-                    };
+                    var taskToAdd = _mapper.Map<Tasks>(taskDto);
+
+                    taskToAdd.OriginalEstimateHours = originalEstimateHours;
+                    taskToAdd.RemainingEstimateHours = originalEstimateHours;
+                    taskToAdd.CreatedBy = adminId;
 
                     _context.Tasks.Add(taskToAdd);
                     await _context.SaveChangesAsync();
@@ -669,23 +636,13 @@ namespace EmployeeSystem.Provider.Services
                     return 0;
                 }
 
-                
+
                 // creating the new task model
-                var task = new Tasks
-                {
-                    Name = taskDto.Name,
-                    Description = taskDto.Description,
-                    AssignedTo = taskDto.AssignedTo,
-                    Status = taskDto.Status,
-                    TaskType = taskDto.TaskType,
-                    ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                    ProjectId = taskDto.ProjectId,
-                    SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
-                    OriginalEstimateHours = originalEstimateHours,
-                    RemainingEstimateHours = originalEstimateHours,
-                    CreatedBy = adminId,
-                    CreatedOn = DateTime.Now,
-                };
+                var task = _mapper.Map<Tasks>(taskDto);
+
+                task.OriginalEstimateHours = originalEstimateHours;
+                task.RemainingEstimateHours = originalEstimateHours;
+                task.CreatedBy = adminId;
 
                 // adding and updating the database
                 _context.Tasks.Add(task);
@@ -735,21 +692,11 @@ namespace EmployeeSystem.Provider.Services
                     }
                     if (assignedToId == 0)
                     {
-                        var taskToAdd = new Tasks
-                        {
-                            Name = taskDto.Name,
-                            Description = taskDto.Description,
-                            AssignedTo = assignedToId == 0 ? null : assignedToId,
-                            Status = taskDto.Status,
-                            TaskType = taskDto.TaskType,
-                            ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                            ProjectId = taskDto.ProjectId,
-                            SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
-                            OriginalEstimateHours = originalEstimateHours,
-                            RemainingEstimateHours = originalEstimateHours,
-                            CreatedBy = adminId,
-                            CreatedOn = DateTime.Now,
-                        };
+                        var taskToAdd = _mapper.Map<Tasks>(taskDto);
+
+                        taskToAdd.OriginalEstimateHours = originalEstimateHours;
+                        taskToAdd.RemainingEstimateHours = originalEstimateHours;
+                        taskToAdd.CreatedBy = adminId;
 
                         _context.Tasks.Add(taskToAdd);
                         await _context.SaveChangesAsync();
@@ -800,20 +747,11 @@ namespace EmployeeSystem.Provider.Services
                     }
 
                     // creating the new task model
-                    var task = new Tasks
-                    {
-                        Name = taskDto.Name,
-                        Description = taskDto.Description,
-                        AssignedTo = taskDto.AssignedTo,
-                        Status = taskDto.Status,
-                        SprintId = taskDto.SprintId == 0 ? null : taskDto.SprintId,
-                        ParentId = taskDto.ParentId == 0 ? null : taskDto.ParentId,
-                        OriginalEstimateHours = originalEstimateHours,
-                        RemainingEstimateHours = originalEstimateHours,
-                        ProjectId = taskDto.ProjectId,
-                        CreatedBy = adminId,
-                        CreatedOn = DateTime.Now,
-                    };
+                    var task = _mapper.Map<Tasks>(taskDto);
+
+                    task.OriginalEstimateHours = originalEstimateHours;
+                    task.RemainingEstimateHours = originalEstimateHours;
+                    task.CreatedBy = adminId;
 
                     // adding and updating the database
                     _context.Tasks.Add(task);

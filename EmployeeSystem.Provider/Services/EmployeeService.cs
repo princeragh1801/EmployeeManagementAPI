@@ -1,4 +1,6 @@
-﻿using EmployeeSystem.Contract.Dtos;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
@@ -13,14 +15,16 @@ namespace EmployeeSystem.Provider.Services
 {
     public class EmployeeService : IEmployeeService
     {
+        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
         private readonly IUtilityService _utilityService;
-        public EmployeeService(ApplicationDbContext applicationDbContext, IEmailService emailService, IUtilityService utilityService)
+        public EmployeeService(ApplicationDbContext applicationDbContext, IEmailService emailService, IUtilityService utilityService, IMapper mapper)
         {
             _context = applicationDbContext;
             _emailService = emailService;
             _utilityService = utilityService;
+            _mapper = mapper;
         }
 
         public async Task<bool> CheckManagerAndEmployeeDepartment(int ?ManagerId, int? DepartmentId)
@@ -127,17 +131,8 @@ namespace EmployeeSystem.Provider.Services
                 var employees = await query.
                     Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
-                    .Select(e => new EmployeePaginationInfo
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Salary = e.Salary,
-                        Role = e.Role,
-                        ManagerName = e.Manager.Name,
-                        DepartmentName = e.Department.Name,
-                        Email = e.Email,
-                        CreatedOn = e.CreatedOn,
-                    }).ToListAsync();
+                    .ProjectTo<EmployeePaginationInfo>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
 
                 // creating new dto to send the info
                 PaginatedItemsDto<List<EmployeePaginationInfo>> res = new PaginatedItemsDto<List<EmployeePaginationInfo>>();
@@ -194,22 +189,8 @@ namespace EmployeeSystem.Provider.Services
                         .Include(e => e.Manager)
                     .ThenInclude(e => e.Department)
                     .Where(e => e.IsActive)
-                    .Select(e => new EmployeeDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Salary = e.Salary,
-                        Role = e.Role,
-                        ManagerName = e.Manager.Name,
-                        DepartmentName = e.Department.Name,
-                        DepartmentId = e.DepartmentID,
-                        ManagerId = e.ManagerID,
-                        CreatedBy = e.CreatedBy,
-                        UpdatedBy = e.UpdatedBy,
-                        CreatedOn = e.CreatedOn,
-                        UpdatedOn = e.UpdatedOn,
-
-                    }).ToListAsync();
+                    .ProjectTo<EmployeeDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
                 }
 
 
@@ -218,22 +199,8 @@ namespace EmployeeSystem.Provider.Services
                     .Include(e => e.Manager)
                     .ThenInclude(e => e.Department)
                     .Where(e => e.IsActive)
-                    .Select(e=> new EmployeeDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Salary = e.Salary,
-                        Role = e.Role,
-                        ManagerName = e.Manager.Name,
-                        DepartmentName = e.Department.Name,
-                        DepartmentId = e.DepartmentID,
-                        ManagerId = e.ManagerID,
-                        CreatedBy = e.CreatedBy,
-                        UpdatedBy = e.UpdatedBy,
-                        CreatedOn = e.CreatedOn,
-                        UpdatedOn = e.UpdatedOn,
-
-                    }).ToListAsync();
+                    .ProjectTo<EmployeeDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
 
                 return employees;
             }
@@ -262,23 +229,8 @@ namespace EmployeeSystem.Provider.Services
                     .Include(e => e.Manager)
                     .Include(e => e.Department)
                     .Include(e => e.Creator)
-                    .Select(e => new EmployeeInfo
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        Salary = e.Salary,
-                        Role = e.Role,
-                        ManagerName = e.Manager.Name,
-                        DepartmentName = e.Department.Name,
-                        Phone = e.Phone,
-                        Email = e.Email,
-                        Address = e.Address,
-                        ImageUrl = e.ImageUrl,
-                        CreatedOn = e.CreatedOn,
-                        CreatedBy = e.Creator.Name
-                    }).FirstOrDefaultAsync(e => e.Id == id);
-
-
+                    .ProjectTo<EmployeeInfo>(_mapper.ConfigurationProvider)
+                    .FirstOrDefaultAsync(e => e.Id == id);
 
                 return employee;
             }
@@ -326,24 +278,9 @@ namespace EmployeeSystem.Provider.Services
                 Console.WriteLine("First " + firstLetter);
                 Console.WriteLine("Last " + lastLetter);
                 Console.WriteLine("Url "+ imageUrl);
-                var employee = new Employee
-                {
-                    Username = employeeDto.Username,
-                    Password = employeeDto.Password,
-                    Name = employeeDto.Name,
-                    Email = employeeDto.Email,
-                    Address = employeeDto.Address,
-                    Salary = employeeDto.Salary,
-                    Phone = "+91-"+employeeDto.Phone,
-                    Role = employeeDto.Role,
-                    ImageUrl = imageUrl,
-                    DepartmentID = departmentId == 0 ? null : departmentId,
-                    ManagerID = managerId == 0 ? null : managerId,
-                    IsActive = true,
-                    CreatedOn = DateTime.Now,
-                    CreatedBy = userID,
-                };
-
+                var employee = _mapper.Map<Employee>(employeeDto);
+                employee.CreatedBy = userID;
+                employee.ImageUrl = imageUrl;
                 // adding and saving to the database
                 _context.Employees.Add(employee);
                 await _context.SaveChangesAsync();
@@ -404,23 +341,9 @@ namespace EmployeeSystem.Provider.Services
                     var lastLetter = employeeDto.Name.ElementAt(1);
                     var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
 
-                    var employee = new Employee
-                    {
-                        Username = employeeDto.Username,
-                        Password = employeeDto.Password,
-                        Name = employeeDto.Name,
-                        Email = employeeDto.Email,
-                        Address = employeeDto.Address,
-                        Salary = employeeDto.Salary,
-                        Phone = employeeDto.Phone,
-                        Role = employeeDto.Role,
-                        ImageUrl = imageUrl,
-                        DepartmentID = departmentId == 0 ? null : departmentId,
-                        ManagerID = managerId == 0 ? null : managerId,
-                        IsActive = true,
-                        CreatedOn = DateTime.Now,
-                        CreatedBy = userID,
-                    };
+                    var employee = _mapper.Map<Employee>(employeeDto);
+                    employee.CreatedBy = userID;
+                    employee.ImageUrl = imageUrl;
 
                     // adding and saving to the database
                     _context.Employees.Add(employee);
@@ -473,7 +396,7 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // update employee
-        public async Task<EmployeeInfo?> Update(int userID, int id, UpdateEmployeeDto employeeDto)
+        public async Task<bool?> Update(int userID, int id, UpdateEmployeeDto employeeDto)
         {
             try
             {
@@ -511,7 +434,7 @@ namespace EmployeeSystem.Provider.Services
                 // updating the feilds if employee exist
                 if (employeeToUpdate == null)
                 {
-                    return null;
+                    return false;
                     
                 }
                 var firstLetter = employeeDto.Name.ElementAt(0);
@@ -521,22 +444,15 @@ namespace EmployeeSystem.Provider.Services
                 var obj = await _context.Employees.FirstAsync(e => e.Id == userID);
                 var updatedByName = obj.Name;
 
-                employeeToUpdate.Name = employeeDto.Name;
+                _mapper.Map(employeeToUpdate, employeeDto);
+
                 employeeToUpdate.ImageUrl = imageUrl;
-                employeeToUpdate.Email = employeeDto.Email;
-                employeeToUpdate.Address = employeeDto.Address;
-                employeeToUpdate.Phone = "+91-" + employeeDto.Phone;
-                employeeToUpdate.Salary = employeeDto.Salary;
-                employeeToUpdate.Role = employeeDto.Role;
-                employeeToUpdate.DepartmentID = employeeDto.DepartmentID;
-                employeeToUpdate.ManagerID = employeeDto.ManagerID;
-                employeeToUpdate.UpdatedOn = DateTime.Now;
                 employeeToUpdate.UpdatedBy = userID;
 
                 await _context.SaveChangesAsync();
 
                 var employee = await GetById(id);
-                return employee;
+                return true;
 
 
             }
@@ -620,11 +536,8 @@ namespace EmployeeSystem.Provider.Services
                 // fetching the employees of the department with id-[x]
                 var employees = await _context.Employees
                     .Where(e => e.DepartmentID == res.Id & e.IsActive)
-                    .Select(e => new EmployeeIdAndName
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                    }).ToListAsync();
+                    .ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
 
                 return employees;
                 
@@ -640,12 +553,8 @@ namespace EmployeeSystem.Provider.Services
             {
                 var employeeInfo = await _context.Employees
                     .Include(e => e.Department)
-                    .Select(e => new EmployeeIdAndName
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        DepartmentName = e.Department.Name
-                    }).ToListAsync();
+                    .ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
                 return employeeInfo;
             }catch(Exception ex)
             {

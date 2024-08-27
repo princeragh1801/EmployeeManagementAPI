@@ -77,7 +77,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing an EmployeeDto with the updated information, or null if the employee is not found.
         /// </returns>
-        public Task<EmployeeInfo?> Update(int userId, int id, UpdateEmployeeDto employee);
+        public Task<bool?> Update(int userId, int id, UpdateEmployeeDto employee);
 
 
         /// <summary>

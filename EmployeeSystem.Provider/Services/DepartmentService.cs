@@ -1,4 +1,6 @@
-﻿using EmployeeSystem.Contract.Dtos;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
@@ -11,12 +13,14 @@ namespace EmployeeSystem.Provider.Services
 {
     public class DepartmentService : IDepartmentService
     {
+        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly IUtilityService _utilityService;
-        public DepartmentService(ApplicationDbContext applicationDbContext, IUtilityService utilityService)
+        public DepartmentService(ApplicationDbContext applicationDbContext, IUtilityService utilityService, IMapper mapper)
         {
             _context = applicationDbContext;
             _utilityService = utilityService;
+            _mapper = mapper;
         }
 
         public async Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> Get(PaginatedDto<Role?> paginatedDto)
@@ -62,14 +66,7 @@ namespace EmployeeSystem.Provider.Services
                 var departments = await query
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
-                    .Select(
-                    d => new DepartmentPaginationInfo
-                    {
-                        Id = d.Id,
-                        Name = d.Name,
-                        CreatedOn = d.CreatedOn,
-                        CreatedBy = d.Creator.Name,
-                    }).ToListAsync();
+                    .ProjectTo<DepartmentPaginationInfo>(_mapper.ConfigurationProvider).ToListAsync();
 
                 // creating new dto to send the info
                 PaginatedItemsDto<List<DepartmentPaginationInfo>> res = new PaginatedItemsDto<List<DepartmentPaginationInfo>>();
@@ -94,16 +91,8 @@ namespace EmployeeSystem.Provider.Services
                 // fetching departments and converting them into list of department dto
                 var departments = await _context.Departments
                     .Where(d => d.IsActive)
-                    .Select(
-                    d => new DepartmentDto
-                    {
-                        Id = d.Id,
-                        Name = d.Name,
-                        CreatedOn = d.CreatedOn,
-                        UpdatedOn = d.UpdatedOn,
-                        CreatedBy = d.CreatedBy,
-                        UpdatedBy = d.UpdatedBy,
-                    }).ToListAsync();
+                    .ProjectTo<DepartmentDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
 
                 response.Data = departments;
                 response.Message = "Departments fetched";
@@ -131,15 +120,7 @@ namespace EmployeeSystem.Provider.Services
                     return response;
                 }
 
-                var departmentDto = new DepartmentDto
-                {
-                    Id = department.Id,
-                    Name = department.Name,
-                    CreatedOn = department.CreatedOn,
-                    UpdatedOn = department.UpdatedOn,
-                    CreatedBy = department.CreatedBy,
-                    UpdatedBy = department.UpdatedBy,
-                };
+                var departmentDto = _mapper.Map<DepartmentDto>(department);
                 response.Data = departmentDto;
                 response.Message = "Department fetched";
 
