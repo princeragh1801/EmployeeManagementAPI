@@ -33,6 +33,7 @@ namespace EmployeeSystem.Provider.Services
                 new Claim("UserId", emp.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, emp.Role.ToString()),
+                new Claim("Role", emp.Role.ToString()),
                 new Claim("Date", DateTime.Now.ToString()),
                 
             };

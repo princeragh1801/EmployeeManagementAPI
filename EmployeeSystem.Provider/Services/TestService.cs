@@ -1,9 +1,4 @@
 ﻿using EmployeeSystem.Contract.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -14,7 +9,6 @@ namespace EmployeeSystem.Provider.Services
         public TestService(ApplicationDbContext applicationDbContext)
         {
             _context = applicationDbContext;
-            
         }
 
         public string Get()

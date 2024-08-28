@@ -28,8 +28,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
-                var projects = await _projectService.Get(userId, paginatedDto);
+                var claims = HttpContext.User.Claims;
+                var projects = await _projectService.Get(claims, paginatedDto);
 
                 var response = new ApiResponse<PaginatedItemsDto<List<ProjectDto>>>
                 {
@@ -58,9 +58,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var id = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
-
-                var projects = await _projectService.GetAll(id);
+                var claims = HttpContext.User.Claims;
+                var projects = await _projectService.GetAll(claims);
                 var response = new ApiResponse<List<ProjectDto>>
                 {
                     Success = true,
@@ -89,8 +88,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var id = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
-                var projects = await _projectService.GetProjectsByEmployee(id, employeeId);
+                var claims = HttpContext.User.Claims;
+                var projects = await _projectService.GetProjectsByEmployee(claims, employeeId);
                 var response = new ApiResponse<List<ProjectDto>>
                 {
                     Success = true,
@@ -152,8 +151,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
-                var project = await _projectService.GetById(userId, id);
+                var claims = HttpContext.User.Claims;
+                var project = await _projectService.GetById(claims, id);
                 var response = new ApiResponse<ProjectDetailsDto>
                 {
                     Success = true,

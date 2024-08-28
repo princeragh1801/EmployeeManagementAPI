@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeSystemWebApi.Controllers
 {
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SprintController : ControllerBase

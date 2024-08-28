@@ -1,19 +1,20 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IProjectService
-    {
-        public Task<PaginatedItemsDto<List<ProjectDto>>> Get(int userId, PaginatedDto<ProjectStatus?> paginatedDto);
+    { 
+        public Task<PaginatedItemsDto<List<ProjectDto>>> Get(IEnumerable<Claim> claims, PaginatedDto<ProjectStatus?> paginatedDto);
         /// <summary>
         /// Retrieves a list of projects present in the system based on accessibility.
         /// </summary>
         /// <returns>
         /// A task representing the asynchronous operation, containing a list of ProjectDto representing the projects.
         /// </returns>
-        public Task<List<ProjectDto>> GetAll(int id);
+        public Task<List<ProjectDto>> GetAll(IEnumerable<Claim> claims);
 
         /// <summary>
         /// Retrieves a list of projects assigned to the specified user.
@@ -22,7 +23,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a list of ProjectDto representing the projects.
         /// </returns>
-        public Task<List<ProjectDto>> GetProjectsByEmployee(int userId, int employeeId);
+        public Task<List<ProjectDto>> GetProjectsByEmployee(IEnumerable<Claim> claims, int employeeId);
 
         /// <summary>
         /// Retrieves a list of projects according to the status.
@@ -40,7 +41,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a ProjectDetailsDto with the project information, or null if the project is not found.
         /// </returns>
-        public Task<ProjectDetailsDto?> GetById(int userId, int id);
+        public Task<ProjectDetailsDto?> GetById(IEnumerable<Claim> claims, int id);
 
 
         /// <summary>

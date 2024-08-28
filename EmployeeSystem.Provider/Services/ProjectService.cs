@@ -5,6 +5,7 @@ using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -21,13 +22,31 @@ namespace EmployeeSystem.Provider.Services
             _mapper = mapper;
         }
 
-        public async Task<PaginatedItemsDto<List<ProjectDto>>> Get(int userId, PaginatedDto<ProjectStatus?> paginatedDto)
+        public IQueryable<Project> GetProjectInfo(int userId, string role, int employeeId=0)
+        {
+            var query = _context.Projects.Where(p => p.IsActive);
+            if(employeeId == 0)
+            {
+                employeeId = userId;
+            }
+            if (role != "SuperAdmin")
+            {
+                var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
+                query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
+            }
+            return query;
+        }
+
+        public async Task<PaginatedItemsDto<List<ProjectDto>>> Get(IEnumerable<Claim> claims, PaginatedDto<ProjectStatus?> paginatedDto)
         {
             try
             {
-
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value??"Employee";
+                var query = GetProjectInfo(userId, userRole);
                 // only selecting which is active
-                var query = _context.Projects.Include(p => p.Creator).Where(d => d.IsActive);
+                query = query.Include(p => p.Creator);
 
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
@@ -50,51 +69,7 @@ namespace EmployeeSystem.Provider.Services
                 }
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
 
-                // role specific
-                if (user.Role != Role.SuperAdmin)
-                {
-                    var userQuery = _context.ProjectEmployees
-                        .Include(p => p.Employee).Include(p => p.Project)
-                        .Where(p => p.Project.IsActive && (p.EmployeeId == userId || p.Employee.ManagerID == userId))
-                        .Distinct();
-
-
-                    if (!string.IsNullOrEmpty(search))
-                    {
-                        userQuery = userQuery.Where(pe => pe.Project.Name.Contains(search));
-                    }
-
-                    userQuery = orderBy == SortedOrder.NoOrder ? userQuery : _utilityService.GetOrdered<ProjectEmployee>(userQuery, orderKey, (orderBy == SortedOrder.Ascending) ? true : false);
-
-                    // calculating the total count and pages
-                    var totalCnt = userQuery.Count();
-                    var totalPage = totalCnt / paginatedDto.PagedItemsCount;
-                    if (totalCnt % paginatedDto.PagedItemsCount != 0)
-                    {
-                        totalPage++;
-                    }
-
-                    // now extrating projects of the page-[x]
-                    var userProjects = await userQuery
-                        .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
-                        .Take(paginatedDto.PagedItemsCount)
-                        .Select(e => new ProjectDto
-                        {
-                            Id = e.Project.Id,
-                            Name = e.Project.Name,
-                            Description = e.Project.Description,
-                            CreatedBy = e.Project.Creator.Name,
-                            CreatedOn = e.Project.CreatedOn,
-                        }).ToListAsync();
-
-                    // creating new dto to send the info
-                    PaginatedItemsDto<List<ProjectDto>> resp = new PaginatedItemsDto<List<ProjectDto>>();
-
-                    resp.Data = userProjects;
-                    resp.TotalPages = totalPage;
-                    resp.TotalItems = totalCnt;
-                    return resp;
-                }
+                
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -133,39 +108,18 @@ namespace EmployeeSystem.Provider.Services
         }
 
 
-        public async Task<List<ProjectDto>> GetAll(int id)
+        public async Task<List<ProjectDto>> GetAll(IEnumerable<Claim> claims)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
                 // extracting the user info
-                var user = await _context.Employees.FirstAsync(e => e.Id == id);
 
-                // checking the role
-                if(user.Role != Role.SuperAdmin)
-                {
-                    // creating the query if user is not super admin
-                    var query = _context.ProjectEmployees
-                        .Include(p => p.Employee).Include(p => p.Project)
-                        .ThenInclude(p => p.Creator)
-                        .Where(p => p.Project.IsActive && (p.EmployeeId == id || p.Employee.ManagerID == id))
-                        .Distinct();
+                var query = GetProjectInfo(userId, userRole);
 
-                    // fetching project based on the query
-                    var res = await query
-                        .Select(pe => new ProjectDto
-                        {
-                            Id = pe.ProjectId,
-                            Name = pe.Project.Name,
-                            Description = pe.Project.Description,
-                            Status = pe.Project.Status,
-
-                        })
-                        .Distinct().ToListAsync();
-                    return res;
-                }
-                
                 // only fetching project details
-                var projects = await _context.Projects
+                var projects = await query
                     .Include(p => p.Creator)
                     .Where(p => p.IsActive)
                     .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider)
@@ -178,22 +132,14 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<List<ProjectDto>> GetProjectsByEmployee(int userId, int employeeId)
+        public async Task<List<ProjectDto>> GetProjectsByEmployee(IEnumerable<Claim> claims, int employeeId)
         {
             try
             {
-                var query = _context.Projects.Where(p => p.IsActive);
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value??"Employee";
+                var query = GetProjectInfo(userId, userRole, employeeId);
                 
-                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
-
-                if(user.Role != Role.SuperAdmin)
-                {
-                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
-                    var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
-                    query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
-                }
-                
-
                 // only fetching project details
                 var projects = await query
                     .Select(p => new ProjectDto
@@ -228,17 +174,15 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<ProjectDetailsDto?> GetById(int userId, int id)
+        public async Task<ProjectDetailsDto?> GetById(IEnumerable<Claim> claims, int id)
         {
             try
             {
-                var query = _context.Projects.Where(p => p.IsActive);
-                var user = await _context.Employees.FirstAsync(e => e.Id ==  userId);
-                if(user.Role != Role.SuperAdmin)
-                {
-                    var userProjects = await _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe=> pe.ProjectId).ToListAsync();
-                    query.Where(p => p.Id == id && userProjects.Contains(p.Id));
-                }
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
+
+                var query = GetProjectInfo(userId, userRole);
+                
                 // fetching the project with given id
                 var project = await query
                     .Include(p => p.Creator)
@@ -261,20 +205,6 @@ namespace EmployeeSystem.Provider.Services
                 var pendingTasks =tasks.Where(t => t.Status == TasksStatus.Pending).Count();
                 var completedTasks = tasks.Where(t => t.Status == TasksStatus.Completed).Count();
                 var activeTasks = tasks.Where(t => t.Status == TasksStatus.Active).Count();
-
-                /*// fetching the tasks of the project
-                var tasksDto = tasks
-                    .Select(task => new TaskBasicDto
-                    {
-                        Id = task.Id,
-                        Name = task.Name,
-                        Description = task.Description,
-                        Status = task.Status,
-                        TaskType = task.TaskType,
-                    }).ToList();*/
-
-                
-
 
                 // assemble all the details in project details dto to send
                 var projectDetails = new ProjectDetailsDto
@@ -304,7 +234,6 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-
                 var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
                 var project = _mapper.Map<Project>(projectDto);

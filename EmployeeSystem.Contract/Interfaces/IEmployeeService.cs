@@ -4,6 +4,7 @@ using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
@@ -12,7 +13,7 @@ namespace EmployeeSystem.Contract.Interfaces
     {
         public Task<EmployeeCount> GetCounts();
 
-        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(int userId, PaginatedDto<Role?> paginatedDto);
+        public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(IEnumerable<Claim> claims, PaginatedDto<Role?> paginatedDto);
         /// <summary>
         /// Retrieves a list of employees present in the system based on the user's accessibility.
         /// </summary>
@@ -20,7 +21,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a list of EmployeeDto or null if no employees are accessible.
         /// </returns>
-        public Task<List<EmployeeDto>?> GetAll(int userId);
+        public Task<List<EmployeeDto>?> GetAll(IEnumerable<Claim> claims);
 
 
         /// <summary>
@@ -42,7 +43,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing the ID of the newly added employee.
         /// </returns>
-        public Task<int> Add(int userId, AddEmployeeDto employee);
+        public Task<int> Add(IEnumerable<Claim> claims, AddEmployeeDto employee);
 
 
         /// <summary>
@@ -54,7 +55,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing the count of successfully added employees.
         /// </returns>
-        public Task<int> AddList(int userId, List<AddEmployeeDto> employees);
+        public Task<int> AddList(IEnumerable<Claim> claims, List<AddEmployeeDto> employees);
 
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing an EmployeeDto with the updated information, or null if the employee is not found.
         /// </returns>
-        public Task<bool?> Update(int userId, int id, UpdateEmployeeDto employee);
+        public Task<bool?> Update(IEnumerable<Claim> claims, int id, UpdateEmployeeDto employee);
 
 
         /// <summary>

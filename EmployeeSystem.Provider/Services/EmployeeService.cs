@@ -9,6 +9,7 @@ using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -75,7 +76,7 @@ namespace EmployeeSystem.Provider.Services
             return user != null;
         }
 
-        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(int userId, PaginatedDto<Role?> paginatedDto)
+        public async Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(IEnumerable<Claim> claims, PaginatedDto<Role?> paginatedDto)
         {
             try
             {
@@ -83,15 +84,16 @@ namespace EmployeeSystem.Provider.Services
                 var search = paginatedDto.Search;
                 var orderBy = paginatedDto.SortedOrder;
                 var role = paginatedDto.Status;
-                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
-
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value;
+                
                 // including the details of the employee in query
                 var query = _context.Employees
                     .Include(e => e.Manager)
                     .Include(m => m.Department)
                     .Where(e => e.IsActive);
 
-                if (user.Role != Role.SuperAdmin)
+                if (userRole != "SuperAdmin")
                 {
                     query = query.Where(e => e.ManagerID != null && e.ManagerID == userId);
                 }
@@ -174,15 +176,17 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // get all employees
-        public async Task<List<EmployeeDto>?> GetAll(int userId)
+        public async Task<List<EmployeeDto>?> GetAll(IEnumerable<Claim> claims)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value;
                 // fetching the user details
                 var emp = await _context.Employees.FirstOrDefaultAsync(e => e.Id == userId);
 
                 // if user is not a super-admin then sending the employees where the manager id == emp.id
-                if(emp != null && emp.Role != Role.SuperAdmin)
+                if(userRole != "SuperAdmin")
                 {
                     return await _context.Employees
                         .Where(e => e.ManagerID == emp.Id)
@@ -241,10 +245,11 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // add new employee
-        public async Task<int> Add(int userID, AddEmployeeDto employeeDto)
+        public async Task<int> Add(IEnumerable<Claim> claims, AddEmployeeDto employeeDto)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 // checking the role exist or not
                 bool checkRole = RoleExist(employeeDto.Role);
                 if (!checkRole)
@@ -279,7 +284,7 @@ namespace EmployeeSystem.Provider.Services
                 Console.WriteLine("Last " + lastLetter);
                 Console.WriteLine("Url "+ imageUrl);
                 var employee = _mapper.Map<Employee>(employeeDto);
-                employee.CreatedBy = userID;
+                employee.CreatedBy = userId;
                 employee.ImageUrl = imageUrl;
                 // adding and saving to the database
                 _context.Employees.Add(employee);
@@ -300,12 +305,13 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // add list of employees
-        public async Task<int> AddList(int userID, List<AddEmployeeDto> employees)
+        public async Task<int> AddList(IEnumerable<Claim> claims, List<AddEmployeeDto> employees)
         {
             // started the transaction
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 // created a save point for roll back
                 await transaction.CreateSavepointAsync("Adding list");
                 foreach (var employeeDto in employees)
@@ -342,7 +348,7 @@ namespace EmployeeSystem.Provider.Services
                     var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
 
                     var employee = _mapper.Map<Employee>(employeeDto);
-                    employee.CreatedBy = userID;
+                    employee.CreatedBy = userId;
                     employee.ImageUrl = imageUrl;
 
                     // adding and saving to the database
@@ -396,10 +402,11 @@ namespace EmployeeSystem.Provider.Services
         }
 
         // update employee
-        public async Task<bool?> Update(int userID, int id, UpdateEmployeeDto employeeDto)
+        public async Task<bool?> Update(IEnumerable<Claim> claims, int id, UpdateEmployeeDto employeeDto)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 // checking the role
                 bool checkRole = RoleExist(employeeDto.Role);
                 if (!checkRole)
@@ -441,13 +448,11 @@ namespace EmployeeSystem.Provider.Services
                 var lastLetter = employeeDto.Name.ElementAt(1);
                 
                 var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
-                var obj = await _context.Employees.FirstAsync(e => e.Id == userID);
-                var updatedByName = obj.Name;
 
                 _mapper.Map(employeeToUpdate, employeeDto);
 
                 employeeToUpdate.ImageUrl = imageUrl;
-                employeeToUpdate.UpdatedBy = userID;
+                employeeToUpdate.UpdatedBy = userId;
 
                 await _context.SaveChangesAsync();
 

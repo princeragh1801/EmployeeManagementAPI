@@ -8,6 +8,7 @@ using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
@@ -18,9 +19,11 @@ namespace EmployeeSystemWebApi.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
+        
         public EmployeeController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
+            //claims = HttpContext.User.Claims;
         }
 
         [HttpGet("Count")]
@@ -44,8 +47,9 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
-                var employees = await _employeeService.Get(userId, paginatedDto);
+                var claims = HttpContext.User.Claims;
+                //var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var employees = await _employeeService.Get(claims, paginatedDto);
 
                 var response = new ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>
                 {
@@ -73,9 +77,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
-
-                var employees = await _employeeService.GetAll(userId);
+                var claims = HttpContext.User.Claims;
+                var employees = await _employeeService.GetAll(claims);
 
                 var response = new ApiResponse<List<EmployeeDto>>
                 {
@@ -133,7 +136,7 @@ namespace EmployeeSystemWebApi.Controllers
 
             try
             {
-                Console.WriteLine("Employee Object : " + _employeeService.GetHashCode());
+                //Console.WriteLine("Employee Object : " + _employeeService.GetHashCode());
                 var employee = await _employeeService.GetById(id);
 
                 var response = new ApiResponse<EmployeeInfo>
@@ -168,9 +171,8 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
-                Console.WriteLine("UserId : " +  userId);
-                var id = await _employeeService.Add(userId, employee);
+                var claims = HttpContext.User.Claims;
+                var id = await _employeeService.Add(claims, employee);
 
                 var response = new ApiResponse<int>
                 {
@@ -209,9 +211,8 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
-
-                var added = await _employeeService.AddList(userId, employees);
+                var claims = HttpContext.User.Claims;
+                var added = await _employeeService.AddList(claims, employees);
                 var response = new ApiResponse<int>
                 {
                     Success = true,
@@ -284,9 +285,8 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
-
-                var updatedEmployee = await _employeeService.Update(userId, id, employee);
+                var claims = HttpContext.User.Claims;
+                var updatedEmployee = await _employeeService.Update(claims, id, employee);
 
                 var response = new ApiResponse<bool?>
                 {
