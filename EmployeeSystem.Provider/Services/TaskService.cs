@@ -328,7 +328,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 // filter according to the role
-                var query = GetTasksInfo(userId);
+                var query = _context.Tasks.Where(t => t.IsActive);
 
                 query.Include(t => t.Parent).Include(t => t.Employee).Include(t => t.Creator);
                 // check whether the task belongs to the list, then convert the task into task dto form

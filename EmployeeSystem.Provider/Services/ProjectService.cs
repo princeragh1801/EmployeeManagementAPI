@@ -152,7 +152,14 @@ namespace EmployeeSystem.Provider.Services
 
                     // fetching project based on the query
                     var res = await query
-                        .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider)
+                        .Select(pe => new ProjectDto
+                        {
+                            Id = pe.ProjectId,
+                            Name = pe.Project.Name,
+                            Description = pe.Project.Description,
+                            Status = pe.Project.Status,
+
+                        })
                         .Distinct().ToListAsync();
                     return res;
                 }

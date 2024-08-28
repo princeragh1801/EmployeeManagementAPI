@@ -21,6 +21,7 @@ namespace EmployeeSystemWebApi.Extention
             services.AddScoped<ITaskLogService, TaskLogsService>();
             services.AddScoped<IProjectEmployeeService, ProjectEmployeeService>();
             services.AddSingleton<IUtilityService, UtilityService>();
+            services.AddScoped<ITestService, TestService>();
             return services;
         }
     }
