@@ -365,27 +365,6 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpGet("epics")]
-        public async Task<ActionResult<ApiResponse<List<EpicTaskDto>>>> GetEpicTasks()
-        {
-            try
-            {
-                var response = new ApiResponse<List<EpicTaskDto>>();
-                
-                response.Data = await _taskService.GetEpics();
-                response.Message = "Epics fetched";
-                return Ok(response);
-            }catch (Exception ex)
-            {
-                return BadRequest(new ApiResponse<List<EpicTaskDto>?>
-                {
-                    Success = false,
-                    Status = 500,
-                    Message = ex.Message
-                });
-            }
-        }
-
         [HttpGet("task{parentId}/children")]
         public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetChildren(int parentId)
         {

@@ -6,7 +6,6 @@ using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
-using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static EmployeeSystem.Contract.Enums.Enums;
@@ -314,7 +313,6 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        
         [HttpGet("managers")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<ApiResponse<List<EmployeeDto>?>>> GetManagers()
@@ -371,26 +369,5 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-
-        /*// patch
-        [HttpPatch("{id}")]
-        public async Task<ActionResult> UpdatePatch(int id,[FromBody] JsonPatchDocument patch)
-        {
-            try
-            {
-                var fromDB = _context.Employees.FirstOrDefault(x => x.Id == id);
-                
-                return Ok();
-            }catch (Exception ex)
-            {
-                return BadRequest(new ApiResponse<bool>
-                {
-                    Success = false,
-                    Status = 500,
-                    Message = ex.Message,
-                    Data = false
-                });
-            }
-        }*/
     }
 }

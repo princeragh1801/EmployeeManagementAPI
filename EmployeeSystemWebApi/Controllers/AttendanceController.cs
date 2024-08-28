@@ -18,7 +18,7 @@ namespace EmployeeSystemWebApi.Controllers
             _attendanceService = attendance;
         }
 
-        [HttpGet()]
+        [HttpGet]
         public async Task<ActionResult<ApiResponse<List<AttendanceDto>>>> Get()
         {
             try

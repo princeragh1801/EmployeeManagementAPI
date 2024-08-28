@@ -14,7 +14,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Message(string to, string msg)
+        public IActionResult Message(string to, string msg)
         {
             try
             {

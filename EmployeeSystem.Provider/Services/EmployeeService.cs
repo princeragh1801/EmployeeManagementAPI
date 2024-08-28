@@ -562,21 +562,6 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        /*public async Task PatchUpdate(int id, UpdateEmployeeDto employeeDto)
-        {
-            try
-            {
-                var employee = _context.Employees.FirstOrDefault(e => e.Id == id);
-
-                if (employee == null) { return; }
-
-                //var original = employee.Copy
-            }catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }*/
-
     }
 
 }

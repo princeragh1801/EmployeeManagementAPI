@@ -183,7 +183,6 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var query = _context.Projects.Where(p => p.IsActive);
-                // TODO::
                 
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
 
@@ -393,44 +392,6 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        /*public async Task<bool> AddMembers(int projectId, List<int> employeesToAdd)
-        {
-            try
-            {
-                var projectEmployees = employeesToAdd.Select(e => new ProjectEmployee
-                {
-                    EmployeeId = e,
-                    ProjectId = projectId,
-                });
-                _context.ProjectEmployees.AddRange(projectEmployees);
-                await _context.SaveChangesAsync();
-                return true;
-            }catch(Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<bool> DeleteMembers(int projectId, List<int> employeesToAdd)
-        {
-            try
-            {
-                var projectEmployees = employeesToAdd.Select(e => new ProjectEmployee
-                {
-                    EmployeeId = e,
-                    ProjectId = projectId,
-                });
-                _context.ProjectEmployees.RemoveRange(projectEmployees);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-*/
-        
         public async Task<bool> DeleteById(int id)
         {
             try
@@ -456,27 +417,5 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        /*public async Task<List<EmployeeIdAndName>> GetProjectEmployees(int projectId)
-        {
-            try
-            {
-                // fetching the project details
-                var projectEmployees = await _context.ProjectEmployees
-                    .Include(pe => pe.Employee)
-                    .Where(pe => pe.ProjectId == projectId)
-                    .Select(pe => new EmployeeIdAndName
-                    {
-                        Id = pe.Employee.Id,
-                        Name = pe.Employee.Name,
-                        DepartmentName = pe.Employee.Department.Name
-                    }).ToListAsync();
-                return projectEmployees;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-    */
     }
 }
