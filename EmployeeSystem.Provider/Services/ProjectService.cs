@@ -25,15 +25,20 @@ namespace EmployeeSystem.Provider.Services
         public IQueryable<Project> GetProjectInfo(int userId, string role, int employeeId=0)
         {
             var query = _context.Projects.Where(p => p.IsActive);
-            if(employeeId == 0)
-            {
-                employeeId = userId;
-            }
+
             if (role != "SuperAdmin")
             {
-                var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
-                var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
-                query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
+                if(employeeId == 0)
+                {
+                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                    query = query.Where(p => userProjects.Contains(p.Id));
+                }
+                else
+                {
+                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                    var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
+                    query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
+                }
             }
             return query;
         }

@@ -182,14 +182,12 @@ namespace EmployeeSystem.Provider.Services
             {
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 var userRole = claims.First(e => e.Type == "Role")?.Value;
-                // fetching the user details
-                var emp = await _context.Employees.FirstOrDefaultAsync(e => e.Id == userId);
 
                 // if user is not a super-admin then sending the employees where the manager id == emp.id
                 if(userRole != "SuperAdmin")
                 {
                     return await _context.Employees
-                        .Where(e => e.ManagerID == emp.Id)
+                        .Where(e => e.ManagerID == userId)
                         .Include(e => e.Manager)
                     .ThenInclude(e => e.Department)
                     .Where(e => e.IsActive)
