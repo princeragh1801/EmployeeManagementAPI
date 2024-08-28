@@ -40,7 +40,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a ProjectDetailsDto with the project information, or null if the project is not found.
         /// </returns>
-        public Task<ProjectDetailsDto?> GetById(int id);
+        public Task<ProjectDetailsDto?> GetById(int userId, int id);
 
 
         /// <summary>

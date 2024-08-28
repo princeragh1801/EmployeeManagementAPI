@@ -229,12 +229,19 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<ProjectDetailsDto?> GetById(int id)
+        public async Task<ProjectDetailsDto?> GetById(int userId, int id)
         {
             try
             {
+                var query = _context.Projects.Where(p => p.IsActive);
+                var user = await _context.Employees.FirstAsync(e => e.Id ==  userId);
+                if(user.Role != Role.SuperAdmin)
+                {
+                    var userProjects = await _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe=> pe.ProjectId).ToListAsync();
+                    query.Where(p => p.Id == id && userProjects.Contains(p.Id));
+                }
                 // fetching the project with given id
-                var project = await _context.Projects
+                var project = await query
                     .Include(p => p.Creator)
                      .Include(p => p.Tasks)
                      .Include(p => p.ProjectEmployees)

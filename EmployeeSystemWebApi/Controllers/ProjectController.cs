@@ -56,9 +56,9 @@ namespace EmployeeSystemWebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<ProjectDto>>>> GetAll()
         {
-           try
-           {
-                var id = Convert.ToInt32(HttpContext.User.Claims.First(e=> e.Type == "UserId")?.Value);
+            try
+            {
+                var id = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
 
                 var projects = await _projectService.GetAll(id);
                 var response = new ApiResponse<List<ProjectDto>>
@@ -70,7 +70,8 @@ namespace EmployeeSystemWebApi.Controllers
                 };
 
                 return Ok(response);
-           }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 var response = new ApiResponse<List<ProjectDto>>
                 {
@@ -151,7 +152,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var project = await _projectService.GetById(id);
+                var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var project = await _projectService.GetById(userId, id);
                 var response = new ApiResponse<ProjectDetailsDto>
                 {
                     Success = true,
@@ -159,7 +161,7 @@ namespace EmployeeSystemWebApi.Controllers
                     Message = "Project Details fetched",
                     Data = project
                 };
-                if(project == null)
+                if (project == null)
                 {
                     response.Message = "Project not found";
                     response.Status = 404;
@@ -196,7 +198,7 @@ namespace EmployeeSystemWebApi.Controllers
                     Data = id
                 };
 
-                if(id == 0)
+                if (id == 0)
                 {
                     response.Message = "Unauthorized request";
                 }
@@ -215,76 +217,6 @@ namespace EmployeeSystemWebApi.Controllers
             }
 
         }
-
-        /*[HttpPost("addmembers{projectId}")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<bool>>> AddMembers(int projectId, List<int> employeesToAdd)
-        {
-            try
-            {
-                var add = await _projectService.AddMembers(projectId, employeesToAdd);
-                if (!add)
-                {
-                    return BadRequest("Error occured while adding");
-                }
-                var response = new ApiResponse<bool>
-                {
-                    Success = true,
-                    Status = 200,
-                    Message = "Members added",
-                    Data = true
-                };
-
-                *//*if (id == 0)
-                {
-                    response.Message = "Unauthorized request";
-                }*//*
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var response = new ApiResponse<int>
-                {
-                    Success = false,
-                    Status = 500,
-                    Message = ex.Message
-                };
-                return BadRequest(response);
-            }
-
-        }
-
-        [HttpDelete("deletemembers{projectId}")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<ApiResponse<bool>>> DeleteMembers(int projectId, List<int> employeesToDelete)
-        {
-            try
-            {
-                var add = await _projectService.DeleteMembers(projectId, employeesToDelete);
-                var response = new ApiResponse<bool>
-                {
-                    Success = true,
-                    Status = 200,
-                    Message = "Members deleted",
-                    Data = true
-                };
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var response = new ApiResponse<int>
-                {
-                    Success = false,
-                    Status = 500,
-                    Message = ex.Message
-                };
-                return BadRequest(response);
-            }
-
-        }
-*/
 
         [HttpPut("{id}")]
         [Authorize(Roles = "SuperAdmin")]
@@ -301,7 +233,7 @@ namespace EmployeeSystemWebApi.Controllers
                     Message = "Project Updated",
                     Data = projectId
                 };
-                if(id == -1)
+                if (id == -1)
                 {
                     response.Status = 404;
                     response.Message = "Project not found";
@@ -343,7 +275,7 @@ namespace EmployeeSystemWebApi.Controllers
                     Data = deleted
                 };
 
-                if(!deleted)
+                if (!deleted)
                 {
                     response.Status = 404;
                     response.Message = "Project not found";
@@ -363,34 +295,6 @@ namespace EmployeeSystemWebApi.Controllers
 
         }
 
-        /*[HttpGet("projectEmployees{projectId}")]
-        public async Task<ActionResult<ApiResponse<List<EmployeeIdAndName>>>> GetProjectEmployees(int projectId)
-        {
-            try
-            {
-                var projectEmployees = await _projectService.GetProjectEmployees(projectId);
-                var response = new ApiResponse<List<EmployeeIdAndName>>
-                {
-                    Success = true,
-                    Status = 200,
-                    Message = "Project Details fetched",
-                    Data = projectEmployees
-                };
 
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var response = new ApiResponse<List<EmployeeIdAndName>>
-                {
-                    Success = false,
-                    Status = 500,
-                    Message = ex.Message
-                };
-                return BadRequest(response);
-            }
-        }
-    */
-    
     }
 }

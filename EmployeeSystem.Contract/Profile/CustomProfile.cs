@@ -20,6 +20,13 @@ namespace EmployeeSystem.Contract.Prof
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee.Name))
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Employee.ImageUrl));
 
+            CreateMap<ProjectEmployee, EmployeeIdAndName>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.EmployeeId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Employee.Name))
+                .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Employee.Department.Name));
+                
+                
+
             CreateMap<Project, ProjectDto>()
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.Creator.Name));
 
