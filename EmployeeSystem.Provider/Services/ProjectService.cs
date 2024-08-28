@@ -178,23 +178,32 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<List<ProjectDto>> GetProjectsByEmployee(int employeeId)
+        public async Task<List<ProjectDto>> GetProjectsByEmployee(int userId, int employeeId)
         {
             try
             {
-                var query = _context.ProjectEmployees
-                    .Include(p => p.Employee)
-                    .Include(p => p.Project)
-                    .ThenInclude(p => p.Creator)
-                    .Where(p => p.EmployeeId == employeeId)
-                    .Distinct();
+                var query = _context.Projects.Where(p => p.IsActive);
+                // TODO::
+                
+                var user = await _context.Employees.FirstAsync(e => e.Id == userId);
 
-
+                if(user.Role != Role.SuperAdmin)
+                {
+                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                    var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
+                    query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
+                }
+                
 
                 // only fetching project details
                 var projects = await query
-                    .Where(p => p.Project.IsActive)
-                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider).ToListAsync();
+                    .Select(p => new ProjectDto
+                    {
+                        Name = p.Name,
+                        Description = p.Description,
+                        Status = p.Status,
+                        Id = p.Id
+                    }).ToListAsync();
 
                 return projects;
             }

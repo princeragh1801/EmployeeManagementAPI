@@ -88,8 +88,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                
-                var projects = await _projectService.GetProjectsByEmployee(employeeId);
+                var id = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var projects = await _projectService.GetProjectsByEmployee(id, employeeId);
                 var response = new ApiResponse<List<ProjectDto>>
                 {
                     Success = true,

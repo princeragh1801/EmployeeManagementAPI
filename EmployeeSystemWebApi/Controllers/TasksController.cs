@@ -493,22 +493,6 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [HttpGet("logs/{taskId}")]
-        public async Task<ActionResult<ApiResponse<List<LogDto>>>> GetLogs(int taskId)
-        {
-            try
-            {
-                var logs = await _taskService.GetLogs(taskId);
-                var response = new ApiResponse<List<LogDto>>();
-                response.Data = logs;
-                response.Message = "Task logs fetched";
-                return Ok(response);
-            }catch(Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [HttpPatch("{id}")]
         public async Task<ActionResult<ApiResponse<bool>>> PatchUpdate(int id, [FromBody] JsonPatchDocument<UpdateTaskDto> patchDoc)
         {

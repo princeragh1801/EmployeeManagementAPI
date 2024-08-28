@@ -1069,23 +1069,6 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-
-        public async Task<List<LogDto>> GetLogs(int taskId)
-        {
-            try
-            {
-               var logs = await _context.TaskLogs.Where(t => t.TaskId == taskId)
-                    .Select(t => new LogDto
-                    {
-                        Message = t.Message
-                    })
-                    .ToListAsync();
-                return logs;
-            }catch(Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
         
         public async Task<Tasks?> GetById(int id)
         {

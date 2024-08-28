@@ -22,7 +22,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a list of ProjectDto representing the projects.
         /// </returns>
-        public Task<List<ProjectDto>> GetProjectsByEmployee(int employeeId);
+        public Task<List<ProjectDto>> GetProjectsByEmployee(int userId, int employeeId);
 
         /// <summary>
         /// Retrieves a list of projects according to the status.
