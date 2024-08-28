@@ -289,8 +289,6 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-
-
                 // creating the task dto list
                 var tasks = await _context.Tasks
                     .Where(t => t.IsActive & t.AssignedTo == employeeId)

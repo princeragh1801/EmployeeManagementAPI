@@ -105,6 +105,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [Authorize(Roles ="SuperAdmin")]
         [HttpGet("employee/{employeeId}")]
         public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetEmployeeTasks(int employeeId)
         {
@@ -132,6 +133,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [Authorize(Roles ="SuperAdmin")]
         [HttpGet("sprint/{sprintId}")]
         public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetSprintTasks(int sprintId)
         {
