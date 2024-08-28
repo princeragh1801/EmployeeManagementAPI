@@ -75,7 +75,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id);
                 if (sprint == null) { return null; }
-                return new SprintInfo { Name = sprint.Name, StartDate = sprint.StartDate, EndDate = sprint.EndDate, };
+                return new SprintInfo { Id = sprint.Id, Name = sprint.Name, StartDate = sprint.StartDate, EndDate = sprint.EndDate, };
             }
             catch (Exception ex)
             {

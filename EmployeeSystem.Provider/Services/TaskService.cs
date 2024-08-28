@@ -958,7 +958,24 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-        
+
+        public async Task<List<TaskIdAndName>> GetByType(int projectId, TaskType type)
+        {
+            try
+            {
+                var tasks = await _context.Tasks.Where(t => t.IsActive & t.ProjectId == projectId && t.TaskType == type).Select(t => new TaskIdAndName
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                }).ToListAsync();
+                return tasks;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<Tasks?> GetById(int id)
         {
             try

@@ -1,6 +1,7 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
+using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Models;
@@ -47,6 +48,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<TaskInfo?> GetById(int userId, int id);
 
+        public Task<List<TaskIdAndName>> GetByType(int projectId, TaskType type);
 
         /// <summary>
         /// Updates the status of the task with the specified ID and returns the updated task object.

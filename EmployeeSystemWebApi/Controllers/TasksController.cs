@@ -2,6 +2,7 @@
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
+using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
@@ -540,5 +541,24 @@ namespace EmployeeSystemWebApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{projectId}/type={type}")]
+        public async Task<ActionResult<ApiResponse<List<TaskIdAndName>>>> GetTasksByType(int projectId, TaskType type)
+        {
+            try
+            {
+                var tasks = await _taskService.GetByType(projectId, type);
+                var response = new ApiResponse<List<TaskIdAndName>>();
+                response.Data = tasks;
+               
+                response.Message = "Details fetched";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
