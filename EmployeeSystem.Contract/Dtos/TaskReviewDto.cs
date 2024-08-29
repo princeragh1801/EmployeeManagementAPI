@@ -8,7 +8,7 @@
         public string ?ReviewedBy { get; set; }
         public string ReviewerAvatarUrl { get; set; }
         public DateTime CreatedOn { get; set; }
-
+        public int EmployeeId { get; set; }
         //public EmployeeDto? ReviewerDetails { get; set; }
     }
 }

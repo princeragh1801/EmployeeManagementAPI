@@ -42,6 +42,7 @@ namespace EmployeeSystem.Provider.Services
                         Content = tr.Content,
                         CreatedOn = tr.CreatedOn,
                         ReviewerAvatarUrl = tr.Creator.ImageUrl,
+                        EmployeeId = tr.Creator.Id,
 
                     }).ToListAsync();
 

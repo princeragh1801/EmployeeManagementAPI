@@ -155,6 +155,15 @@ namespace EmployeeSystem.Provider.Services
                 {
                     tasksList = tasksList.Where(t => ((assign == true) ? (t.AssignedTo != null) : (t.AssignedTo == null)));
                 }
+                var orderKey = paginatedDto.OrderKey ?? "Id";
+                var search = paginatedDto.Search;
+                var orderBy = paginatedDto.SortedOrder;
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    filter = true;
+                    tasksList = tasksList.Where(t => t.Name.Contains(search));
+                }
                 if (filter == false)
                 {
                     var epics = tasksList.Where(t => t.TaskType == TaskType.Epic);
@@ -167,14 +176,7 @@ namespace EmployeeSystem.Provider.Services
                 }
 
 
-                var orderKey = paginatedDto.OrderKey ?? "Id";
-                var search = paginatedDto.Search;
-                var orderBy = paginatedDto.SortedOrder;
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    tasksList = tasksList.Where(t => t.Name.Contains(search));
-                }
+                
 
                 tasksList = orderBy == SortedOrder.NoOrder ? tasksList :_utilityService.GetOrdered(tasksList, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
@@ -569,6 +571,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var adminId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var creatorName = (claims.First(e => e.Type == "Name")?.Value);
                 var userRole = claims.First(e => e.Type == "Role")?.Value;
                 var parentId = taskDto.ParentId ?? 0;
                 if (parentId != 0)
@@ -619,13 +622,12 @@ namespace EmployeeSystem.Provider.Services
                 // adding and updating the database
                 _context.Tasks.Add(task);
                 await _context.SaveChangesAsync();
-                var taskLog = new TaskLog
+                var taskLog = new AddTaskLogDto
                 {
-                    Message = $"A new task created by {task.Creator.Name} at {task.CreatedOn}",
+                    Message = $"A new task created by {creatorName} at {task.CreatedOn}",
                     TaskId = task.Id
                 };
-                _context.TaskLogs.Add(taskLog);
-                await _context.SaveChangesAsync();
+                await _logService.Add(taskLog);
                 return task.Id;
             }
             catch (Exception ex)
@@ -639,16 +641,16 @@ namespace EmployeeSystem.Provider.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                var adminId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var creatorName = (claims.First(e => e.Type == "Name")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value;
                 List<AddTaskLogDto> logs = new List<AddTaskLogDto>();
                 await transaction.CreateSavepointAsync("Adding list");
                 foreach (var taskDto in taskList)
                 {
-                    var adminId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
-                    var userRole = claims.First(e => e.Type == "Role")?.Value;
                     var parentId = taskDto.ParentId ?? 0;
                     if (parentId != 0)
                     {
-                        
                         var checkValidParent = await CheckValidParent(parentId, taskDto.TaskType);
                         if (!checkValidParent)
                         {
@@ -694,13 +696,13 @@ namespace EmployeeSystem.Provider.Services
 
                     // adding and updating the database
                     _context.Tasks.Add(task);
-                    var log = new AddTaskLogDto
+                    await _context.SaveChangesAsync();
+                    var taskLog = new AddTaskLogDto
                     {
-                        Message = $"A new task created by {task.Creator.Name} at {task.CreatedOn}",
+                        Message = $"A new task created by {creatorName} at {task.CreatedOn}",
                         TaskId = task.Id
                     };
-                    logs.Add(log);
-
+                    logs.Add(taskLog);
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

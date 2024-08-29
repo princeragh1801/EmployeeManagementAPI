@@ -70,14 +70,14 @@ namespace EmployeeSystemWebApi.Controllers
                 });
             }
         }
-        [HttpPut("{taskId}")]
-        public async Task<ActionResult<ApiResponse<bool?>>> UpdateReview(int taskId, AddTaskReviewDto taskReviewDto)
+        [HttpPut("{taskReviewId}")]
+        public async Task<ActionResult<ApiResponse<bool?>>> UpdateReview(int taskReviewId, AddTaskReviewDto taskReviewDto)
         {
             try
             {
                 var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
 
-                var updated = await _taskReviewService.UpdateReview(taskId, adminId, taskReviewDto);
+                var updated = await _taskReviewService.UpdateReview(taskReviewId, adminId, taskReviewDto);
                 var response = new ApiResponse<bool?>
                 {
                     Success = true,

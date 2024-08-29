@@ -55,8 +55,9 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-                var sprints = await _context.Sprints.Select(s => new SprintInfo
+                var sprints = await _context.Sprints.Where(s => s.isActive).Select(s => new SprintInfo
                 {
+                    Id = s.Id,
                     Name = s.Name,
                     StartDate = s.StartDate,
                     EndDate = s.EndDate,
@@ -73,7 +74,7 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-                var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id);
+                var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id & s.isActive);
                 if (sprint == null) { return null; }
                 return new SprintInfo { Id = sprint.Id, Name = sprint.Name, StartDate = sprint.StartDate, EndDate = sprint.EndDate, };
             }
@@ -88,7 +89,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var sprints = await _context.Sprints
-                    .Where(s => s.projectId == projectId)
+                    .Where(s => s.isActive & s.projectId == projectId)
                     .Select(s => new SprintInfo
                     {
                         Id = s.Id,
@@ -110,7 +111,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id);
                 if (sprint == null) return false;
-                _context.Sprints.Remove(sprint);
+                sprint.isActive = false;
                 await _context.SaveChangesAsync();
                 return true;
             }

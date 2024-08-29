@@ -12,5 +12,6 @@ namespace EmployeeSystem.Contract.Models
 
         [ForeignKey(nameof(projectId))]
         public Project Project { get; set; }
+        public bool isActive { get; set; } = true;
     }
 }
