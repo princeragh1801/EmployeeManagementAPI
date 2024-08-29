@@ -9,6 +9,7 @@ using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
@@ -29,25 +30,34 @@ namespace EmployeeSystem.Provider.Services
             _mapper = mapper;
         }
 
-        private bool CheckValidParent(TaskType parent, TaskType child)
+        public async Task<bool> CheckValidParent(int parentId, TaskType child)
         {
-            if (parent == TaskType.Epic && child != TaskType.Feature)
+            try
             {
-                return false;
+                var p = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == parentId);
+                var parent = p.TaskType;
+                if (parent == TaskType.Epic && child != TaskType.Feature)
+                {
+                    return false;
+                }
+                else if (parent == TaskType.Feature && child != TaskType.Userstory)
+                {
+                    return false;
+                }
+                else if (parent == TaskType.Userstory && (child != TaskType.Task && child != TaskType.Bug))
+                {
+                    return false;
+                }
+                else if (parent == TaskType.Task || parent == TaskType.Bug)
+                {
+                    return false;
+                }
+                return true;
             }
-            else if (parent == TaskType.Feature && child != TaskType.Userstory)
+            catch(Exception ex)
             {
-                return false;
+                throw new Exception(ex.Message);
             }
-            else if (parent == TaskType.Userstory && (child != TaskType.Task && child != TaskType.Bug))
-            {
-                return false;
-            }
-            else if (parent == TaskType.Task || parent == TaskType.Bug)
-            {
-                return false;
-            }
-            return true;
         }
 
         public IQueryable<Tasks> GetTasksInfo(int userId)
@@ -67,17 +77,18 @@ namespace EmployeeSystem.Provider.Services
             return _context.Tasks.Where(t => t.IsActive);
         }
 
-        public async Task<bool> CheckTaskValidAssign(int assignedTo, int assignedBy)
+        public async Task<bool> CheckTaskValidAssign(int projectId, int assignedTo, int assignedBy, string role)
         {
             try
             {
-                // extracting the assignee details
-                var assignee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedTo);
+                var projectEmployees = await _context.ProjectEmployees.Where(pe => pe.ProjectId == projectId).Select(pe => pe.EmployeeId).ToListAsync();
 
-                // extracting the assigner details
-                var assinger = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedBy);
+                if(projectEmployees.Contains(assignedTo) && (role == "SuperAdmin" || projectEmployees.Contains(assignedBy)))
+                {
+                    return true;
+                }
 
-                return ((assinger != null && assignee != null) && (assinger.Role == Role.SuperAdmin || assignee.ManagerID == assignedBy));
+                return false;
             }
             catch (Exception ex)
             {
@@ -488,9 +499,8 @@ namespace EmployeeSystem.Provider.Services
 
                 if(taskDto.ParentId != null && task.ParentId != taskDto.ParentId)
                 {
-                    var parent = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == taskDto.ParentId);
-                    
-                    var checkValidParent = CheckValidParent(parent.TaskType, task.TaskType);
+                    var parentId = taskDto.ParentId??0;
+                    var checkValidParent = await CheckValidParent(parentId, task.TaskType);
 
                     if (!checkValidParent)
                     {
@@ -499,7 +509,7 @@ namespace EmployeeSystem.Provider.Services
                     
                     var log = new AddTaskLogDto
                     {
-                        Message = $"Task Parent changed by {user.Name} New parent - {parent.Name} at {DateTime.Now}",
+                        Message = $"Task Parent changed by {user.Name} at {DateTime.Now}",
                         TaskId = id,
                     };
                     logs.Add(log);
@@ -554,86 +564,50 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<int> Add(int adminId, AddTaskDto taskDto)
+        public async Task<int> Add(IEnumerable<Claim> claims, AddTaskDto taskDto)
         {
             try
             {
+                var adminId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value;
                 var parentId = taskDto.ParentId ?? 0;
                 if (parentId != 0)
                 {
-                    var parent = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == parentId);
-                    var checkValidParent = CheckValidParent(parent.TaskType, taskDto.TaskType);
+                    var checkValidParent = await CheckValidParent(parentId, taskDto.TaskType);
                     if (!checkValidParent)
                     {
                         return -4;
                     }
                 }
                 int assignedById = adminId;
-                int assignedToId = taskDto.AssignedTo ?? 0;
+                var assignedToId = taskDto.AssignedTo;
                 int? originalEstimateHours = taskDto.OriginalEstimateHours;
                 var type = taskDto.TaskType;
                 if(type == TaskType.Epic || type == TaskType.Feature || type == TaskType.Userstory)
                 {
                     originalEstimateHours = null;
                 }
-                
-                if (assignedToId == 0)
+
+                var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
+
+                if (project == null)
                 {
-                    var taskToAdd = _mapper.Map<Tasks>(taskDto);
-
-                    taskToAdd.OriginalEstimateHours = originalEstimateHours;
-                    taskToAdd.RemainingEstimateHours = originalEstimateHours;
-                    taskToAdd.CreatedBy = adminId;
-
-                    _context.Tasks.Add(taskToAdd);
-                    await _context.SaveChangesAsync();
-                    var log = new AddTaskLogDto
-                    {
-                        Message = $"A new task created by {taskToAdd.Creator.Name} at {taskToAdd.CreatedOn}",
-                        TaskId = taskToAdd.Id
-                    };
-                    
-                    await _context.SaveChangesAsync();
-                    await _logService.Add(log);
-                    return taskToAdd.Id;
+                    return -2;
                 }
-
                 // fetching the assigned user details
-                var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
-                if (assignedUser == null)
+                if (assignedToId != null)
                 {
-                    return -3;
-                }
-
-                // check for whether the task belongs to the project or not
-                if (taskDto.ProjectId != 0)
-                {
-                    var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
-
-                    if (project == null)
+                    var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
+                    if (assignedUser == null)
                     {
-                        return -2;
+                        return -3;
                     }
-
-                    // check whether the task whom to assign is belongs to that project 
-                    var checkProjectEmployee = await _context.ProjectEmployees
-                    .FirstOrDefaultAsync(p => p.ProjectId == taskDto.ProjectId
-                        && p.EmployeeId == assignedToId);
-                    // employee with given id is not in the project so can't assign the task
-                    if (checkProjectEmployee == null)
+                    var checkValidAssign = await CheckTaskValidAssign(project.Id, assignedToId??0, assignedById, userRole);
+                    if (!checkValidAssign)
                     {
-                        return -1;
+                        return 0;
                     }
                 }
-
-
-                // check for valid task assin
-                var check = assignedById == assignedToId ? true : await CheckTaskValidAssign(assignedToId, assignedById);
-                if (!check)
-                {
-                    return 0;
-                }
-
 
                 // creating the new task model
                 var task = _mapper.Map<Tasks>(taskDto);
@@ -660,7 +634,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<bool> AddMany(int adminId, List<AddTaskDto> taskList)
+        public async Task<bool> AddMany(IEnumerable<Claim> claims, List<AddTaskDto> taskList)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -669,79 +643,46 @@ namespace EmployeeSystem.Provider.Services
                 await transaction.CreateSavepointAsync("Adding list");
                 foreach (var taskDto in taskList)
                 {
+                    var adminId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                    var userRole = claims.First(e => e.Type == "Role")?.Value;
                     var parentId = taskDto.ParentId ?? 0;
                     if (parentId != 0)
                     {
-                        var parent = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == parentId);
-                        var checkValidParent = CheckValidParent(parent.TaskType, taskDto.TaskType);
+                        
+                        var checkValidParent = await CheckValidParent(parentId, taskDto.TaskType);
                         if (!checkValidParent)
                         {
                             return false;
                         }
                     }
-
                     int assignedById = adminId;
-                    int assignedToId = taskDto.AssignedTo ?? 0;
+                    var assignedToId = taskDto.AssignedTo;
                     int? originalEstimateHours = taskDto.OriginalEstimateHours;
                     var type = taskDto.TaskType;
                     if (type == TaskType.Epic || type == TaskType.Feature || type == TaskType.Userstory)
                     {
                         originalEstimateHours = null;
                     }
-                    if (assignedToId == 0)
+
+                    var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
+
+                    if (project == null)
                     {
-                        var taskToAdd = _mapper.Map<Tasks>(taskDto);
-
-                        taskToAdd.OriginalEstimateHours = originalEstimateHours;
-                        taskToAdd.RemainingEstimateHours = originalEstimateHours;
-                        taskToAdd.CreatedBy = adminId;
-
-                        _context.Tasks.Add(taskToAdd);
-                        await _context.SaveChangesAsync();
-                        var taskLog = new AddTaskLogDto
-                        {
-                            Message = $"A new task created by {taskToAdd.Creator.Name} at {taskToAdd.CreatedOn} ",
-                            TaskId = taskToAdd.Id
-                        };
-                        logs.Add(taskLog);
-                        //await _context.SaveChangesAsync();
-                        continue;
+                        return false;
                     }
-
                     // fetching the assigned user details
-                    var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
-                    if (assignedUser == null)
+                    if (assignedToId != null)
                     {
-                        return false;
-                    }
-
-                    // check for whether the task belongs to the project or not
-                    if (taskDto.ProjectId != 0)
-                    {
-                        var project = await _context.Projects.FirstOrDefaultAsync(p => p.IsActive & p.Id == taskDto.ProjectId);
-
-                        if (project == null)
+                        var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
+                        if (assignedUser == null)
                         {
                             return false;
                         }
-
-                        // check whether the task whom to assign is belongs to that project 
-                        var checkProjectEmployee = await _context.ProjectEmployees
-                        .FirstOrDefaultAsync(p => p.ProjectId == taskDto.ProjectId
-                            && p.EmployeeId == assignedToId);
-                        // employee with given id is not in the project so can't assign the task
-                        if (checkProjectEmployee == null)
+                        var checkValidAssign = await CheckTaskValidAssign(project.Id, assignedToId ?? 0, assignedById, userRole);
+                        if (!checkValidAssign)
                         {
                             return false;
                         }
-                    }
-
-
-                    // check for valid task assin
-                    var check = assignedById == assignedToId ? true : await CheckTaskValidAssign(assignedToId, assignedById);
-                    if (!check)
-                    {
-                        return false;
                     }
 
                     // creating the new task model

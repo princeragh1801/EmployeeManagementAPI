@@ -200,9 +200,9 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
+                var claims = HttpContext.User.Claims;
 
-                var id = await _taskService.Add(adminId, taskDto);
+                var id = await _taskService.Add(claims, taskDto);
                 var response = new ApiResponse<int>
                 {
                     Success = true,
@@ -256,9 +256,9 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 // fetching id from token
-                var adminId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId").Value);
+                var claims = HttpContext.User.Claims;
 
-                var added = await _taskService.AddMany(adminId, taskDto);
+                var added = await _taskService.AddMany(claims, taskDto);
                 var response = new ApiResponse<bool>
                 {
                     Success = true,
@@ -503,7 +503,20 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     return ValidationProblem(ModelState);
                 }
-
+                // Check if parentId was modified and perform additional logic if necessary
+                if (patchDoc.Operations.Any(op => op.path.Equals("/parentId", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Example check: ensure parentId is not set to a specific value or perform some validation
+                    var parentId = taskToPatch.ParentId ?? 0;
+                    var type = taskToPatch.TaskType ?? TaskType.Epic;
+                    var check = await _taskService.CheckValidParent(parentId, type);
+                    if (!check) // Replace 'someInvalidValue' with your condition
+                    {
+                        response.Message = "Invalid parentId value.";
+                        response.Status = 400;
+                        return BadRequest(response);
+                    }
+                }
                 _mapper.Map(taskToPatch, task);
 
                 var changedEntries = new List<string>();

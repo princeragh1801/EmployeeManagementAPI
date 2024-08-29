@@ -5,6 +5,7 @@ using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Models;
+using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
@@ -71,9 +72,9 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing the ID of the newly created task.
         /// </returns>
-        public Task<int> Add(int adminId, AddTaskDto task);
+        public Task<int> Add(IEnumerable<Claim> claims, AddTaskDto task);
 
-        public Task<bool> AddMany(int adminId, List<AddTaskDto> taskList);
+        public Task<bool> AddMany(IEnumerable<Claim> claims, List<AddTaskDto> taskList);
         /// <summary>
         /// Deletes the task with the specified ID and returns a boolean indicating the success of the operation.
         /// </summary>
@@ -101,5 +102,7 @@ namespace EmployeeSystem.Contract.Interfaces
         public Task<Tasks?> GetById(int id);
 
         public Task UpdateTask(Tasks task);
+
+        public Task<bool> CheckValidParent(int parentId, TaskType child);
     }
 }
