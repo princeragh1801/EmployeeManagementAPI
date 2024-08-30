@@ -369,6 +369,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [Authorize(Roles = "SuperAdmin")]
         [HttpGet("Update/{id}")]
         public async Task<ActionResult<ApiResponse<UpdateEmployeeDto>>> GetEmployeeToUpdate(int id)
         {

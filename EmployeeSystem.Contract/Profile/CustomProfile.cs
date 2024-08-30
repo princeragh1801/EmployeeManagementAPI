@@ -52,7 +52,6 @@ namespace EmployeeSystem.Contract.Prof
             .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.Creator.Name));
 
             CreateMap<AddEmployeeDto, Employee>()
-            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => "+91-" + src.Phone))
             .ForMember(dest => dest.DepartmentID, opt => opt.MapFrom(src => src.DepartmentID == 0 ? (int?)null : src.DepartmentID))
             .ForMember(dest => dest.ManagerID, opt => opt.MapFrom(src => src.ManagerID == 0 ? (int?)null : src.ManagerID))
             .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
