@@ -116,5 +116,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// A task representing the asynchronous operation, containing a list of EmployeeIdAndName.
         /// </returns>
         public Task<List<EmployeeIdAndName>> GetEmployeeIdAndName();
+
+        public Task<UpdateEmployeeDto> GetEmployeeToUpdate(int id);
     }
 }

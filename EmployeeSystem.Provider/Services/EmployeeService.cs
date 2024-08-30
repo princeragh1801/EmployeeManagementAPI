@@ -565,6 +565,31 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+        public async Task<UpdateEmployeeDto> GetEmployeeToUpdate(int id)
+        {
+            try
+            {
+                var employee = await _context.Employees.
+                    Where(e => e.Id == id).
+                    Select(e => new UpdateEmployeeDto
+                    {
+                        Name = e.Name,
+                        Email = e.Email,
+                        Address = e.Address,
+                        DepartmentID = e.DepartmentID,
+                        ManagerID = e.ManagerID,
+                        Phone = e.Phone,
+                        Role = e.Role,
+                        Salary = e.Salary,
+                        
+                    }).FirstAsync();
+
+                return employee;
+            }catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 
 }

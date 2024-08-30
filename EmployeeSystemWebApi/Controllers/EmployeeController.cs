@@ -369,5 +369,35 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [HttpGet("Update/{id}")]
+        public async Task<ActionResult<ApiResponse<UpdateEmployeeDto>>> GetEmployeeToUpdate(int id)
+        {
+
+            try
+            {
+                //Console.WriteLine("Employee Object : " + _employeeService.GetHashCode());
+                var employee = await _employeeService.GetEmployeeToUpdate(id);
+
+                var response = new ApiResponse<UpdateEmployeeDto>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Employee details fetched",
+                    Data = employee
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<UpdateEmployeeDto>
+                {
+                    Success = false,
+                    Status = 500,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+        }
+
     }
 }
