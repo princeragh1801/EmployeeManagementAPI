@@ -59,11 +59,11 @@ namespace EmployeeSystem.Contract.Prof
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())// Handle manually if needed
             .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());// Handle manually if needed
 
-            CreateMap<UpdateEmployeeDto, Employee> ()
+/*            CreateMap<UpdateEmployeeDto, Employee> ()
+                .ForMember(dest => dest.ManagerID,)
                 .ForMember(dest => dest.UpdatedOn, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => "+91-" + src.Phone))
                 .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());// Handle manually if needed
-
+*/
             CreateMap<Employee, EmployeeIdAndName>()
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name));
             // map for department

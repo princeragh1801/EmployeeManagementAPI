@@ -37,7 +37,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var count = await _taskService.GetCount();
+                var claims = HttpContext.User.Claims;
+                var count = await _taskService.GetCount(claims);
                 var response = new ApiResponse<TaskCount>();
                 response.Data = count;
                 response.Message = "Details fetched";

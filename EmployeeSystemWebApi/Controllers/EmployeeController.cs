@@ -26,6 +26,7 @@ namespace EmployeeSystemWebApi.Controllers
             //claims = HttpContext.User.Claims;
         }
 
+        [Authorize(Roles = "SuperAdmin")]
         [HttpGet("Count")]
         public async Task<ActionResult<ApiResponse<EmployeeCount>>> GetCount()
         {

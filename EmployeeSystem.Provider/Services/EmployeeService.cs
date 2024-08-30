@@ -447,10 +447,18 @@ namespace EmployeeSystem.Provider.Services
                 
                 var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
 
-                _mapper.Map(employeeToUpdate, employeeDto);
+                
 
                 employeeToUpdate.ImageUrl = imageUrl;
+                employeeToUpdate.Name = employeeDto.Name;
+                employeeToUpdate.DepartmentID = employeeDto.DepartmentID;
+                employeeToUpdate.ManagerID = employeeDto.ManagerID;
+                employeeToUpdate.Salary = employeeDto.Salary;
+                employeeToUpdate.Address = employeeDto.Address;
+                employeeToUpdate.Phone = employeeDto.Phone;
+                employeeToUpdate.Role = employeeDto.Role;
                 employeeToUpdate.UpdatedBy = userId;
+                employeeToUpdate.UpdatedOn = DateTime.Now;
 
                 await _context.SaveChangesAsync();
 

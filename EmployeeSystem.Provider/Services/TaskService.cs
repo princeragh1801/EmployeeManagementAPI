@@ -220,11 +220,18 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<TaskCount> GetCount()
+        public async Task<TaskCount> GetCount(IEnumerable<Claim> claims)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value;
+
                 var query = _context.Tasks.Where(t => t.IsActive);
+                if(userRole != "SuperAdmin")
+                {
+                    query = query.Where(t => t.AssignedTo == userId);
+                }
                 var total = await query.CountAsync();
                 var epic = await query.Where(t => t.TaskType == TaskType.Epic).CountAsync();
                 var feature = await query.Where(t => t.TaskType == TaskType.Feature).CountAsync();

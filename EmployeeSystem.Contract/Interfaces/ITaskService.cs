@@ -12,7 +12,7 @@ namespace EmployeeSystem.Contract.Interfaces
 {
     public interface ITaskService
     {
-        public Task<TaskCount> GetCount();
+        public Task<TaskCount> GetCount(IEnumerable<Claim> claims);
 
         public Task<PaginatedItemsDto<List<TasksDto>>> Get(int userId, int projectId, ProjectTasksDto paginatedDto);
         /// <summary>
