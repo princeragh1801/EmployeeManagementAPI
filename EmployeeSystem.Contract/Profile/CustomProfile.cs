@@ -59,11 +59,12 @@ namespace EmployeeSystem.Contract.Prof
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())// Handle manually if needed
             .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());// Handle manually if needed
 
-/*            CreateMap<UpdateEmployeeDto, Employee> ()
-                .ForMember(dest => dest.ManagerID,)
-                .ForMember(dest => dest.UpdatedOn, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());// Handle manually if needed
-*/
+            CreateMap<UpdateEmployeeDto, Employee>()
+            .ForMember(dest => dest.ImageUrl, opt => opt.Ignore()) // Assuming ImageUrl is set separately
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore()) // Assuming UpdatedBy is set separately
+            .ForMember(dest => dest.UpdatedOn, opt => opt.MapFrom(src => DateTime.Now)); // Sets UpdatedOn to the current date and time
+
+           
             CreateMap<Employee, EmployeeIdAndName>()
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name));
             // map for department
