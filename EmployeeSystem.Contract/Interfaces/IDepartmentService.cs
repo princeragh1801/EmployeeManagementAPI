@@ -8,7 +8,18 @@ namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IDepartmentService
     {
+        /// <summary>
+        /// Retrieves a paginated list of departments based on the specified pagination criteria and filter for roles.
+        /// </summary>
+        /// <param name="paginatedDto">
+        /// The pagination criteria and filter options, including the optional <see cref="Role"/> filter.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation, containing a paginated list of departments as 
+        /// <see cref="PaginatedItemsDto{List{DepartmentPaginationInfo}}"/>.
+        /// </returns>
         public Task<PaginatedItemsDto<List<DepartmentPaginationInfo>>> Get(PaginatedDto<Role?> paginatedDto);
+
         /// <summary>
         /// Retrieves the list of all departments in the system.
         /// </summary>

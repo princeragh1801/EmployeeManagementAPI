@@ -6,8 +6,21 @@ using static EmployeeSystem.Contract.Enums.Enums;
 namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IProjectService
-    { 
+    {
+        /// <summary>
+        /// Retrieves a paginated list of projects based on the specified user claims and pagination criteria, 
+        /// including an optional filter for project status.
+        /// </summary>
+        /// <param name="claims">A collection of <see cref="Claim"/> objects representing the user's claims for access control and filtering.</param>
+        /// <param name="paginatedDto">
+        /// The pagination criteria and filter options, including an optional <see cref="ProjectStatus"/> filter.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation, containing a paginated list of projects as 
+        /// <see cref="PaginatedItemsDto{List{ProjectDto}}"/>.
+        /// </returns>
         public Task<PaginatedItemsDto<List<ProjectDto>>> Get(IEnumerable<Claim> claims, PaginatedDto<ProjectStatus?> paginatedDto);
+
         /// <summary>
         /// Retrieves a list of projects present in the system based on accessibility.
         /// </summary>

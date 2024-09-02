@@ -11,6 +11,13 @@ namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IEmployeeService
     {
+        /// <summary>
+        /// Retrieves the total count of employees, including counts categorized by roles such as Employee, Admin, and SuperAdmin.
+        /// </summary>
+        /// <returns>
+        /// A task that represents the asynchronous operation, containing an <see cref="EmployeeCount"/> object with details of 
+        /// the total employee count and counts grouped by each role.
+        /// </returns>
         public Task<EmployeeCount> GetCounts();
 
         public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(IEnumerable<Claim> claims, PaginatedDto<Role?> paginatedDto);
@@ -117,6 +124,13 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<List<EmployeeIdAndName>> GetEmployeeIdAndName();
 
+        /// <summary>
+        /// Retrieves the details of an employee for the purpose of updating, based on the specified employee ID.
+        /// </summary>
+        /// <param name="id">The unique identifier of the employee to retrieve for update.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation, containing an <see cref="UpdateEmployeeDto"/> object with the employee's details.
+        /// </returns>
         public Task<UpdateEmployeeDto> GetEmployeeToUpdate(int id);
     }
 }

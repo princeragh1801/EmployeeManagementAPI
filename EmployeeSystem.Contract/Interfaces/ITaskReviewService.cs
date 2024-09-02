@@ -26,6 +26,15 @@ namespace EmployeeSystem.Contract.Interfaces
         /// </returns>
         public Task<int> Add(int taskId, int adminId, AddTaskReviewDto taskReview);
 
+        /// <summary>
+        /// Updates the review of a task based on the provided task ID, admin ID, and review details.
+        /// </summary>
+        /// <param name="id">The unique identifier of the task to be reviewed.</param>
+        /// <param name="adminId">The unique identifier of the admin performing the review.</param>
+        /// <param name="taskReviewDto">An <see cref="AddTaskReviewDto"/> object containing the details of the review to be updated.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation, containing a nullable boolean value indicating whether the update was successful (<c>true</c>), failed (<c>false</c>), or if the result is unknown (<c>null</c>).
+        /// </returns>
         public Task<bool?> UpdateReview(int id, int adminId, AddTaskReviewDto taskReviewDto);
     }
 }
