@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
@@ -216,6 +217,34 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
+    
+        public async Task<List<DepartmentEmployeeCount>> GetCount()
+        {
+            try
+            {
+
+                var departments = await _context.Departments.Where(d => d.IsActive).ToListAsync();
+                var employees = _context.Employees.Where(e => e.IsActive & e.DepartmentID != null);
+                List<DepartmentEmployeeCount> departmentCount = new List<DepartmentEmployeeCount>();
+            
+                foreach(var department in departments)
+                {
+                    var count = await employees.Where(e => e.DepartmentID == department.Id).CountAsync();
+                    var departmentEmployeeCount = new DepartmentEmployeeCount
+                    {
+                        Name = department.Name,
+                        Count = count
+                    };
+                    departmentCount.Add(departmentEmployeeCount);
+                    
+                }
+                return departmentCount;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+    
     }
 
 

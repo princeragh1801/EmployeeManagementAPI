@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
@@ -21,6 +22,26 @@ namespace EmployeeSystemWebApi.Controllers
         {
             _departmentService = departmentService;
         }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpGet("Count")]
+        public async Task<ActionResult<ApiResponse<List<DepartmentEmployeeCount>>>> GetCount()
+        {
+            try
+            {
+                var count = await _departmentService.GetCount();
+                var response = new ApiResponse<List<DepartmentEmployeeCount>>();
+                response.Data = count;
+                response.Message = "Details fetched";
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
         [Authorize(Roles = "SuperAdmin")]
         [HttpPost("pagination")]
         public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<DepartmentPaginationInfo>>>>> GetDepartments(PaginatedDto<Role?> paginatedDto)

@@ -34,7 +34,7 @@ namespace EmployeeSystemWebApi.Controllers
                 var response = new ApiResponse<ProjectCount>();
                 response.Data = count;
                 response.Message = "Details fetched";
-                return Ok(count);
+                return Ok(response);
             }
             catch (Exception ex)
             {

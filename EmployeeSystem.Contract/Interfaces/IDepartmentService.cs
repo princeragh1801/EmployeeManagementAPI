@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Response;
 using static EmployeeSystem.Contract.Enums.Enums;
@@ -8,6 +9,7 @@ namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IDepartmentService
     {
+        public Task<List<DepartmentEmployeeCount>> GetCount();
         /// <summary>
         /// Retrieves a paginated list of departments based on the specified pagination criteria and filter for roles.
         /// </summary>
