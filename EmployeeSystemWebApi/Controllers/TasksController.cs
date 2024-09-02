@@ -32,13 +32,13 @@ namespace EmployeeSystemWebApi.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("Count")]
-        public async Task<ActionResult<ApiResponse<TaskCount>>> GetCount()
+        [HttpGet("Count/{projectId}")]
+        public async Task<ActionResult<ApiResponse<TaskCount>>> GetCount(int projectId)
         {
             try
             {
                 var claims = HttpContext.User.Claims;
-                var count = await _taskService.GetCount(claims);
+                var count = await _taskService.GetCount(claims, projectId);
                 var response = new ApiResponse<TaskCount>();
                 response.Data = count;
                 response.Message = "Details fetched";

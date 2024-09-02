@@ -220,14 +220,14 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<TaskCount> GetCount(IEnumerable<Claim> claims)
+        public async Task<TaskCount> GetCount(IEnumerable<Claim> claims, int projectId)
         {
             try
             {
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 var userRole = claims.First(e => e.Type == "Role")?.Value;
 
-                var query = _context.Tasks.Where(t => t.IsActive);
+                var query = _context.Tasks.Where(t => t.IsActive && t.ProjectId == projectId);
                 if(userRole != "SuperAdmin")
                 {
                     query = query.Where(t => t.AssignedTo == userId);
