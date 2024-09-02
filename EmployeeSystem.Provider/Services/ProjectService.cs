@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -351,5 +352,28 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
+        public async Task<ProjectCount> GetCounts()
+        {
+            try
+            {
+                var query = _context.Projects.Where(p => p.IsActive);
+                var totalProject = await query.CountAsync();
+                var active = await query.Where(p => p.Status == ProjectStatus.Active).CountAsync();
+                var pending = await query.Where(p => p.Status == ProjectStatus.Pending).CountAsync();
+                var completed = await query.Where(p => p.Status == ProjectStatus.Completed).CountAsync();
+                var count = new ProjectCount
+                {
+                    Total = totalProject,
+                    Active = active,
+                    Pending = pending,
+                    Completed = completed
+                };
+                return count;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

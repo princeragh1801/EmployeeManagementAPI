@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
@@ -7,6 +8,7 @@ namespace EmployeeSystem.Contract.Interfaces
 {
     public interface IProjectService
     {
+        public Task<ProjectCount> GetCounts();
         /// <summary>
         /// Retrieves a paginated list of projects based on the specified user claims and pagination criteria, 
         /// including an optional filter for project status.

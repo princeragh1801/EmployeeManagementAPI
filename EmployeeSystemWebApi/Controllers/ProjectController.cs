@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
+using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
@@ -21,6 +22,24 @@ namespace EmployeeSystemWebApi.Controllers
         public ProjectController(IProjectService projectService)
         {
             _projectService = projectService;
+        }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpGet("Count")]
+        public async Task<ActionResult<ApiResponse<ProjectCount>>> GetCount()
+        {
+            try
+            {
+                var count = await _projectService.GetCounts();
+                var response = new ApiResponse<ProjectCount>();
+                response.Data = count;
+                response.Message = "Details fetched";
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("pagination")]
