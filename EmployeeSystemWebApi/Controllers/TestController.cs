@@ -1,7 +1,7 @@
 ﻿using EmployeeSystem.Contract.Interfaces;
+using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
-using System.Net;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -164,6 +164,28 @@ namespace EmployeeSystemWebApi.Controllers
                 var response = $"Your Ip Address is : {ip.ToString()}";
                 return Ok(response);
             }catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("ConvertToString")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult<ApiResponse<string>>> ConvertToString(IFormFile file)
+        {
+            try
+            {
+                var stream = file.OpenReadStream();
+                var text = await _testService.ConvertToTextAsync(stream);
+                var response = new ApiResponse<string>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "conversion done",
+                    Data = text
+                };
+                return Ok(response);
+            }catch(Exception ex)
             {
                 return BadRequest(ex.Message);
             }

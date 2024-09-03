@@ -8,6 +8,7 @@ using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
@@ -20,12 +21,14 @@ namespace EmployeeSystem.Provider.Services
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
         private readonly IUtilityService _utilityService;
-        public EmployeeService(ApplicationDbContext applicationDbContext, IEmailService emailService, IUtilityService utilityService, IMapper mapper)
+        private readonly ICloudinaryService _cloudinaryService;
+        public EmployeeService(ApplicationDbContext applicationDbContext, IEmailService emailService, IUtilityService utilityService, IMapper mapper, ICloudinaryService cloudinaryService)
         {
             _context = applicationDbContext;
             _emailService = emailService;
             _utilityService = utilityService;
             _mapper = mapper;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<bool> CheckManagerAndEmployeeDepartment(int ?ManagerId, int? DepartmentId)
@@ -586,6 +589,21 @@ namespace EmployeeSystem.Provider.Services
                     }).FirstAsync();
 
                 return employee;
+            }catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+    
+        public async Task<bool> UpdateAvatar(int id, IFormFile file)
+        {
+            try
+            {
+                var employee = await _context.Employees.FirstAsync(e => e.Id == id);
+                var imageUrl = await _cloudinaryService.UploadFile(file);
+                employee.ImageUrl = imageUrl;
+                await _context.SaveChangesAsync();
+                return true;
             }catch (Exception ex)
             {
                 throw new Exception(ex.Message);

@@ -20,6 +20,7 @@ namespace EmployeeSystemWebApi.Extention
             services.AddScoped<ITaskLogService, TaskLogsService>();
             services.AddScoped<IProjectEmployeeService, ProjectEmployeeService>();
             services.AddSingleton<IUtilityService, UtilityService>();
+            services.AddSingleton<ICloudinaryService, CloudinaryService>();
             services.AddScoped<ITestService, TestService>();
             return services;
         }

@@ -4,6 +4,7 @@ using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
@@ -132,5 +133,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// A task that represents the asynchronous operation, containing an <see cref="UpdateEmployeeDto"/> object with the employee's details.
         /// </returns>
         public Task<UpdateEmployeeDto> GetEmployeeToUpdate(int id);
+
+        public Task<bool> UpdateAvatar(int id, IFormFile file);
     }
 }

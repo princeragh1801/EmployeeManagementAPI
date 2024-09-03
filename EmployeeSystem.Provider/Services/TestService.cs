@@ -17,5 +17,19 @@ namespace EmployeeSystem.Provider.Services
             id++;
             return $"Hello {id}";
         }
+
+        public async Task<string> ConvertToTextAsync(Stream srcStream)
+        {
+            try
+            {
+                var reader = new StreamReader(srcStream);
+                var content = await reader.ReadToEndAsync();
+                return content;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

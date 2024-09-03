@@ -8,7 +8,6 @@ using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
@@ -23,7 +22,6 @@ namespace EmployeeSystemWebApi.Controllers
         public EmployeeController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
-            //claims = HttpContext.User.Claims;
         }
 
         [Authorize(Roles = "SuperAdmin")]
@@ -401,5 +399,25 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [HttpPost("Update-Avatar")]
+        public async Task<ActionResult<ApiResponse<bool>>> ChangeAvatar(IFormFile file)
+        {
+            try
+            {
+                int id = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
+                var updated = await _employeeService.UpdateAvatar(id, file);
+                var response = new ApiResponse<bool>
+                {
+                    Success = true,
+                    Status = 200,
+                    Message = "Avatar updated successfully",
+                    Data = updated
+                };
+                return Ok(response);
+            }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
