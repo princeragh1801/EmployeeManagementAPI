@@ -3,6 +3,7 @@
     public interface ITestService
     {
         public string Get();
-        public Task<string> ConvertToTextAsync(Stream srcStream);
+        public string ConvertToTextAsync(Stream srcStream);
+        public Stream ConvertDocToDocx(Stream inputStream);
     }
 }
