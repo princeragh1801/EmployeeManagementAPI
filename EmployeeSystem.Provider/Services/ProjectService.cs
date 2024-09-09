@@ -228,7 +228,8 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 // fetching the employees of the project
-                var projectEmployees = _mapper.Map<List<ProjectEmployeeDto>>(project.ProjectEmployees);
+                var pe = project.ProjectEmployees.Where(e => e.Employee.IsActive);
+                var projectEmployees = _mapper.Map<List<ProjectEmployeeDto>>(pe);
 
 
                 var tasks = project.Tasks.Where(t => t.IsActive);
