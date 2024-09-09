@@ -572,6 +572,11 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
+                var taskExist = await _context.Tasks.FirstOrDefaultAsync(t => t.Name == taskDto.Name && t.ProjectId == taskDto.ProjectId);
+                if(taskExist != null)
+                {
+                    return -5;
+                }
                 var adminId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 var creatorName = (claims.First(e => e.Type == "Name")?.Value);
                 var userRole = claims.First(e => e.Type == "Role")?.Value;
@@ -604,6 +609,10 @@ namespace EmployeeSystem.Provider.Services
                 {
                     var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
                     if (assignedUser == null)
+                    {
+                        return -3;
+                    }
+                    if(assignedToId == project.CreatedBy && assignedById != project.CreatedBy && userRole != "SuperAdmin")
                     {
                         return -3;
                     }
@@ -650,6 +659,11 @@ namespace EmployeeSystem.Provider.Services
                 await transaction.CreateSavepointAsync("Adding list");
                 foreach (var taskDto in taskList)
                 {
+                    var taskExist = await _context.Tasks.FirstOrDefaultAsync(t => t.Name == taskDto.Name && t.ProjectId == taskDto.ProjectId);
+                    if (taskExist != null)
+                    {
+                        return false;
+                    }
                     var parentId = taskDto.ParentId ?? 0;
                     if (parentId != 0)
                     {
@@ -679,6 +693,10 @@ namespace EmployeeSystem.Provider.Services
                     {
                         var assignedUser = await _context.Employees.FirstOrDefaultAsync(e => e.Id == assignedToId);
                         if (assignedUser == null)
+                        {
+                            return false;
+                        }
+                        if (assignedToId == project.CreatedBy && assignedById != project.CreatedBy && userRole != "SuperAdmin")
                         {
                             return false;
                         }

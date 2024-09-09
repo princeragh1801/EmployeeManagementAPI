@@ -146,6 +146,17 @@ namespace EmployeeSystem.Provider.Services
                 var userRole = claims.First(e => e.Type == "Role")?.Value??"Employee";
                 var query = GetProjectInfo(userId, userRole, employeeId);
                 
+                /*foreach(var p in query)
+                {
+                    var taskCount = _context.Tasks.Where(t => t.IsActive && t.ProjectId == p.Id).CountAsync();
+                    var project = new ProjectDto
+                    {
+                        Name = p.Name,
+                        Description = p.Description,
+                        Status = p.Status,
+                        Id = p.Id,
+                    };
+                }*/
                 // only fetching project details
                 var projects = await query
                     .Select(p => new ProjectDto
@@ -240,7 +251,6 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-                var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
                 var project = _mapper.Map<Project>(projectDto);
                 project.CreatedBy = adminId;
@@ -281,6 +291,9 @@ namespace EmployeeSystem.Provider.Services
                 if(project == null)
                 {
                     return -1;
+                }if(project.CreatedBy != adminId && admin.Role != Role.SuperAdmin)
+                {
+                    return -2;
                 }
 
                 project.Name = projectDto.Name;

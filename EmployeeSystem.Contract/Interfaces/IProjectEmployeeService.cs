@@ -1,4 +1,5 @@
 ﻿using EmployeeSystem.Contract.Dtos.IdAndName;
+using System.Security.Claims;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -21,7 +22,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task that represents the asynchronous operation, containing a boolean value indicating whether the addition of employees was successful.
         /// </returns>
-        public Task<bool> AddMembers(int projectId, List<int> employeesToAdd);
+        public Task<bool> AddMembers(int projectId, IEnumerable<Claim> claims, List<int> employeesToAdd);
 
         /// <summary>
         /// Removes a list of employees from a specific project based on the provided project ID.
@@ -31,6 +32,6 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task that represents the asynchronous operation, containing a boolean value indicating whether the removal of employees was successful.
         /// </returns>
-        public Task<bool> DeleteMembers(int projectId, List<int> employeesToAdd);
+        public Task<bool> DeleteMembers(int projectId, IEnumerable<Claim> claims, List<int> employeesToAdd);
     }
 }

@@ -4,6 +4,7 @@ using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -29,10 +30,21 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<bool> AddMembers(int projectId, List<int> employeesToAdd)
+        public async Task<bool> AddMembers(int projectId, IEnumerable<Claim> claims, List<int> employeesToAdd)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var role = claims.First(e => e.Type == "Role")?.Value;
+                var project = await _context.Projects.FirstAsync(p => p.Id == projectId);
+                if(project == null)
+                {
+                    return false;
+                }
+                if(role == "Admin" && project.CreatedBy != userId)
+                {
+                    return false;
+                }
                 var projectEmployees = employeesToAdd.Select(e => new ProjectEmployee
                 {
                     EmployeeId = e,
@@ -48,10 +60,21 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<bool> DeleteMembers(int projectId, List<int> employeesToAdd)
+        public async Task<bool> DeleteMembers(int projectId, IEnumerable<Claim> claims, List<int> employeesToAdd)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var role = claims.First(e => e.Type == "Role")?.Value;
+                var project = await _context.Projects.FirstAsync(p => p.Id == projectId);
+                if (project == null)
+                {
+                    return false;
+                }
+                if (role == "Admin" && project.CreatedBy != userId)
+                {
+                    return false;
+                }
                 var projectEmployees = employeesToAdd.Select(e => new ProjectEmployee
                 {
                     EmployeeId = e,

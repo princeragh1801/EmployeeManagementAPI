@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
-using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
@@ -237,8 +236,12 @@ namespace EmployeeSystemWebApi.Controllers
                     response.Message = "Invalid parent";
                     response.Status = 422;
                     return UnprocessableEntity(response);
+                }else if(id == -5)
+                {
+                    response.Message = "Task with the given name already exist";
+                    response.Status = 409;
+                    return Conflict(response);
                 }
-
                 return Ok(response);
             }
             catch (Exception ex)
@@ -355,6 +358,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     response.Message = "Task not found";
                 }
+                
                 return Ok(response);
             }
             catch (Exception ex)

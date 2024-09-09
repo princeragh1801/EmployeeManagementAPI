@@ -34,12 +34,13 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPost("{projectId}")]
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<ApiResponse<bool>>> AddMembers(int projectId, List<int> employeesToAdd)
         {
             try
             {
-                var add = await _employeeService.AddMembers(projectId, employeesToAdd);
+                var claims = HttpContext.User.Claims;
+                var add = await _employeeService.AddMembers(projectId, claims, employeesToAdd);
                 if (!add)
                 {
                     return BadRequest("Error occured while adding");
@@ -73,12 +74,13 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpDelete("{projectId}")]
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<ApiResponse<bool>>> DeleteMembers(int projectId, List<int> employeesToDelete)
         {
             try
             {
-                var add = await _employeeService.DeleteMembers(projectId, employeesToDelete);
+                var claims = HttpContext.User.Claims;
+                var add = await _employeeService.DeleteMembers(projectId, claims, employeesToDelete);
                 var response = new ApiResponse<bool>
                 {
                     Success = true,

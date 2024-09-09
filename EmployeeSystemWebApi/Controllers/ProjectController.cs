@@ -24,7 +24,7 @@ namespace EmployeeSystemWebApi.Controllers
             _projectService = projectService;
         }
 
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         [HttpGet("Count")]
         public async Task<ActionResult<ApiResponse<ProjectCount>>> GetCount()
         {
@@ -201,7 +201,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<ApiResponse<int>>> Add(AddProjectDto project)
         {
             try
@@ -219,6 +219,7 @@ namespace EmployeeSystemWebApi.Controllers
                 if (id == 0)
                 {
                     response.Message = "Unauthorized request";
+                    
                 }
 
                 return Ok(response);
@@ -237,7 +238,7 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<ApiResponse<int>>> Upate(int id, AddProjectDto project)
         {
             try
@@ -257,9 +258,10 @@ namespace EmployeeSystemWebApi.Controllers
                     response.Message = "Project not found";
                     return NotFound(response);
                 }
-                if (id == 0)
+                if (id == 0 || id == -2)
                 {
                     response.Message = "Unauthorized request";
+                    return Forbid();
                 }
 
                 return Ok(response);
@@ -279,7 +281,7 @@ namespace EmployeeSystemWebApi.Controllers
 
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<ApiResponse<bool>>> Delete(int id)
         {
             try

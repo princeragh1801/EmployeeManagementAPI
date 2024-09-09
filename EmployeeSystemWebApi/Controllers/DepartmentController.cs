@@ -128,7 +128,7 @@ namespace EmployeeSystemWebApi.Controllers
 
                 if (response.Status == 409)
                 {
-                    return NotFound(response);
+                    return Conflict(response);
                 }
                 return Ok(response);
             }

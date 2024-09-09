@@ -24,7 +24,7 @@ namespace EmployeeSystemWebApi.Controllers
             _employeeService = employeeService;
         }
 
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin, Admin")]
         [HttpGet("Count")]
         public async Task<ActionResult<ApiResponse<EmployeeCount>>> GetCount()
         {
@@ -41,6 +41,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
+        [Authorize(Roles = "SuperAdmin, Admin")]
         [HttpPost("pagination")]
         public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<EmployeePaginationInfo>>>>> GetEmployees(PaginatedDto<Role?> paginatedDto)
         {
@@ -185,7 +186,7 @@ namespace EmployeeSystemWebApi.Controllers
                     response.Message = "Manager not exist";
                 }else if(id == -1)
                 {
-                    response.Message = "Role is not assigned properly";
+                    response.Message = "Can't assign this role";
                 }else if(id == -2)
                 {
                     response.Message = "Given username is already exist";

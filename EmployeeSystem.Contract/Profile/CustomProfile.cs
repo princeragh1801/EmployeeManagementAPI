@@ -6,6 +6,7 @@ using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
 using EmployeeSystem.Contract.Models;
+using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Prof
 {
@@ -82,6 +83,7 @@ namespace EmployeeSystem.Contract.Prof
 
             CreateMap<AddTaskDto, Tasks>()
             .ForMember(dest => dest.AssignedTo, opt => opt.MapFrom(src => src.AssignedTo == 0 ? (int?)null : src.AssignedTo))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => TasksStatus.Pending))
             .ForMember(dest => dest.SprintId, opt => opt.MapFrom(src => src.SprintId == 0 ? (int?)null : src.SprintId))
             .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.ParentId == 0 ? (int?)null : src.ParentId))
             .ForMember(dest => dest.OriginalEstimateHours, opt => opt.Ignore())

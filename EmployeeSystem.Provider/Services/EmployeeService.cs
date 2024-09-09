@@ -96,11 +96,6 @@ namespace EmployeeSystem.Provider.Services
                     .Include(m => m.Department)
                     .Where(e => e.IsActive);
 
-                if (userRole != "SuperAdmin")
-                {
-                    query = query.Where(e => e.ManagerID != null && e.ManagerID == userId);
-                }
-
                 var range = paginatedDto.DateRange;
 
                 // range filter
@@ -253,7 +248,7 @@ namespace EmployeeSystem.Provider.Services
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 // checking the role exist or not
                 bool checkRole = RoleExist(employeeDto.Role);
-                if (!checkRole)
+                if (!checkRole || employeeDto.Role == Role.SuperAdmin)
                 {
                     return -1;
                 }
@@ -319,7 +314,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     // checking the role exist or not
                     bool checkRole = RoleExist(employeeDto.Role);
-                    if (!checkRole)
+                    if (!checkRole || employeeDto.Role == Role.SuperAdmin)
                     {
                         return -1;
                     }
@@ -410,7 +405,7 @@ namespace EmployeeSystem.Provider.Services
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 // checking the role
                 bool checkRole = RoleExist(employeeDto.Role);
-                if (!checkRole)
+                if (!checkRole || employeeDto.Role == Role.SuperAdmin)
                 {
                     return null;
                 }
