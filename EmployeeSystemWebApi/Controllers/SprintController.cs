@@ -70,13 +70,14 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-
+        [Authorize(Roles = "SuperAdmin, Admin")]
         [HttpPost("{id=0}")]
         public async Task<ActionResult<ApiResponse<int>>> Upsert(int id, AddSprintDto addSprintDto)
         {
             try
             {
-                var res = await _sprintService.Upsert(id, addSprintDto);
+                var claims = HttpContext.User.Claims;
+                var res = await _sprintService.Upsert(id, claims, addSprintDto);
                 var response = new ApiResponse<int>();
                 response.Message = "Sprint added";
                 response.Data = res;
@@ -100,7 +101,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var res = await _sprintService.DeleteById(id);
+                var claims = HttpContext.User.Claims;
+                var res = await _sprintService.DeleteById(id, claims);
                 var response = new ApiResponse<bool>();
                 if (!res)
                 {

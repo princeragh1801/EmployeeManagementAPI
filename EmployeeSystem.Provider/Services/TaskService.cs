@@ -612,12 +612,12 @@ namespace EmployeeSystem.Provider.Services
                     {
                         return -3;
                     }
-                    if(assignedToId == project.CreatedBy && assignedById != project.CreatedBy && userRole != "SuperAdmin")
+                   /* if(assignedToId == project.CreatedBy && assignedById != project.CreatedBy && userRole != "SuperAdmin")
                     {
                         return -3;
-                    }
+                    }*/
                     var checkValidAssign = await CheckTaskValidAssign(project.Id, assignedToId ?? 0, assignedById, userRole);
-                    if (!checkValidAssign)
+                    if (!checkValidAssign && assignedToId != project.CreatedBy)
                     {
                         return 0;
                     }
@@ -701,7 +701,7 @@ namespace EmployeeSystem.Provider.Services
                             return false;
                         }
                         var checkValidAssign = await CheckTaskValidAssign(project.Id, assignedToId ?? 0, assignedById, userRole);
-                        if (!checkValidAssign)
+                        if (!checkValidAssign && assignedToId != project.CreatedBy)
                         {
                             return false;
                         }

@@ -1,5 +1,6 @@
 ﻿using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Info;
+using System.Security.Claims;
 
 namespace EmployeeSystem.Contract.Interfaces
 {
@@ -13,7 +14,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task that represents the asynchronous operation, containing the unique identifier of the inserted or updated sprint.
         /// </returns>
-        public Task<int> Upsert(int id, AddSprintDto addSprintDto);
+        public Task<int> Upsert(int id, IEnumerable<Claim> claims, AddSprintDto addSprintDto);
 
         /// <summary>
         /// Retrieves a list of all sprints.
@@ -48,6 +49,6 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task that represents the asynchronous operation, containing a boolean value indicating whether the deletion was successful.
         /// </returns>
-        public Task<bool> DeleteById(int id);
+        public Task<bool> DeleteById(int id, IEnumerable<Claim> claims);
     }
 }

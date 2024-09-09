@@ -3,6 +3,7 @@ using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -15,10 +16,20 @@ namespace EmployeeSystem.Provider.Services
             _context = applicationDbContext;
         }
 
-        public async Task<int> Upsert(int id, AddSprintDto addSprintDto)
+        public async Task<int> Upsert(int id, IEnumerable<Claim> claims, AddSprintDto addSprintDto)
         {
             try
             {
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
+                if(userRole == "Admin")
+                {
+                    var check = await _context.Projects.FirstOrDefaultAsync(p => p.Id == addSprintDto.ProjectId && userId == p.CreatedBy);
+                    if(check == null)
+                    {
+                        return -1;
+                    }
+                }
                 var sprintToUpdate = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id);
                 if (sprintToUpdate == null)
                 {
@@ -108,12 +119,23 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<bool> DeleteById(int id)
+        public async Task<bool> DeleteById(int id, IEnumerable<Claim> claims)
         {
             try
             {
+                
                 var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id);
                 if (sprint == null) return false;
+                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
+                var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
+                if (userRole == "Admin")
+                {
+                    var check = await _context.Projects.FirstOrDefaultAsync(p => p.Id == sprint.projectId && userId == p.CreatedBy);
+                    if (check == null)
+                    {
+                        return false;
+                    }
+                }
                 sprint.isActive = false;
                 await _context.SaveChangesAsync();
                 return true;

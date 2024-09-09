@@ -26,20 +26,32 @@ namespace EmployeeSystem.Provider.Services
         public IQueryable<Project> GetProjectInfo(int userId, string role, int employeeId=0)
         {
             var query = _context.Projects.Where(p => p.IsActive);
-
-            if (role != "SuperAdmin")
+            if(employeeId == 0)
             {
-                if(employeeId == 0)
+                employeeId = userId;
+            }if(role == "Admin")
+            {
+                if(userId == employeeId)
                 {
-                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
-                    query = query.Where(p => userProjects.Contains(p.Id));
+                    query = query.Where(p => p.CreatedBy == userId);
                 }
                 else
                 {
-                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                    var adminProjects = query.Where(p => p.CreatedBy == userId).Select(p => p.Id).ToList();
                     var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
-                    query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
+                    query = query.Where(p => adminProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
                 }
+            }
+            else if (role != "SuperAdmin")
+            {
+                var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
+                query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
+            }
+            else if(userId != employeeId)
+            {
+                var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
+                query = query.Where(p => employeeProjects.Contains(p.Id));
             }
             return query;
         }
@@ -146,17 +158,7 @@ namespace EmployeeSystem.Provider.Services
                 var userRole = claims.First(e => e.Type == "Role")?.Value??"Employee";
                 var query = GetProjectInfo(userId, userRole, employeeId);
                 
-                /*foreach(var p in query)
-                {
-                    var taskCount = _context.Tasks.Where(t => t.IsActive && t.ProjectId == p.Id).CountAsync();
-                    var project = new ProjectDto
-                    {
-                        Name = p.Name,
-                        Description = p.Description,
-                        Status = p.Status,
-                        Id = p.Id,
-                    };
-                }*/
+
                 // only fetching project details
                 var projects = await query
                     .Select(p => new ProjectDto

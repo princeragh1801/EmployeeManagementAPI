@@ -187,7 +187,10 @@ namespace EmployeeSystemWebApi.Controllers
                 }else if(id == -1)
                 {
                     response.Message = "Can't assign this role";
-                }else if(id == -2)
+                    response.Status = 400;
+                    return BadRequest(response);
+                }
+                else if(id == -2)
                 {
                     response.Message = "Given username is already exist";
                     return Conflict(response);
