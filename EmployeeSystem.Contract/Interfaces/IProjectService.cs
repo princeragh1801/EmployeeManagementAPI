@@ -1,6 +1,7 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
+using EmployeeSystem.Contract.Dtos.Info;
 using System.Security.Claims;
 using static EmployeeSystem.Contract.Enums.Enums;
 
@@ -38,7 +39,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task representing the asynchronous operation, containing a list of ProjectDto representing the projects.
         /// </returns>
-        public Task<List<ProjectDto>> GetProjectsByEmployee(IEnumerable<Claim> claims, int employeeId);
+        public Task<List<EmployeeProjectInfo>> GetProjectsByEmployee(IEnumerable<Claim> claims, int employeeId);
 
         /// <summary>
         /// Retrieves a list of projects according to the status.

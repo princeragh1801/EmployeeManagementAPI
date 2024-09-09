@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
@@ -150,7 +151,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<List<ProjectDto>> GetProjectsByEmployee(IEnumerable<Claim> claims, int employeeId)
+        public async Task<List<EmployeeProjectInfo>> GetProjectsByEmployee(IEnumerable<Claim> claims, int employeeId)
         {
             try
             {
@@ -169,7 +170,18 @@ namespace EmployeeSystem.Provider.Services
                         Id = p.Id
                     }).ToListAsync();
 
-                return projects;
+                var employeeProjects = new List<EmployeeProjectInfo>();
+                foreach(var project in projects)
+                {
+                    var tasks = await _context.Tasks.Where(t => t.ProjectId == project.Id && t.AssignedTo == userId).CountAsync();
+                    var employeeProjectInfo = new EmployeeProjectInfo
+                    {
+                        Project = project,
+                        Tasks = tasks
+                    };
+                    employeeProjects.Add(employeeProjectInfo);
+                }
+                return employeeProjects;
             }
             catch (Exception ex)
             {

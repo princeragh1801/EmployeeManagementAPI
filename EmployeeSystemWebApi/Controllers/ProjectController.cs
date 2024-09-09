@@ -2,6 +2,7 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
+using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using EmployeeSystem.Provider.Services;
@@ -103,13 +104,13 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpGet("employee/{employeeId}")]
-        public async Task<ActionResult<ApiResponse<List<ProjectDto>>>> GetEmployeeProject(int employeeId)
+        public async Task<ActionResult<ApiResponse<List<EmployeeProjectInfo>>>> GetEmployeeProject(int employeeId)
         {
             try
             {
                 var claims = HttpContext.User.Claims;
                 var projects = await _projectService.GetProjectsByEmployee(claims, employeeId);
-                var response = new ApiResponse<List<ProjectDto>>
+                var response = new ApiResponse<List<EmployeeProjectInfo>>
                 {
                     Success = true,
                     Status = 200,
@@ -121,7 +122,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
             catch (Exception ex)
             {
-                var response = new ApiResponse<List<ProjectDto>>
+                var response = new ApiResponse<List<EmployeeProjectInfo>>
                 {
                     Success = false,
                     Status = 500,
