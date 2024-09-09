@@ -26,9 +26,9 @@ namespace EmployeeSystem.Contract.Interfaces
         ///     <item><description><see cref="TaskCount.AssignCount"/>: The count of tasks grouped by assignment.</description></item>
         /// </list>
         /// </returns>
-        public Task<TaskCount> GetCount(IEnumerable<Claim> claims, int projectId);
+        public Task<TaskCount> GetCount(IQueryable<Tasks> query);
 
-        public Task<PaginatedItemsDto<List<TasksDto>>> Get(int userId, int projectId, ProjectTasksDto paginatedDto);
+        public Task<PaginatedItemsDto<TaskPaginationInfo>> Get(int userId, int projectId, ProjectTasksDto paginatedDto);
         /// <summary>
         /// Retrieves a list of tasks based on the accessibility role of the specified user.
         /// </summary>

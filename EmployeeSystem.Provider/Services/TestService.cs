@@ -10,23 +10,18 @@ namespace EmployeeSystem.Provider.Services
     public class TestService : ITestService
     {
         private static string OpenOfficePath = @"C:\Program Files (x86)\OpenOffice 4\program\soffice.exe"; // Update this path
-        private readonly ApplicationDbContext _context;
+
         int id;
-        public TestService(ApplicationDbContext applicationDbContext)
-        {
-            _context = applicationDbContext;
-        }
+  
 
         public string Get()
         {
-            Console.WriteLine("Context : " + _context);
             id++;
             return $"Hello {id}";
         }
 
         public string ConvertToTextAsync(Stream srcStream)
         {
-
             try
             {
                 srcStream = ConvertDocToDocx(srcStream);

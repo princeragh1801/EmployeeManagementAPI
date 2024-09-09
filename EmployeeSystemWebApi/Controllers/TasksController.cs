@@ -32,7 +32,8 @@ namespace EmployeeSystemWebApi.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("Count/{projectId}")]
+        // remove this and attach the details with taskPagination
+        /*[HttpGet("Count/{projectId}")]
         public async Task<ActionResult<ApiResponse<TaskCount>>> GetCount(int projectId)
         {
             try
@@ -48,17 +49,17 @@ namespace EmployeeSystemWebApi.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }
+        }*/
 
         [HttpPost("pagination/{projectId}")]
-        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<List<TasksDto>>>>> GetProjectTasks(int projectId, ProjectTasksDto paginatedDto)
+        public async Task<ActionResult<ApiResponse<PaginatedItemsDto<TaskPaginationInfo>>>> GetProjectTasks(int projectId, ProjectTasksDto paginatedDto)
         {
             try
             {
                 var userId = Convert.ToInt32(HttpContext.User.Claims.First(e => e.Type == "UserId")?.Value);
                 var tasks = await _taskService.Get(userId, projectId, paginatedDto);
 
-                var response = new ApiResponse<PaginatedItemsDto<List<TasksDto>>>
+                var response = new ApiResponse<PaginatedItemsDto<TaskPaginationInfo>>
                 {
                     Success = true,
                     Status = 200,

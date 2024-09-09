@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EmployeeSystem.Contract.Dtos.Count;
 
 namespace EmployeeSystem.Contract.Dtos.Info.PaginationInfo
 {
     public class TaskPaginationInfo
     {
+        public List<TasksDto> Tasks { get; set; }
+        public TaskCount Count { get; set; }
     }
 }

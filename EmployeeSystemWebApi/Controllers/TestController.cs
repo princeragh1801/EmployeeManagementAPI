@@ -1,4 +1,5 @@
 ﻿
+using DocumentFormat.OpenXml.Packaging;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +13,22 @@ namespace EmployeeSystemWebApi.Controllers
     {
         private int id;
         private readonly ITestService _testService;
-        public TestController(ITestService testService)
+        private readonly ITestService _testService1;
+        private readonly ITestService _testService2;
+
+        public TestController(ITestService testService, ITestService test1, ITestService test2)
         {
             _testService = testService;
+            _testService1 = test1;
+            _testService2 = test2;
+            if(ReferenceEquals(_testService, _testService1) && ReferenceEquals(_testService1, _testService2))
+            {
+                Console.WriteLine("Both objects are same");
+            }
+            else
+            {
+                Console.WriteLine("Different objects");
+            }
             
         }
 
@@ -175,7 +189,6 @@ namespace EmployeeSystemWebApi.Controllers
         public async Task<ActionResult<ApiResponse<string>>> ConvertToString(IFormFile file)
         {
             var stream = file.OpenReadStream();
-            
             var text = _testService.ConvertToTextAsync(stream);
             var response = new ApiResponse<string>
             {
@@ -187,5 +200,6 @@ namespace EmployeeSystemWebApi.Controllers
             return Ok(response);
             
         }
+
     }
 }

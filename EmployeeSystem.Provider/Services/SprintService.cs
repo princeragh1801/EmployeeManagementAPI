@@ -55,13 +55,15 @@ namespace EmployeeSystem.Provider.Services
         {
             try
             {
-                var sprints = await _context.Sprints.Where(s => s.isActive).Select(s => new SprintInfo
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    StartDate = s.StartDate,
-                    EndDate = s.EndDate,
-                }).ToListAsync();
+                var sprints = await _context.Sprints.Where(s => s.isActive)
+                    .OrderByDescending(s => s.Id)
+                    .Select(s => new SprintInfo
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        StartDate = s.StartDate,
+                        EndDate = s.EndDate,
+                    }).ToListAsync();
                 return sprints;
             }
             catch (Exception ex)
@@ -90,6 +92,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 var sprints = await _context.Sprints
                     .Where(s => s.isActive & s.projectId == projectId)
+                    .OrderByDescending(s => s.Id)
                     .Select(s => new SprintInfo
                     {
                         Id = s.Id,

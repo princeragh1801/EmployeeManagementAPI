@@ -96,7 +96,7 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<PaginatedItemsDto<List<TasksDto>>> Get(int userId, int projectId, ProjectTasksDto paginatedDto)
+        public async Task<PaginatedItemsDto<TaskPaginationInfo>> Get(int userId, int projectId, ProjectTasksDto paginatedDto)
         {
             try
             {
@@ -175,9 +175,6 @@ namespace EmployeeSystem.Provider.Services
                     tasksList = epics;
                 }
 
-
-
-
                 tasksList = orderBy == SortedOrder.NoOrder ? tasksList : _utilityService.GetOrdered(tasksList, orderKey, orderBy == SortedOrder.Ascending ? true : false);
 
                 // calculating the total count and pages
@@ -187,6 +184,8 @@ namespace EmployeeSystem.Provider.Services
                 {
                     totalPages++;
                 }
+
+                var taskCount = await GetCount(tasksList);
 
                 // now extrating projects of the page-[x]
                 var tasksData = await tasksList
@@ -206,9 +205,15 @@ namespace EmployeeSystem.Provider.Services
 
                     }).ToListAsync();
 
+                var paginationInfo = new TaskPaginationInfo
+                {
+                    Tasks = tasksData,
+                    Count = taskCount,
+                };
+
                 // creating new dto to send the info
-                PaginatedItemsDto<List<TasksDto>> res = new PaginatedItemsDto<List<TasksDto>>();
-                res.Data = tasksData;
+                PaginatedItemsDto<TaskPaginationInfo> res = new PaginatedItemsDto<TaskPaginationInfo>();
+                res.Data = paginationInfo;
                 res.TotalPages = totalPages;
                 res.TotalItems = totalCount;
                 return res;
@@ -220,19 +225,10 @@ namespace EmployeeSystem.Provider.Services
             }
         }
 
-        public async Task<TaskCount> GetCount(IEnumerable<Claim> claims, int projectId)
+        public async Task<TaskCount> GetCount(IQueryable<Tasks> query)
         {
             try
             {
-                var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
-                var userRole = claims.First(e => e.Type == "Role")?.Value;
-
-                var query = _context.Tasks.Where(t => t.IsActive && t.ProjectId == projectId);
-                if(userRole != "SuperAdmin")
-                {
-                    query = query.Where(t => t.AssignedTo == userId);
-                }
-                var total = await query.CountAsync();
                 var epic = await query.Where(t => t.TaskType == TaskType.Epic).CountAsync();
                 var feature = await query.Where(t => t.TaskType == TaskType.Feature).CountAsync();
                 var userstory = await query.Where(t => t.TaskType == TaskType.Userstory).CountAsync();
@@ -270,7 +266,6 @@ namespace EmployeeSystem.Provider.Services
 
                 var count = new TaskCount
                 {
-                    Total = total,
                     TypeCount = type,
                     StatusCount = status,
                     AssignCount = assigned
