@@ -30,14 +30,14 @@ namespace EmployeeSystem.Provider.Services
                         return -1;
                     }
                 }
+                var sprintExist = await _context.Sprints.FirstOrDefaultAsync(s => s.Name == addSprintDto.Name & s.projectId == addSprintDto.ProjectId);
+                if (sprintExist != null && sprintExist.Id != id)
+                {
+                    return 0;
+                }
                 var sprintToUpdate = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id);
                 if (sprintToUpdate == null)
                 {
-                    var sprintExist = await _context.Sprints.FirstOrDefaultAsync(s => s.Name == addSprintDto.Name & s.projectId == addSprintDto.ProjectId);
-                    if (sprintExist != null)
-                    {
-                        return 0;
-                    }
                     var sprint = new Sprint
                     {
                         Name = addSprintDto.Name,
@@ -50,6 +50,7 @@ namespace EmployeeSystem.Provider.Services
                     await _context.SaveChangesAsync();
                     return sprint.Id;
                 }
+                
                 sprintToUpdate.Name = addSprintDto.Name;
                 sprintToUpdate.StartDate = addSprintDto.StartDate;
                 sprintToUpdate.EndDate = addSprintDto.EndDate;

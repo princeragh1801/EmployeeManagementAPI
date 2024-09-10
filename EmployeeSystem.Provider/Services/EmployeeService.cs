@@ -94,7 +94,7 @@ namespace EmployeeSystem.Provider.Services
                 var query = _context.Employees
                     .Include(e => e.Manager)
                     .Include(m => m.Department)
-                    .Where(e => e.IsActive);
+                    .Where(e => e.IsActive && e.Id != userId && e.Role != Role.SuperAdmin);
 
                 var range = paginatedDto.DateRange;
 
@@ -149,11 +149,11 @@ namespace EmployeeSystem.Provider.Services
         }
 
 
-        public async Task<EmployeeCount> GetCounts()
+        public async Task<EmployeeCount> GetCounts(int userId)
         {
             try
             {
-                var query = _context.Employees.Where(t => t.IsActive);
+                var query = _context.Employees.Where(e => e.IsActive && e.Id != userId && e.Role != Role.SuperAdmin); ;
                 var totalActive = await query.CountAsync();
                 var superAdmin = await query.Where(t => t.Role == Role.SuperAdmin).CountAsync();
                 var admin = await query.Where(t => t.Role == Role.Admin).CountAsync();

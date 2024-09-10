@@ -19,7 +19,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// A task that represents the asynchronous operation, containing an <see cref="EmployeeCount"/> object with details of 
         /// the total employee count and counts grouped by each role.
         /// </returns>
-        public Task<EmployeeCount> GetCounts();
+        public Task<EmployeeCount> GetCounts(int userId);
 
         public Task<PaginatedItemsDto<List<EmployeePaginationInfo>>> Get(IEnumerable<Claim> claims, PaginatedDto<Role?> paginatedDto);
         /// <summary>

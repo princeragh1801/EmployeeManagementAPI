@@ -30,7 +30,8 @@ namespace EmployeeSystemWebApi.Controllers
         {
             try
             {
-                var count = await _employeeService.GetCounts();
+                var userId = Convert.ToInt32(HttpContext.User.FindFirst(e => e.Type == "UserId")?.Value);
+                var count = await _employeeService.GetCounts(userId);
                 var response = new ApiResponse<EmployeeCount>();
                 response.Data = count;
                 response.Message = "Details fetched";

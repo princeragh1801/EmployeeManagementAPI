@@ -29,31 +29,23 @@ namespace EmployeeSystem.Provider.Services
             var query = _context.Projects.Where(p => p.IsActive);
             if(employeeId == 0)
             {
+
                 employeeId = userId;
-            }if(role == "Admin")
-            {
-                if(userId == employeeId)
-                {
-                    query = query.Where(p => p.CreatedBy == userId);
-                }
-                else
-                {
-                    var adminProjects = query.Where(p => p.CreatedBy == userId).Select(p => p.Id).ToList();
-                    var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
-                    query = query.Where(p => adminProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
-                }
-            }
-            else if (role != "SuperAdmin")
+            }if (role != "SuperAdmin")
             {
                 var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
                 var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
-                query = query.Where(p => userProjects.Contains(p.Id) & employeeProjects.Contains(p.Id));
+                query = query.Where(p => (p.CreatedBy == userId || userProjects.Contains(p.Id)) & employeeProjects.Contains(p.Id));
             }
-            else if(userId != employeeId)
+            else
             {
-                var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
-                query = query.Where(p => employeeProjects.Contains(p.Id));
+                if(employeeId != userId)
+                {
+                    var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
+                    query = query.Where(p => (p.CreatedBy == employeeId || employeeProjects.Contains(p.Id)));
+                }
             }
+
             return query;
         }
 
@@ -319,30 +311,28 @@ namespace EmployeeSystem.Provider.Services
 
                 await _context.SaveChangesAsync();
 
-                if(projectDto.Members != null && projectDto.Members.Any())
-                {
-                    var existingEmp = _context.ProjectEmployees
-                        .Where(pe => pe.ProjectId == id)
-                        .Select(pe => pe.EmployeeId)
-                        .ToList();
+                var existingEmp = _context.ProjectEmployees
+                    .Where(pe => pe.ProjectId == id)
+                    .Select(pe => pe.EmployeeId)
+                    .ToList();
 
-                    var empToRemove = existingEmp.Except(projectDto.Members.Select(m => m.EmployeeId)).ToList();
-                    var empToAdd = projectDto.Members.Select(e => e.EmployeeId).Except(existingEmp).ToList();
+                var empToRemove = existingEmp.Except(projectDto.Members.Select(m => m.EmployeeId)).ToList();
+                var empToAdd = projectDto.Members.Select(e => e.EmployeeId).Except(existingEmp).ToList();
                     
-                    if(empToRemove.Any()) _context.ProjectEmployees.RemoveRange(_context.ProjectEmployees.Where(pe=> pe.ProjectId == id && empToRemove.Contains(pe.EmployeeId)));
+                if(empToRemove.Any()) _context.ProjectEmployees.RemoveRange(_context.ProjectEmployees.Where(pe=> pe.ProjectId == id && empToRemove.Contains(pe.EmployeeId)));
 
-                    if (empToAdd.Any())
+                if (empToAdd.Any())
+                {
+                    var projectEmployeesToAdd = empToAdd.Select(e => new ProjectEmployee
                     {
-                        var projectEmployeesToAdd = empToAdd.Select(e => new ProjectEmployee
-                        {
-                            EmployeeId = e,
-                            ProjectId = id,
-                        });
-                        _context.ProjectEmployees.AddRange(projectEmployeesToAdd);
-                    }
-
-                    await _context.SaveChangesAsync();
+                        EmployeeId = e,
+                        ProjectId = id,
+                    });
+                    _context.ProjectEmployees.AddRange(projectEmployeesToAdd);
                 }
+
+                await _context.SaveChangesAsync();
+                
 
                 
 
