@@ -14,13 +14,15 @@ namespace EmployeeSystem.Provider.Services
             _context = applicationDbContext;
         }
 
-        public async Task<List<LogDto>> GetLogs(int taskId)
+        public async Task<List<LogDto>> GetLogs(int taskId, int skip)
         {
             try
             {
                 var logs = await _context.TaskLogs
                     .Where(t => t.TaskId == taskId)
                     .OrderByDescending(t => t.Id)
+                    .Skip(skip)
+                    .Take(10)
                     .Select(t => new LogDto
                     {
                         Message = t.Message,
