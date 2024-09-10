@@ -29,13 +29,21 @@ namespace EmployeeSystem.Provider.Services
             var query = _context.Projects.Where(p => p.IsActive);
             if(employeeId == 0)
             {
-
                 employeeId = userId;
             }if (role != "SuperAdmin")
             {
-                var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
-                var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
-                query = query.Where(p => (p.CreatedBy == userId || userProjects.Contains(p.Id)) & employeeProjects.Contains(p.Id));
+                if(employeeId != userId)
+                {
+                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                    var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
+                    query = query.Where(p => (p.CreatedBy == userId || userProjects.Contains(p.Id)) & employeeProjects.Contains(p.Id));
+                }
+                else
+                {
+                    var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
+                    query = query.Where(p => (p.CreatedBy == userId || userProjects.Contains(p.Id)));
+                }
+                
             }
             else
             {
