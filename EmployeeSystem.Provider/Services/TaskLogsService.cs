@@ -25,6 +25,10 @@ namespace EmployeeSystem.Provider.Services
 
                 var count = await query.CountAsync();
                 var remaining = count - 10;
+                if(remaining < 0)
+                {
+                    remaining = 0;
+                }
                 var logs = await query
                     .Take(10)
                     .Select(t => new LogDto
