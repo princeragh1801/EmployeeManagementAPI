@@ -12,7 +12,7 @@ namespace EmployeeSystem.Contract.Interfaces
         /// <returns>
         /// A task that represents the asynchronous operation, containing a list of <see cref="LogDto"/> objects representing the logs associated with the given task.
         /// </returns>
-        public Task<List<LogDto>> GetLogs(int taskId, int skip);
+        public Task<TaskLogInfo> GetLogs(int taskId, int skip);
 
         /// <summary>
         /// Adds a new task log entry based on the provided log details.

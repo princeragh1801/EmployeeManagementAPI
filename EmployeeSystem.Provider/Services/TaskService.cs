@@ -343,7 +343,7 @@ namespace EmployeeSystem.Provider.Services
                 // filter according to the role
                 var query = _context.Tasks.Where(t => t.IsActive);
 
-                query.Include(t => t.Parent).Include(t => t.Employee).Include(t => t.Creator);
+                query = query.Include(t => t.Parent).Include(t => t.Employee).Include(t => t.Creator);
                 // check whether the task belongs to the list, then convert the task into task dto form
                 /*var task = await query
                     .Select(t => new TasksDto
@@ -364,14 +364,14 @@ namespace EmployeeSystem.Provider.Services
 
                     }).FirstOrDefaultAsync(t => t.Id == id);*/
 
-                var taskEntity = await query.Include(t => t.Employee).FirstOrDefaultAsync(t => t.Id == id);
+                var taskEntity = await query.FirstOrDefaultAsync(t => t.Id == id);
                 if (taskEntity == null)
                 {
                     return null;
                 }
 
                 var task = _mapper.Map<TasksDto>(taskEntity);
-
+                task.AssignerName = taskEntity.Creator?.Name;
 
                 var reviews = await _reviewService.Get(id);
 

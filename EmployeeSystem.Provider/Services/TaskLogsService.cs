@@ -14,21 +14,29 @@ namespace EmployeeSystem.Provider.Services
             _context = applicationDbContext;
         }
 
-        public async Task<List<LogDto>> GetLogs(int taskId, int skip)
+        public async Task<TaskLogInfo> GetLogs(int taskId, int skip)
         {
             try
             {
-                var logs = await _context.TaskLogs
+                var query = _context.TaskLogs
                     .Where(t => t.TaskId == taskId)
                     .OrderByDescending(t => t.Id)
-                    .Skip(skip)
+                    .Skip(skip);
+
+                var count = await query.CountAsync();
+                var remaining = count - 10;
+                var logs = await query
                     .Take(10)
                     .Select(t => new LogDto
                     {
                         Message = t.Message,
                     }).ToListAsync();
-
-                return logs;
+                var taskLogInfo = new TaskLogInfo
+                {
+                    Remaining = remaining,
+                    Logs = logs
+                };
+                return taskLogInfo;
             }catch(Exception ex)
             {
                 throw new Exception(ex.Message);

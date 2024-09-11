@@ -19,12 +19,12 @@ namespace EmployeeSystemWebApi.Controllers
         }
 
         [HttpGet("{taskId}/{skip}")]
-        public async Task<ActionResult<ApiResponse<List<LogDto>>>> GetLogs(int taskId, int skip)
+        public async Task<ActionResult<ApiResponse<TaskLogInfo>>> GetLogs(int taskId, int skip)
         {
             try
             {
                 var logs = await _taskLogService.GetLogs(taskId, skip);
-                var response = new ApiResponse<List<LogDto>>();
+                var response = new ApiResponse<TaskLogInfo>();
                 response.Data = logs;
                 response.Message = "Task logs fetched";
                 return Ok(response);
