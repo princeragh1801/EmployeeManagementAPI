@@ -12,7 +12,7 @@ namespace EmployeeSystem.Provider.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public ProjectEmployeeService(ApplicationDbContext applicationDbContext, IMapper mapper) 
+        public ProjectEmployeeService(ApplicationDbContext applicationDbContext, IMapper mapper)
         {
             _context = applicationDbContext;
             _mapper = mapper;
@@ -24,7 +24,8 @@ namespace EmployeeSystem.Provider.Services
             {
                 var employees = await _context.ProjectEmployees.Include(e => e.Employee).Where(e => e.ProjectId == projectId & e.Employee.IsActive).ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider).ToListAsync();
                 return employees;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -37,11 +38,11 @@ namespace EmployeeSystem.Provider.Services
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 var role = claims.First(e => e.Type == "Role")?.Value;
                 var project = await _context.Projects.FirstAsync(p => p.Id == projectId);
-                if(project == null)
+                if (project == null)
                 {
                     return false;
                 }
-                if(role == "Admin" && project.CreatedBy != userId)
+                if (role == "Admin" && project.CreatedBy != userId)
                 {
                     return false;
                 }

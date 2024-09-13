@@ -4,13 +4,13 @@ using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using EmployeeSystem.Provider;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -27,7 +27,7 @@ namespace EmployeeSystemWebApi.Controllers
         {
             _taskService = taskService;
             _context = applicationDbContext;
-            _taskLogService = taskLogService;   
+            _taskLogService = taskLogService;
             _mapper = mapper;
         }
 
@@ -96,7 +96,8 @@ namespace EmployeeSystemWebApi.Controllers
                     Data = tasks
                 };
                 return Ok(response);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new ApiResponse<List<TasksDto>?>
                 {
@@ -107,13 +108,13 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [Authorize(Roles ="SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpGet("employee/{employeeId}")]
         public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetEmployeeTasks(int employeeId)
         {
             try
             {
-                
+
                 var tasks = await _taskService.GetEmployeeTask(employeeId);
                 var response = new ApiResponse<List<TasksDto>>
                 {
@@ -135,7 +136,7 @@ namespace EmployeeSystemWebApi.Controllers
             }
         }
 
-        [Authorize(Roles ="SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpGet("sprint/{sprintId}")]
         public async Task<ActionResult<ApiResponse<List<TasksDto>>>> GetSprintTasks(int sprintId)
         {
@@ -178,7 +179,7 @@ namespace EmployeeSystemWebApi.Controllers
                     Message = "Task fetched",
                     Data = task
                 };
-                if(task == null)
+                if (task == null)
                 {
                     response.Message = "Task with given id not found";
                 }
@@ -216,27 +217,32 @@ namespace EmployeeSystemWebApi.Controllers
                     response.Message = "Unauthorized request, The assigner doesn't has the authority to assign the task";
                     response.Status = 401;
                     return Unauthorized(response);
-                }else if(id == -1)
+                }
+                else if (id == -1)
                 {
                     response.Message = "Employee is not in the project so task can't assign";
                     response.Status = 401;
                     return Unauthorized(response);
-                }else if(id == -2)
+                }
+                else if (id == -2)
                 {
                     response.Message = "Project not exist";
                     response.Status = 404;
                     return NotFound(response);
-                }else if(id == -3)
+                }
+                else if (id == -3)
                 {
                     response.Message = "User with assigned to id is not exist";
                     response.Status = 404;
                     return NotFound(response);
-                }else if(id == -4)
+                }
+                else if (id == -4)
                 {
                     response.Message = "Invalid parent";
                     response.Status = 422;
                     return UnprocessableEntity(response);
-                }else if(id == -5)
+                }
+                else if (id == -5)
                 {
                     response.Message = "Task with the given name already exist";
                     response.Status = 409;
@@ -277,7 +283,7 @@ namespace EmployeeSystemWebApi.Controllers
                     response.Status = 401;
                     return Unauthorized(response);
                 }
-                
+
 
                 return Ok(response);
             }
@@ -308,9 +314,9 @@ namespace EmployeeSystemWebApi.Controllers
                     Status = 200,
                     Message = "Task Deleted",
                     Data = true
-                   
+
                 };
-                if(deleted == null)
+                if (deleted == null)
                 {
                     response.Message = "Unauthorized user";
                     response.Data = false;
@@ -358,7 +364,7 @@ namespace EmployeeSystemWebApi.Controllers
                 {
                     response.Message = "Task not found";
                 }
-                
+
                 return Ok(response);
             }
             catch (Exception ex)
@@ -449,7 +455,8 @@ namespace EmployeeSystemWebApi.Controllers
                 }
                 response.Message = "Status updated";
                 return Ok(response);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -569,7 +576,7 @@ namespace EmployeeSystemWebApi.Controllers
                 var tasks = await _taskService.GetByType(projectId, type);
                 var response = new ApiResponse<List<TaskIdAndName>>();
                 response.Data = tasks;
-               
+
                 response.Message = "Details fetched";
                 return Ok(response);
             }

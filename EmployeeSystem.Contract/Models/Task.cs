@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using static EmployeeSystem.Contract.Enums.Enums;
+﻿using EmployeeSystem.Contract.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EmployeeSystem.Contract.Models
 {
@@ -28,7 +28,7 @@ namespace EmployeeSystem.Contract.Models
         public int? RemainingEstimateHours { get; set; }
 
         [ForeignKey(nameof(SprintId))]
-        public Sprint ?Sprint { get; set; }
+        public Sprint? Sprint { get; set; }
 
         [ForeignKey(nameof(ParentId))]
         public Tasks? Parent { get; set; }

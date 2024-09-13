@@ -2,11 +2,11 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -77,7 +77,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 var response = await _departmentService.GetAll();
-                
+
                 return Ok(response);
             }
             catch (Exception ex)
@@ -98,8 +98,8 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 var response = await _departmentService.GetById(id);
-                
-                if(response.Status == 404)
+
+                if (response.Status == 404)
                 {
                     return NotFound(response);
                 }
@@ -149,7 +149,7 @@ namespace EmployeeSystemWebApi.Controllers
             try
             {
                 var response = await _departmentService.DeleteById(id);
-                
+
                 if (response.Status == 404)
                 {
                     return NotFound();

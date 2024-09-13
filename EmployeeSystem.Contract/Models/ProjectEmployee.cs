@@ -4,9 +4,8 @@ namespace EmployeeSystem.Contract.Models
 {
     public class ProjectEmployee
     {
-        
         public int ProjectId { get; set; }
-        
+
         public int EmployeeId { get; set; }
 
         [ForeignKey(nameof(ProjectId))]

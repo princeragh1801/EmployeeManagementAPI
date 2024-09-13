@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using static EmployeeSystem.Contract.Enums.Enums;
+﻿using EmployeeSystem.Contract.Enums;
 
 namespace EmployeeSystem.Contract.Models
 {
@@ -8,7 +7,7 @@ namespace EmployeeSystem.Contract.Models
         public int Id { get; set; }
 
         public string Name { get; set; }
-        
+
         public string Description { get; set; }
 
         public ProjectStatus Status { get; set; } = ProjectStatus.Pending;

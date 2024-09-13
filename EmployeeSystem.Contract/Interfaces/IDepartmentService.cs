@@ -2,8 +2,8 @@
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Response;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Interfaces
 {

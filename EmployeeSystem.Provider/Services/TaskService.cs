@@ -6,11 +6,11 @@ using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -573,7 +573,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var taskExist = await _context.Tasks.FirstOrDefaultAsync(t => t.Name == taskDto.Name && t.ProjectId == taskDto.ProjectId);
-                if(taskExist != null)
+                if (taskExist != null)
                 {
                     return -5;
                 }
@@ -612,10 +612,10 @@ namespace EmployeeSystem.Provider.Services
                     {
                         return -3;
                     }
-                   /* if(assignedToId == project.CreatedBy && assignedById != project.CreatedBy && userRole != "SuperAdmin")
-                    {
-                        return -3;
-                    }*/
+                    /* if(assignedToId == project.CreatedBy && assignedById != project.CreatedBy && userRole != "SuperAdmin")
+                     {
+                         return -3;
+                     }*/
                     var checkValidAssign = await CheckTaskValidAssign(project.Id, assignedToId ?? 0, assignedById, userRole);
                     if (!checkValidAssign && assignedToId != project.CreatedBy)
                     {

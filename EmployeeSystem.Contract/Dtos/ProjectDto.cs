@@ -1,5 +1,5 @@
 ﻿
-using static EmployeeSystem.Contract.Enums.Enums;
+using EmployeeSystem.Contract.Enums;
 
 namespace EmployeeSystem.Contract.Dtos
 {

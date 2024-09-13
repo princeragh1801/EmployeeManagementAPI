@@ -6,12 +6,12 @@ using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -31,7 +31,7 @@ namespace EmployeeSystem.Provider.Services
             _cloudinaryService = cloudinaryService;
         }
 
-        public async Task<bool> CheckManagerAndEmployeeDepartment(int ?ManagerId, int? DepartmentId)
+        public async Task<bool> CheckManagerAndEmployeeDepartment(int? ManagerId, int? DepartmentId)
         {
             try
             {
@@ -64,7 +64,8 @@ namespace EmployeeSystem.Provider.Services
             if (role > 2 || role < 0)
             {
                 return false;
-            }return true;
+            }
+            return true;
         }
 
         public async Task<bool> EmployeeExist(int id)
@@ -89,7 +90,7 @@ namespace EmployeeSystem.Provider.Services
                 var role = paginatedDto.Status;
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
                 var userRole = claims.First(e => e.Type == "Role")?.Value;
-                
+
                 // including the details of the employee in query
                 var query = _context.Employees
                     .Include(e => e.Manager)
@@ -182,7 +183,7 @@ namespace EmployeeSystem.Provider.Services
                 var userRole = claims.First(e => e.Type == "Role")?.Value;
 
                 // if user is not a super-admin then sending the employees where the manager id == emp.id
-                if(userRole != "SuperAdmin")
+                if (userRole != "SuperAdmin")
                 {
                     return await _context.Employees
                         .Where(e => e.ManagerID == userId)
@@ -222,7 +223,7 @@ namespace EmployeeSystem.Provider.Services
                 {
                     return null;
                 }
-                
+
                 // fetching the employee and converting it into the employee dto
 
                 var employee = await _context.Employees
@@ -266,19 +267,19 @@ namespace EmployeeSystem.Provider.Services
 
                 // checking the manager belongs to the same department
                 bool check = await CheckManagerAndEmployeeDepartment(managerId, departmentId);
-                
-                
+
+
                 if (!check)
                 {
                     return 0;
                 }
-                
+
                 var firstLetter = employeeDto.Name.ElementAt(0);
                 var lastLetter = employeeDto.Name.ElementAt(1);
                 var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
                 Console.WriteLine("First " + firstLetter);
                 Console.WriteLine("Last " + lastLetter);
-                Console.WriteLine("Url "+ imageUrl);
+                Console.WriteLine("Url " + imageUrl);
                 var employee = _mapper.Map<Employee>(employeeDto);
                 employee.CreatedBy = userId;
                 employee.ImageUrl = imageUrl;
@@ -431,18 +432,18 @@ namespace EmployeeSystem.Provider.Services
                 // fetching the employee and converting it into the employee dto
 
                 var employeeToUpdate = await _context.Employees
-                    .FirstOrDefaultAsync(e=> e.Id == id);
+                    .FirstOrDefaultAsync(e => e.Id == id);
 
-               
+
                 // updating the feilds if employee exist
                 if (employeeToUpdate == null)
                 {
                     return false;
-                    
+
                 }
                 var firstLetter = employeeDto.Name.ElementAt(0);
                 var lastLetter = employeeDto.Name.ElementAt(1);
-                
+
                 var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
 
 
@@ -463,7 +464,7 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-        
+
         // get manager details
         public async Task<List<EmployeeDto>> GetManagers()
         {
@@ -516,7 +517,7 @@ namespace EmployeeSystem.Provider.Services
                 throw new Exception(ex.Message);
             }
         }
-    
+
 
         public async Task<List<EmployeeIdAndName>?> GetEmployeesWithDepartmentName(int id)
         {
@@ -524,7 +525,7 @@ namespace EmployeeSystem.Provider.Services
             {
                 // check whether the department with given id is exist or not
                 var res = await _context.Departments.FirstOrDefaultAsync(d => d.Id == id & d.IsActive);
-                if(res == null)
+                if (res == null)
                 {
                     return null;
                 }
@@ -542,13 +543,14 @@ namespace EmployeeSystem.Provider.Services
                     .ToListAsync();
 
                 return employees;
-                
-            }catch (Exception ex)
+
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
-        
+
         public async Task<List<EmployeeIdAndName>> GetEmployeeIdAndName()
         {
             try
@@ -558,7 +560,8 @@ namespace EmployeeSystem.Provider.Services
                     .ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider)
                     .ToListAsync();
                 return employeeInfo;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -580,16 +583,17 @@ namespace EmployeeSystem.Provider.Services
                         Phone = e.Phone,
                         Role = e.Role,
                         Salary = e.Salary,
-                        
+
                     }).FirstAsync();
 
                 return employee;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
-    
+
         public async Task<bool> UpdateAvatar(int id, IFormFile file)
         {
             try
@@ -599,7 +603,8 @@ namespace EmployeeSystem.Provider.Services
                 employee.ImageUrl = imageUrl;
                 await _context.SaveChangesAsync();
                 return true;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

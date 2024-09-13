@@ -4,11 +4,11 @@ using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -18,7 +18,7 @@ namespace EmployeeSystemWebApi.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
-        
+
         public EmployeeController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
@@ -36,7 +36,8 @@ namespace EmployeeSystemWebApi.Controllers
                 response.Data = count;
                 response.Message = "Details fetched";
                 return Ok(count);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -182,22 +183,24 @@ namespace EmployeeSystemWebApi.Controllers
                     Message = "Employee Added successfully",
                     Data = id
                 };
-                if(id == 0)
+                if (id == 0)
                 {
                     response.Message = "Manager not exist";
-                }else if(id == -1)
+                }
+                else if (id == -1)
                 {
                     response.Message = "Can't assign this role";
                     response.Status = 400;
                     return BadRequest(response);
                 }
-                else if(id == -2)
+                else if (id == -2)
                 {
                     response.Message = "Given username is already exist";
                     return Conflict(response);
                 }
                 return Ok(response);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new ApiResponse<bool>
                 {
@@ -224,11 +227,11 @@ namespace EmployeeSystemWebApi.Controllers
                     Message = "Employees Added successfully",
                     Data = added
                 };
-                if(added == -1)
+                if (added == -1)
                 {
                     response.Message = "Role is not assigned properly";
                 }
-                else if(added == -2)
+                else if (added == -2)
                 {
                     response.Message = "Manager is not assigned properly";
                 }
@@ -271,7 +274,7 @@ namespace EmployeeSystemWebApi.Controllers
                 }
                 return Ok(response);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new ApiResponse<bool>
                 {
@@ -419,7 +422,8 @@ namespace EmployeeSystemWebApi.Controllers
                     Data = updated
                 };
                 return Ok(response);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

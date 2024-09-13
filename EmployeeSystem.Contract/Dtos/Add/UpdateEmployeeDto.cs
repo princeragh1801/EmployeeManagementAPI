@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using static EmployeeSystem.Contract.Enums.Enums;
+using EmployeeSystem.Contract.Enums;
 
 namespace EmployeeSystem.Contract.Dtos.Add
 {

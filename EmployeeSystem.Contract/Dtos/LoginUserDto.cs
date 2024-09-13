@@ -1,5 +1,4 @@
-﻿using EmployeeSystem.Contract.Dtos.IdAndName;
-using EmployeeSystem.Contract.Dtos.Info;
+﻿using EmployeeSystem.Contract.Dtos.Info;
 
 namespace EmployeeSystem.Contract.Dtos
 {

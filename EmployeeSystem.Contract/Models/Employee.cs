@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using static EmployeeSystem.Contract.Enums.Enums;
+﻿using EmployeeSystem.Contract.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EmployeeSystem.Contract.Models
 {
@@ -27,7 +27,7 @@ namespace EmployeeSystem.Contract.Models
 
         public int? ManagerID { get; set; }
 
-        public  Role Role{ get; set; }
+        public Role Role { get; set; }
 
         [ForeignKey(nameof(ManagerID))]
         public virtual Employee? Manager { get; set; }
@@ -36,6 +36,6 @@ namespace EmployeeSystem.Contract.Models
         public virtual Department? Department { get; set; }
 
         public bool IsActive { get; set; } = true;
-       
+
     }
 }

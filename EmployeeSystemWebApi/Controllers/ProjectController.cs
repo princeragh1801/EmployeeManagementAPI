@@ -1,15 +1,12 @@
 ﻿using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
-using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Response;
-using EmployeeSystem.Provider.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static EmployeeSystem.Contract.Enums.Enums;
-
 
 namespace EmployeeSystemWebApi.Controllers
 {
@@ -220,7 +217,7 @@ namespace EmployeeSystemWebApi.Controllers
                 if (id == 0)
                 {
                     response.Message = "Unauthorized request";
-                    
+
                 }
 
                 return Ok(response);

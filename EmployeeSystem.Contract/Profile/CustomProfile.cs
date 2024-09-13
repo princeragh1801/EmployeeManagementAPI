@@ -1,12 +1,11 @@
-﻿
-using AutoMapper;
+﻿using AutoMapper;
 using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.IdAndName;
 using EmployeeSystem.Contract.Dtos.Info;
 using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Models;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Contract.Prof
 {
@@ -25,8 +24,8 @@ namespace EmployeeSystem.Contract.Prof
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.EmployeeId))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Employee.Name))
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Employee.Department.Name));
-                
-                
+
+
 
             CreateMap<Project, ProjectDto>()
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.Creator.Name));
@@ -65,7 +64,7 @@ namespace EmployeeSystem.Contract.Prof
             .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore()) // Assuming UpdatedBy is set separately
             .ForMember(dest => dest.UpdatedOn, opt => opt.MapFrom(src => DateTime.Now)); // Sets UpdatedOn to the current date and time
 
-           
+
             CreateMap<Employee, EmployeeIdAndName>()
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name));
             // map for department

@@ -4,11 +4,11 @@ using EmployeeSystem.Contract.Dtos;
 using EmployeeSystem.Contract.Dtos.Add;
 using EmployeeSystem.Contract.Dtos.Count;
 using EmployeeSystem.Contract.Dtos.Info;
+using EmployeeSystem.Contract.Enums;
 using EmployeeSystem.Contract.Interfaces;
 using EmployeeSystem.Contract.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using static EmployeeSystem.Contract.Enums.Enums;
 
 namespace EmployeeSystem.Provider.Services
 {
@@ -24,15 +24,16 @@ namespace EmployeeSystem.Provider.Services
             _mapper = mapper;
         }
 
-        public IQueryable<Project> GetProjectInfo(int userId, string role, int employeeId=0)
+        public IQueryable<Project> GetProjectInfo(int userId, string role, int employeeId = 0)
         {
             var query = _context.Projects.Where(p => p.IsActive);
-            if(employeeId == 0)
+            if (employeeId == 0)
             {
                 employeeId = userId;
-            }if (role != "SuperAdmin")
+            }
+            if (role != "SuperAdmin")
             {
-                if(employeeId != userId)
+                if (employeeId != userId)
                 {
                     var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
                     var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
@@ -43,11 +44,11 @@ namespace EmployeeSystem.Provider.Services
                     var userProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == userId).Select(pe => pe.ProjectId).ToList();
                     query = query.Where(p => (p.CreatedBy == userId || userProjects.Contains(p.Id)));
                 }
-                
+
             }
             else
             {
-                if(employeeId != userId)
+                if (employeeId != userId)
                 {
                     var employeeProjects = _context.ProjectEmployees.Where(pe => pe.EmployeeId == employeeId).Select(pe => pe.ProjectId).ToList();
                     query = query.Where(p => (p.CreatedBy == employeeId || employeeProjects.Contains(p.Id)));
@@ -62,7 +63,7 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
-                var userRole = claims.First(e => e.Type == "Role")?.Value??"Employee";
+                var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
                 var query = GetProjectInfo(userId, userRole);
                 // only selecting which is active
                 query = query.Include(p => p.Creator);
@@ -88,7 +89,7 @@ namespace EmployeeSystem.Provider.Services
                 }
                 var user = await _context.Employees.FirstAsync(e => e.Id == userId);
 
-                
+
                 // applying search filter on that
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -143,11 +144,12 @@ namespace EmployeeSystem.Provider.Services
                     .Where(p => p.IsActive)
                     .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider)
                     .ToListAsync();
-                
+
                 return projects;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                throw new Exception(ex.Message);    
+                throw new Exception(ex.Message);
             }
         }
 
@@ -156,9 +158,9 @@ namespace EmployeeSystem.Provider.Services
             try
             {
                 var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
-                var userRole = claims.First(e => e.Type == "Role")?.Value??"Employee";
+                var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
                 var query = GetProjectInfo(userId, userRole, employeeId);
-                
+
 
                 // only fetching project details
                 var projects = await query
@@ -171,7 +173,7 @@ namespace EmployeeSystem.Provider.Services
                     }).ToListAsync();
 
                 var employeeProjects = new List<EmployeeProjectInfo>();
-                foreach(var project in projects)
+                foreach (var project in projects)
                 {
                     var tasks = await _context.Tasks.Where(t => t.ProjectId == project.Id && t.AssignedTo == userId).CountAsync();
                     var employeeProjectInfo = new EmployeeProjectInfo
@@ -213,7 +215,7 @@ namespace EmployeeSystem.Provider.Services
                 var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
 
                 var query = GetProjectInfo(userId, userRole);
-                
+
                 // fetching the project with given id
                 var project = await query
                     .Include(p => p.Creator)
@@ -234,7 +236,7 @@ namespace EmployeeSystem.Provider.Services
 
                 var tasks = project.Tasks.Where(t => t.IsActive);
                 var totalTasks = tasks.Count();
-                var pendingTasks =tasks.Where(t => t.Status == TasksStatus.Pending).Count();
+                var pendingTasks = tasks.Where(t => t.Status == TasksStatus.Pending).Count();
                 var completedTasks = tasks.Where(t => t.Status == TasksStatus.Completed).Count();
                 var activeTasks = tasks.Where(t => t.Status == TasksStatus.Active).Count();
 
@@ -274,7 +276,7 @@ namespace EmployeeSystem.Provider.Services
                 _context.Projects.Add(project);
                 await _context.SaveChangesAsync();
 
-                if(projectDto.Members != null && projectDto.Members.Any())
+                if (projectDto.Members != null && projectDto.Members.Any())
                 {
                     var projectEmployeesToAdd = projectDto.Members.Select(pe => new ProjectEmployee
                     {
@@ -290,7 +292,7 @@ namespace EmployeeSystem.Provider.Services
             }
             catch (Exception ex)
             {
-                
+
                 //Console.WriteLine(ex.Message);
                 throw new Exception(ex.Message, ex);
             }
@@ -303,10 +305,11 @@ namespace EmployeeSystem.Provider.Services
                 var admin = await _context.Employees.FirstAsync(e => e.Id == adminId);
                 // creating a new project model
                 var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id & p.IsActive);
-                if(project == null)
+                if (project == null)
                 {
                     return -1;
-                }if(project.CreatedBy != adminId && admin.Role != Role.SuperAdmin)
+                }
+                if (project.CreatedBy != adminId && admin.Role != Role.SuperAdmin)
                 {
                     return -2;
                 }
@@ -326,8 +329,8 @@ namespace EmployeeSystem.Provider.Services
 
                 var empToRemove = existingEmp.Except(projectDto.Members.Select(m => m.EmployeeId)).ToList();
                 var empToAdd = projectDto.Members.Select(e => e.EmployeeId).Except(existingEmp).ToList();
-                    
-                if(empToRemove.Any()) _context.ProjectEmployees.RemoveRange(_context.ProjectEmployees.Where(pe=> pe.ProjectId == id && empToRemove.Contains(pe.EmployeeId)));
+
+                if (empToRemove.Any()) _context.ProjectEmployees.RemoveRange(_context.ProjectEmployees.Where(pe => pe.ProjectId == id && empToRemove.Contains(pe.EmployeeId)));
 
                 if (empToAdd.Any())
                 {
@@ -340,9 +343,9 @@ namespace EmployeeSystem.Provider.Services
                 }
 
                 await _context.SaveChangesAsync();
-                
 
-                
+
+
 
                 return project.Id;
             }
@@ -360,7 +363,7 @@ namespace EmployeeSystem.Provider.Services
                 // fetching the project details
                 var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
 
-                if(project == null)
+                if (project == null)
                 {
                     return false;
                 }
@@ -396,7 +399,7 @@ namespace EmployeeSystem.Provider.Services
                 };
                 return count;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
