@@ -15,7 +15,7 @@
                 var query = _context.TaskLogs
                     .Where(t => t.TaskId == taskId)
                     .OrderByDescending(t => t.Id)
-                    .Skip(skip);
+                    .Skip(skip).AsNoTracking();
 
                 var count = await query.CountAsync();
                 var remaining = count - 10;

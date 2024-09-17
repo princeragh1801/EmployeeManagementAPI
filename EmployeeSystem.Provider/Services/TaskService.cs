@@ -87,7 +87,7 @@
             try
             {
                 bool filter = false;
-                var tasksList = _context.Tasks.Where(t => t.ProjectId == projectId & t.IsActive);
+                var tasksList = _context.Tasks.Where(t => t.ProjectId == projectId & t.IsActive).AsNoTracking();
 
                 var range = paginatedDto.DateRange;
 
@@ -215,6 +215,7 @@
         {
             try
             {
+                query = query.AsNoTracking();
                 var epic = await query.Where(t => t.TaskType == TaskType.Epic).CountAsync();
                 var feature = await query.Where(t => t.TaskType == TaskType.Feature).CountAsync();
                 var userstory = await query.Where(t => t.TaskType == TaskType.Userstory).CountAsync();
@@ -276,6 +277,7 @@
                 var tasks = await query
                     .Where(t => t.IsActive)
                     .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
                     .ToListAsync();
 
                 return tasks;
@@ -294,6 +296,7 @@
                 var tasks = await _context.Tasks
                     .Where(t => t.IsActive & t.AssignedTo == employeeId)
                     .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
                     .ToListAsync();
 
                 return tasks;
@@ -312,6 +315,7 @@
                 var tasks = await _context.Tasks
                     .Where(t => t.IsActive & t.SprintId == sprintId)
                     .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
                     .ToListAsync();
 
                 return tasks;
@@ -327,7 +331,7 @@
             try
             {
                 // filter according to the role
-                var query = _context.Tasks.Where(t => t.IsActive);
+                var query = _context.Tasks.Where(t => t.IsActive).AsNoTracking();
 
                 query = query.Include(t => t.Parent).Include(t => t.Employee).Include(t => t.Creator);
                 // check whether the task belongs to the list, then convert the task into task dto form
@@ -802,7 +806,7 @@
                         //AssignerName = e.Admin.Name,
                         Status = e.Status,
 
-                    }).ToListAsync();
+                    }).AsNoTracking().ToListAsync();
 
                 return subTasks;
             }
@@ -917,7 +921,7 @@
                 {
                     Id = t.Id,
                     Name = t.Name,
-                }).ToListAsync();
+                }).AsNoTracking().ToListAsync();
                 return tasks;
             }
             catch (Exception ex)

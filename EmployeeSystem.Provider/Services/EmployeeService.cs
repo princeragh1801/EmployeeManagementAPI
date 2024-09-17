@@ -82,7 +82,8 @@ public class EmployeeService : IEmployeeService
             var query = _context.Employees
                 .Include(e => e.Manager)
                 .Include(m => m.Department)
-                .Where(e => e.IsActive && e.Id != userId && e.Role != Role.SuperAdmin);
+                .Where(e => e.IsActive && e.Id != userId && e.Role != Role.SuperAdmin)
+                .AsNoTracking();
 
             var range = paginatedDto.DateRange;
 
@@ -141,7 +142,7 @@ public class EmployeeService : IEmployeeService
     {
         try
         {
-            var query = _context.Employees.Where(e => e.IsActive && e.Id != userId && e.Role != Role.SuperAdmin); ;
+            var query = _context.Employees.Where(e => e.IsActive && e.Id != userId && e.Role != Role.SuperAdmin).AsNoTracking();
             var totalActive = await query.CountAsync();
             var superAdmin = await query.Where(t => t.Role == Role.SuperAdmin).CountAsync();
             var admin = await query.Where(t => t.Role == Role.Admin).CountAsync();
@@ -178,6 +179,7 @@ public class EmployeeService : IEmployeeService
                 .ThenInclude(e => e.Department)
                 .Where(e => e.IsActive)
                 .ProjectTo<EmployeeDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
                 .ToListAsync();
             }
 
@@ -188,6 +190,7 @@ public class EmployeeService : IEmployeeService
                 .ThenInclude(e => e.Department)
                 .Where(e => e.IsActive)
                 .ProjectTo<EmployeeDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
                 .ToListAsync();
 
             return employees;
@@ -218,6 +221,7 @@ public class EmployeeService : IEmployeeService
                 .Include(e => e.Department)
                 .Include(e => e.Creator)
                 .ProjectTo<EmployeeInfo>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             return employee;
@@ -474,6 +478,7 @@ public class EmployeeService : IEmployeeService
                 DepartmentId = e.DepartmentID,
                 ManagerId = e.ManagerID
             })
+            .AsNoTracking()
             .ToListAsync();
 
             return managers;
@@ -505,6 +510,7 @@ public class EmployeeService : IEmployeeService
             var employees = await _context.Employees
                 .Where(e => e.DepartmentID == res.Id & e.IsActive)
                 .ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
                 .ToListAsync();
 
             return employees;

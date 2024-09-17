@@ -38,7 +38,7 @@
                         ReviewerAvatarUrl = tr.Creator.ImageUrl,
                         EmployeeId = tr.Creator.Id,
 
-                    }).ToListAsync();
+                    }).AsNoTracking().ToListAsync();
 
                 return reviews;
                 

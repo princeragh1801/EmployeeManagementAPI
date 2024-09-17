@@ -108,6 +108,9 @@ namespace EmployeeSystem.Provider
 
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Department>().HasQueryFilter(x => x.IsActive);
+            modelBuilder.Entity<Employee>().HasQueryFilter(x => x.IsActive);
+            modelBuilder.Entity<Tasks>().HasQueryFilter(x => x.IsActive);
+            modelBuilder.Entity<Project>().HasQueryFilter(x => x.IsActive);
         }
     }
 }

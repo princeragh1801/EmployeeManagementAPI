@@ -14,7 +14,7 @@
         {
             try
             {
-                var employees = await _context.ProjectEmployees.Include(e => e.Employee).Where(e => e.ProjectId == projectId & e.Employee.IsActive).ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider).ToListAsync();
+                var employees = await _context.ProjectEmployees.Include(e => e.Employee).Where(e => e.ProjectId == projectId & e.Employee.IsActive).ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider).AsNoTracking().ToListAsync();
                 return employees;
             }
             catch (Exception ex)

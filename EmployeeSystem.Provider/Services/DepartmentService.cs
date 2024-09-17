@@ -17,7 +17,7 @@
             try
             {
                 // only selecting which is active
-                var query = _context.Departments.Include(d => d.Creator).Where(d => d.IsActive);
+                var query = _context.Departments.Include(d => d.Creator).Where(d => d.IsActive).AsNoTracking();
 
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
@@ -81,6 +81,7 @@
                 var departments = await _context.Departments
                     .Where(d => d.IsActive)
                     .ProjectTo<DepartmentDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
                     .ToListAsync();
 
                 response.Data = departments;

@@ -20,7 +20,7 @@ public class AttendanceService : IAttendanceService
                 {
                     Id = a.Id,
                     DateOnly = a.DateOnly
-                }).ToListAsync();
+                }).AsNoTracking().ToListAsync();
             response.Message = "Attendance Fetched";
             response.Data = attendances;
             if (attendances == null)

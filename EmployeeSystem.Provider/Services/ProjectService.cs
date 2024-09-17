@@ -14,7 +14,7 @@
 
         public IQueryable<Project> GetProjectInfo(int userId, string role, int employeeId = 0)
         {
-            var query = _context.Projects.Where(p => p.IsActive);
+            var query = _context.Projects.Where(p => p.IsActive).AsNoTracking();
             if (employeeId == 0)
             {
                 employeeId = userId;

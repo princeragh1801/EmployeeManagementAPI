@@ -68,7 +68,7 @@
                         Name = s.Name,
                         StartDate = s.StartDate,
                         EndDate = s.EndDate,
-                    }).ToListAsync();
+                    }).AsNoTracking().ToListAsync();
                 return sprints;
             }
             catch (Exception ex)
@@ -81,7 +81,7 @@
         {
             try
             {
-                var sprint = await _context.Sprints.FirstOrDefaultAsync(s => s.Id == id & s.isActive);
+                var sprint = await _context.Sprints.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id & s.isActive);
                 if (sprint == null) { return null; }
                 return new SprintInfo { Id = sprint.Id, Name = sprint.Name, StartDate = sprint.StartDate, EndDate = sprint.EndDate, };
             }
@@ -104,7 +104,7 @@
                         Name = s.Name,
                         StartDate = s.StartDate,
                         EndDate = s.EndDate,
-                    }).ToListAsync();
+                    }).AsNoTracking().ToListAsync();
                 return sprints;
             }
             catch (Exception ex)
