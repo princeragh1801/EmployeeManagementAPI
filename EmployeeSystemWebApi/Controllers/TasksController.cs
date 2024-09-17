@@ -1,16 +1,6 @@
 ﻿using AutoMapper;
-using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Dtos.Add;
-using EmployeeSystem.Contract.Dtos.IdAndName;
-using EmployeeSystem.Contract.Dtos.Info;
-using EmployeeSystem.Contract.Dtos.Info.PaginationInfo;
-using EmployeeSystem.Contract.Enums;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Response;
 using EmployeeSystem.Provider;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeSystemWebApi.Controllers
 {

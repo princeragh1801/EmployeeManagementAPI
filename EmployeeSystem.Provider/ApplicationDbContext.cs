@@ -107,6 +107,7 @@ namespace EmployeeSystem.Provider
             .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Department>().HasQueryFilter(x => x.IsActive);
         }
     }
 }

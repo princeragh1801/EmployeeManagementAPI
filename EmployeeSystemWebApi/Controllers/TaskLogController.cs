@@ -1,10 +1,4 @@
-﻿using EmployeeSystem.Contract.Dtos.Info;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Response;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
-namespace EmployeeSystemWebApi.Controllers
+﻿namespace EmployeeSystemWebApi.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]

@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace EmployeeSystem.Contract.Interfaces
+namespace EmployeeSystem.Contract.Interfaces;
+public interface ICloudinaryService
 {
-    public interface ICloudinaryService
-    {
-        public Task<string> UploadFile(IFormFile file);
-    }
+    public Task<string> UploadFile(IFormFile file);
 }
+

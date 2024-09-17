@@ -1,5 +1,4 @@
-﻿using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Utils;
+﻿using EmployeeSystem.Contract.Utils;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;

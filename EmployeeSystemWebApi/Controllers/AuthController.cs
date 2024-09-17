@@ -1,10 +1,4 @@
-﻿using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Response;
-using EmployeeSystem.Provider;
-using Microsoft.AspNetCore.Mvc;
-
-namespace EmployeeSystemWebApi.Controllers
+﻿namespace EmployeeSystemWebApi.Controllers
 {
     [Route("Users")]
     [ApiController]

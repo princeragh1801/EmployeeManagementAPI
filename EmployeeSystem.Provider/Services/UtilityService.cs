@@ -1,5 +1,4 @@
-﻿using EmployeeSystem.Contract.Interfaces;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 
 namespace EmployeeSystem.Provider.Services
 {

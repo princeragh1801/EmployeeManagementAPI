@@ -1,83 +1,76 @@
-﻿using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
-using EmployeeSystem.Contract.Response;
-using Microsoft.EntityFrameworkCore;
-
-namespace EmployeeSystem.Provider.Services
+﻿namespace EmployeeSystem.Provider.Services;
+public class AttendanceService : IAttendanceService
 {
-    public class AttendanceService : IAttendanceService
+    private readonly ApplicationDbContext _context;
+
+    public AttendanceService(ApplicationDbContext applicationDbContext)
     {
-        private readonly ApplicationDbContext _context;
+        _context = applicationDbContext;
+    }
 
-        public AttendanceService(ApplicationDbContext applicationDbContext)
+    public async Task<ApiResponse<List<AttendanceDto>>> GetByEmployeeId(int employeeId)
+    {
+        try
         {
-            _context = applicationDbContext;
-        }
+            var response = new ApiResponse<List<AttendanceDto>>();
 
-        public async Task<ApiResponse<List<AttendanceDto>>> GetByEmployeeId(int employeeId)
-        {
-            try
-            {
-                var response = new ApiResponse<List<AttendanceDto>>();
-
-                var attendances = await _context.Attendances
-                    .Where(a => a.EmployeeId == employeeId)
-                    .Select(a => new AttendanceDto
-                    {
-                        Id = a.Id,
-                        DateOnly = a.DateOnly
-                    }).ToListAsync();
-                response.Message = "Attendance Fetched";
-                response.Data = attendances;
-                if(attendances == null)
+            var attendances = await _context.Attendances
+                .Where(a => a.EmployeeId == employeeId)
+                .Select(a => new AttendanceDto
                 {
-                    response.Status = 404;
-                }
-
-                return response;
-
-            } catch (Exception ex)
+                    Id = a.Id,
+                    DateOnly = a.DateOnly
+                }).ToListAsync();
+            response.Message = "Attendance Fetched";
+            response.Data = attendances;
+            if (attendances == null)
             {
-                throw new Exception(ex.Message);
+                response.Status = 404;
             }
+
+            return response;
+
         }
-
-        public async Task<ApiResponse<int>> Add(int employeeId)
+        catch (Exception ex)
         {
-            try
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public async Task<ApiResponse<int>> Add(int employeeId)
+    {
+        try
+        {
+            var response = new ApiResponse<int>();
+            var checkAlreadyAdded = await _context.Attendances
+                .OrderByDescending(a => a.Id)
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            var todaysDate = DateOnly.FromDateTime(DateTime.Now);
+            if (checkAlreadyAdded != null && todaysDate == checkAlreadyAdded.DateOnly)
             {
-                var response = new ApiResponse<int>();
-                var checkAlreadyAdded = await _context.Attendances
-                    .OrderByDescending(a => a.Id)
-                    .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
-
-                var todaysDate = DateOnly.FromDateTime(DateTime.Now);
-                if(checkAlreadyAdded != null && todaysDate == checkAlreadyAdded.DateOnly)
-                {
-                    response.Status = 409;
-                    response.Message = "Attendance already added";
-                    response.Data = checkAlreadyAdded.Id;
-                    return response;
-                }
-                
-                var attendance = new Attendance
-                {
-                    EmployeeId = employeeId,
-                    DateOnly = DateOnly.FromDateTime(DateTime.Now)
-                };
-
-                _context.Attendances.Add(attendance);
-                await _context.SaveChangesAsync();
-
-                response.Message = "Attendance added";
-                response.Data = attendance.Id;
+                response.Status = 409;
+                response.Message = "Attendance already added";
+                response.Data = checkAlreadyAdded.Id;
                 return response;
             }
-            catch (Exception ex)
+
+            var attendance = new Attendance
             {
-                throw new Exception(ex.Message);
-            }
+                EmployeeId = employeeId,
+                DateOnly = DateOnly.FromDateTime(DateTime.Now)
+            };
+
+            _context.Attendances.Add(attendance);
+            await _context.SaveChangesAsync();
+
+            response.Message = "Attendance added";
+            response.Data = attendance.Id;
+            return response;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
         }
     }
 }

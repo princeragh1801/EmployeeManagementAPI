@@ -1,10 +1,4 @@
-﻿using EmployeeSystem.Contract.Dtos.Add;
-using EmployeeSystem.Contract.Dtos.Info;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace EmployeeSystem.Provider.Services
+﻿namespace EmployeeSystem.Provider.Services
 {
     public class TaskLogsService : ITaskLogService
     {

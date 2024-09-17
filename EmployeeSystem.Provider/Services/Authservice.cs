@@ -1,12 +1,6 @@
-﻿using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Dtos.Info;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 
 namespace EmployeeSystem.Provider.Services

@@ -1,16 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Dtos.Add;
-using EmployeeSystem.Contract.Dtos.Count;
-using EmployeeSystem.Contract.Dtos.Info;
-using EmployeeSystem.Contract.Enums;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-
-namespace EmployeeSystem.Provider.Services
+﻿namespace EmployeeSystem.Provider.Services
 {
     public class ProjectService : IProjectService
     {

@@ -1,9 +1,4 @@
-﻿
-using DocumentFormat.OpenXml.Packaging;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Response;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections;
+﻿using System.Collections;
 
 namespace EmployeeSystemWebApi.Controllers
 {

@@ -1,12 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using EmployeeSystem.Contract.Dtos.IdAndName;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-
-namespace EmployeeSystem.Provider.Services
+﻿namespace EmployeeSystem.Provider.Services
 {
     public class ProjectEmployeeService : IProjectEmployeeService
     {

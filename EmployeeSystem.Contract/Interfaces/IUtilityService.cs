@@ -1,7 +1,6 @@
-﻿namespace EmployeeSystem.Contract.Interfaces
+﻿namespace EmployeeSystem.Contract.Interfaces;
+public interface IUtilityService
 {
-    public interface IUtilityService
-    {
-        public IQueryable<T> GetOrdered<T>(IQueryable<T> query, string columnName, bool ascending = true);
-    }
+    public IQueryable<T> GetOrdered<T>(IQueryable<T> query, string columnName, bool ascending = true);
 }
+

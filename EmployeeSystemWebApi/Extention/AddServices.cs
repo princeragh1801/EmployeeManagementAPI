@@ -1,5 +1,4 @@
-﻿using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Provider.Services;
+﻿using EmployeeSystem.Provider.Services;
 
 namespace EmployeeSystemWebApi.Extention
 {

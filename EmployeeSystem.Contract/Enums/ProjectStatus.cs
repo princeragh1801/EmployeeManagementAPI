@@ -1,9 +1,8 @@
-﻿namespace EmployeeSystem.Contract.Enums
+﻿namespace EmployeeSystem.Contract.Enums;
+
+public enum ProjectStatus
 {
-    public enum ProjectStatus
-    {
-        Pending,
-        Active,
-        Completed
-    }
+    Pending,
+    Active,
+    Completed
 }

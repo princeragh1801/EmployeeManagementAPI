@@ -1,7 +1,4 @@
-﻿using EmployeeSystem.Contract.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-
-namespace EmployeeSystemWebApi.Controllers
+﻿namespace EmployeeSystemWebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

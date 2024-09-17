@@ -1,8 +1,4 @@
-﻿using EmployeeSystem.Contract.Dtos;
-using EmployeeSystem.Contract.Interfaces;
-using EmployeeSystem.Contract.Models;
-using Microsoft.EntityFrameworkCore;
-using static EmployeeSystem.Contract.Enums.Enums;
+﻿using static EmployeeSystem.Contract.Enums.Enums;
 
 
 namespace EmployeeSystem.Provider.Services
