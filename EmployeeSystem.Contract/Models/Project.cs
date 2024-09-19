@@ -1,6 +1,4 @@
-﻿using EmployeeSystem.Contract.Enums;
-
-namespace EmployeeSystem.Contract.Models
+﻿namespace EmployeeSystem.Contract.Models
 {
     public class Project : BaseEntity
     {

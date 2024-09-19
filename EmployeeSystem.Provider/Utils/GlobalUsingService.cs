@@ -9,6 +9,7 @@ global using EmployeeSystem.Contract.Enums;
 global using EmployeeSystem.Contract.Models;
 global using EmployeeSystem.Contract.Response;
 global using EmployeeSystem.Contract.Interfaces;
+global using EmployeeSystem.Contract.Prof;
 global using AutoMapper;
 global using AutoMapper.QueryableExtensions;
 global using Microsoft.EntityFrameworkCore;

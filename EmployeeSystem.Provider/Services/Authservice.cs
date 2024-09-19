@@ -8,18 +8,16 @@ namespace EmployeeSystem.Provider.Services
     public class Authservice : IAuthService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration configuration;
 
-        public Authservice(ApplicationDbContext applicationDbContext, IConfiguration _configuration)
+        public Authservice(ApplicationDbContext applicationDbContext)
         {
             _context = applicationDbContext;
-            this.configuration = _configuration;
         }
 
         public string GeneratingToken(Employee emp)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY")));
             var credential = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
             var claims = new[]
             {
@@ -35,8 +33,8 @@ namespace EmployeeSystem.Provider.Services
 
 
             var token = new JwtSecurityToken(
-                    configuration["Jwt:Issuer"],
-                    configuration["Jwt:Audience"],
+                    Environment.GetEnvironmentVariable("JWT_ISSUER"),
+                    Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
                     claims: claims,
                     expires: DateTime.Now.AddDays(5),
                     signingCredentials: credential

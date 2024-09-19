@@ -24,7 +24,7 @@
                     return null;
                 }
 
-                // fetching the reviews and converting to taskreview dto list
+                // fetching the reviews and converting to taskReview dto list
                 var reviews = await _context.TaskReviews
                     .Include(tr => tr.Creator)
                     .Where(tr => tr.TaskID == taskId)
@@ -32,12 +32,11 @@
                     .Select(tr => new TaskReviewDto
                     {
                         Id = tr.Id,
-                        ReviewedBy = tr.Creator.Name,
+                        ReviewedBy = tr.Creator != null ? tr.Creator.Name : "",
                         Content = tr.Content,
                         CreatedOn = tr.CreatedOn,
-                        ReviewerAvatarUrl = tr.Creator.ImageUrl,
-                        EmployeeId = tr.Creator.Id,
-
+                        ReviewerAvatarUrl = tr.Creator != null ? tr.Creator.ImageUrl : "",
+                        EmployeeId = tr.Creator != null ? tr.Creator.Id : 0
                     }).AsNoTracking().ToListAsync();
 
                 return reviews;

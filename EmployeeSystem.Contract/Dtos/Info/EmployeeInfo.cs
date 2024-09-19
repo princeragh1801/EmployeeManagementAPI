@@ -1,6 +1,4 @@
-﻿using EmployeeSystem.Contract.Enums;
-
-namespace EmployeeSystem.Contract.Dtos.Info
+﻿namespace EmployeeSystem.Contract.Dtos.Info
 {
     public class EmployeeInfo
     {

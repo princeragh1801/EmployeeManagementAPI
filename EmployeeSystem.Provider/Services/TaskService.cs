@@ -16,6 +16,28 @@
             _mapper = mapper;
         }
 
+        public async Task<List<TasksDto>> ConvertTaskToTaskDto(IQueryable<Tasks> query)
+        {
+            try
+            {
+                var tasks = await query.Select(e => new TasksDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Description = e.Description,
+                    CreatedOn = e.CreatedOn,
+                    ProjectId = e.ProjectId,
+                    TaskType = e.TaskType,
+                    AssigneeName = e.Employee != null ? e.Employee.Name : "",
+                    AssignerName = e.Creator != null ? e.Creator.Name : "",
+                    Status = e.Status,
+                }).ToListAsync();
+                return tasks;
+            }catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
         public async Task<bool> CheckValidParent(int parentId, TaskType child)
         {
             try
@@ -174,22 +196,10 @@
                 var taskCount = await GetCount(tasksList);
 
                 // now extrating projects of the page-[x]
-                var tasksData = await tasksList
+                tasksList = tasksList
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
-                    .Take(paginatedDto.PagedItemsCount)
-                    .Select(e => new TasksDto
-                    {
-                        Id = e.Id,
-                        Name = e.Name,
-                        //Description = e.Description,
-                        CreatedOn = e.CreatedOn,
-                        //ProjectId = e.ProjectId,
-                        TaskType = e.TaskType,
-                        AssigneeName = e.Employee.Name,
-                        //AssignerName = e.Admin.Name,
-                        Status = e.Status,
-
-                    }).ToListAsync();
+                    .Take(paginatedDto.PagedItemsCount);
+                var tasksData = await ConvertTaskToTaskDto(tasksList);
 
                 var paginationInfo = new TaskPaginationInfo
                 {
@@ -274,12 +284,10 @@
                 var query = GetTasksInfo(userId);
 
                 // creating the task dto list
-                var tasks = await query
+                query = query
                     .Where(t => t.IsActive)
-                    .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
-                    .AsNoTracking()
-                    .ToListAsync();
-
+                    .AsNoTracking();
+                var tasks = await ConvertTaskToTaskDto(query);
                 return tasks;
             }
             catch (Exception ex)
@@ -293,12 +301,11 @@
             try
             {
                 // creating the task dto list
-                var tasks = await _context.Tasks
+                var query = _context.Tasks
                     .Where(t => t.IsActive & t.AssignedTo == employeeId)
-                    .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
-                    .AsNoTracking()
-                    .ToListAsync();
+                    .AsNoTracking();
 
+                var tasks = await ConvertTaskToTaskDto(query);
                 return tasks;
             }
             catch (Exception ex)
@@ -312,12 +319,11 @@
             try
             {
                 // creating the task dto list
-                var tasks = await _context.Tasks
+                var query = _context.Tasks
                     .Where(t => t.IsActive & t.SprintId == sprintId)
-                    .ProjectTo<TasksDto>(_mapper.ConfigurationProvider)
-                    .AsNoTracking()
-                    .ToListAsync();
+                    .AsNoTracking();
 
+                var tasks = await ConvertTaskToTaskDto(query);
                 return tasks;
             }
             catch (Exception ex)
@@ -367,7 +373,12 @@
 
                 var subTasks = await _context.Tasks
                     .Where(t => t.IsActive & t.ParentId == id)
-                    .ProjectTo<TaskIdAndName>(_mapper.ConfigurationProvider).ToListAsync();
+                    .Select(t => new TaskIdAndName
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        TaskType = t.TaskType
+                    }).AsNoTracking().ToListAsync();
 
                 var parentId = await query.Where(t => t.Id == id).Select(t => t.ParentId).FirstAsync();
 
@@ -380,7 +391,13 @@
                 if (parentId != null)
                 {
                     var parent = await _context.Tasks
-                        .ProjectTo<TaskIdAndName>(_mapper.ConfigurationProvider)
+                        .Select(t => new TaskIdAndName
+                        {
+                            Id = t.Id,
+                            Name = t.Name,
+                            TaskType = t.TaskType
+                        })
+                        .AsNoTracking()
                         .FirstOrDefaultAsync(t => t.Id == parentId);
                     taskInfo.Parent = parent;
                 }
@@ -614,11 +631,22 @@
                 }
 
                 // creating the new task model
-                var task = _mapper.Map<Tasks>(taskDto);
+                var task = new Tasks
+                {
+                    Name = taskDto.Name,
+                    Description = taskDto.Description,
+                    TaskType = type,
+                    AssignedTo = taskDto.AssignedTo,
+                    ParentId = taskDto.ParentId,
+                    ProjectId = taskDto.ProjectId,
+                    SprintId = taskDto.SprintId,
+                    Status = TasksStatus.Pending,
+                    OriginalEstimateHours = originalEstimateHours,
+                    RemainingEstimateHours = originalEstimateHours,
+                    CreatedBy = adminId,
+                    IsActive = true
+                };
 
-                task.OriginalEstimateHours = originalEstimateHours;
-                task.RemainingEstimateHours = originalEstimateHours;
-                task.CreatedBy = adminId;
 
                 // adding and updating the database
                 _context.Tasks.Add(task);
@@ -698,11 +726,21 @@
                     }
 
                     // creating the new task model
-                    var task = _mapper.Map<Tasks>(taskDto);
-
-                    task.OriginalEstimateHours = originalEstimateHours;
-                    task.RemainingEstimateHours = originalEstimateHours;
-                    task.CreatedBy = adminId;
+                    var task = new Tasks
+                    {
+                        Name = taskDto.Name,
+                        Description = taskDto.Description,
+                        TaskType = type,
+                        AssignedTo = taskDto.AssignedTo,
+                        ParentId = taskDto.ParentId,
+                        ProjectId = taskDto.ProjectId,
+                        SprintId = taskDto.SprintId,
+                        Status = TasksStatus.Pending,
+                        OriginalEstimateHours = originalEstimateHours,
+                        RemainingEstimateHours = originalEstimateHours,
+                        CreatedBy = adminId,
+                        IsActive = true
+                    };
 
                     // adding and updating the database
                     _context.Tasks.Add(task);
@@ -917,11 +955,13 @@
         {
             try
             {
-                var tasks = await _context.Tasks.Where(t => t.IsActive & t.ProjectId == projectId && t.TaskType == type).Select(t => new TaskIdAndName
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                }).AsNoTracking().ToListAsync();
+                var tasks = await _context.Tasks
+                    .Where(t => t.IsActive & t.ProjectId == projectId && t.TaskType == type)
+                    .Select(t => new TaskIdAndName
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                    }).AsNoTracking().ToListAsync();
                 return tasks;
             }
             catch (Exception ex)

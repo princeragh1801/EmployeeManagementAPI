@@ -1,20 +1,18 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 
 namespace EmployeeSystem.Provider.Services
 {
     public class CloudinaryService : ICloudinaryService
     {
         private readonly Cloudinary _cloudinary;
-        public CloudinaryService(IConfiguration configuration)
+        public CloudinaryService()
         {
-            var cloudinaryConfig = configuration.GetSection("Cloudinary");
             Account account = new Account(
-                cloudinaryConfig["CloudName"],
-                cloudinaryConfig["Key"],
-                cloudinaryConfig["Secret"]
+                Environment.GetEnvironmentVariable("CLOUDINARY_CLOUDNAME"),
+                Environment.GetEnvironmentVariable("CLOUDINARY_KEY"),
+                Environment.GetEnvironmentVariable("CLOUDINARY_SECRET")
             );
             _cloudinary = new Cloudinary(account);
         }

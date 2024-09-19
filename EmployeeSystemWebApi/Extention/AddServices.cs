@@ -21,6 +21,7 @@ namespace EmployeeSystemWebApi.Extention
             services.AddSingleton<IUtilityService, UtilityService>();
             services.AddSingleton<ICloudinaryService, CloudinaryService>();
             services.AddScoped<ITestService, TestService>();
+            services.AddSingleton<IEmailService, EmailService>();
             return services;
         }
     }

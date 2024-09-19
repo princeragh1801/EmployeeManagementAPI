@@ -12,6 +12,26 @@
             _mapper = mapper;
         }
 
+        public async Task<List<ProjectDto>> ConvertProjectToProjectDto(IQueryable<Project> query)
+        {
+            try
+            {
+                var projects = await query.Select(p => new ProjectDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Status = p.Status,
+                    CreatedBy = p.Creator != null ? p.Creator.Name : "",
+                    CreatedOn = p.CreatedOn
+                }).ToListAsync();
+                return projects;
+            }catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public IQueryable<Project> GetProjectInfo(int userId, string role, int employeeId = 0)
         {
             var query = _context.Projects.Where(p => p.IsActive).AsNoTracking();
@@ -54,7 +74,7 @@
                 var userRole = claims.First(e => e.Type == "Role")?.Value ?? "Employee";
                 var query = GetProjectInfo(userId, userRole);
                 // only selecting which is active
-                query = query.Include(p => p.Creator);
+                query = query.Include(p => p.Creator).AsNoTracking();
 
                 var orderKey = paginatedDto.OrderKey ?? "Id";
                 var search = paginatedDto.Search;
@@ -96,11 +116,11 @@
                 }
 
                 // now extrating projects of the page-[x]
-                var projects = await query
+                query = query
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
-                    .Take(paginatedDto.PagedItemsCount)
-                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider).ToListAsync();
+                    .Take(paginatedDto.PagedItemsCount);
 
+                var projects = await ConvertProjectToProjectDto(query);
                 // creating new dto to send the info
                 PaginatedItemsDto<List<ProjectDto>> res = new PaginatedItemsDto<List<ProjectDto>>();
 
@@ -127,12 +147,11 @@
                 var query = GetProjectInfo(userId, userRole);
 
                 // only fetching project details
-                var projects = await query
+                query = query
                     .Include(p => p.Creator)
                     .Where(p => p.IsActive)
-                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-
+                    .AsNoTracking();
+                var projects = await ConvertProjectToProjectDto(query);
                 return projects;
             }
             catch (Exception ex)
@@ -158,7 +177,7 @@
                         Description = p.Description,
                         Status = p.Status,
                         Id = p.Id
-                    }).ToListAsync();
+                    }).AsNoTracking().ToListAsync();
 
                 var employeeProjects = new List<EmployeeProjectInfo>();
                 foreach (var project in projects)
@@ -183,10 +202,11 @@
         {
             try
             {
-                var projects = await _context.Projects
+                var query = _context.Projects
                     .Where(p => p.IsActive && p.Status == status)
-                    .ProjectTo<ProjectDto>(_mapper.ConfigurationProvider).ToListAsync();
+                    .AsNoTracking();
 
+                var projects = await ConvertProjectToProjectDto(query);
                 return projects;
             }
             catch (Exception ex)
@@ -257,8 +277,15 @@
             try
             {
                 // creating a new project model
-                var project = _mapper.Map<Project>(projectDto);
-                project.CreatedBy = adminId;
+                var project = new Project
+                {
+                    Name = projectDto.Name,
+                    Description = projectDto.Description,
+                    Status = ProjectStatus.Pending,
+                    CreatedBy = adminId,
+                    CreatedOn = DateTime.Now,
+                    IsActive = true,
+                };
 
                 // added the new project in db
                 _context.Projects.Add(project);

@@ -18,6 +18,100 @@ public class EmployeeService : IEmployeeService
         _cloudinaryService = cloudinaryService;
     }
 
+    public async Task<List<EmployeeDto>?> ConvertEmployeeToEmployeeDto(IQueryable<Employee> query)
+    {
+        try
+        {
+            var employees = await query.Select(e => new EmployeeDto
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Role = e.Role,
+                Salary = e.Salary,
+                CreatedBy = e.CreatedBy,
+                CreatedOn = e.CreatedOn,
+                ManagerId = e.ManagerID,
+                DepartmentId = e.DepartmentID,
+                DepartmentName = e.Department != null ? e.Department.Name : null,
+                ManagerName = e.Manager != null ? e.Manager.Name : null,
+
+            }).ToListAsync();
+            return employees;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    public async Task<EmployeeInfo?> ConvertEmployeeToEmployeeInfo(IQueryable<Employee> query, int id)
+    {
+        try
+        {
+            var employee = await query.Select(e => new EmployeeInfo
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Role = e.Role,
+                Salary = e.Salary,
+                CreatedBy = e.Creator != null ? e.Creator.Name : "",
+                CreatedOn = e.CreatedOn,
+                DepartmentName = e.Department != null ? e.Department.Name : null,
+                ManagerName = e.Manager != null ? e.Manager.Name : null,
+                Email = e.Email,
+                Phone = e.Phone,
+                Address = e.Address,
+                ImageUrl = e.ImageUrl,
+
+            }).FirstOrDefaultAsync(e => e.Id == id);
+            return employee;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+    
+    public async Task<List<EmployeePaginationInfo>?> ConvertEmployeeToEmployeePaginationInfo(IQueryable<Employee> query)
+    {
+        try
+        {
+            var employees = await query.Select(e => new EmployeePaginationInfo
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Role = e.Role,
+                Salary = e.Salary,
+                CreatedOn = e.CreatedOn,
+                DepartmentName = e.Department != null ? e.Department.Name : null,
+                ManagerName = e.Manager != null ? e.Manager.Name : null,
+                Email = e.Email
+            }).ToListAsync();
+            return employees;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+    public async Task<List<EmployeeIdAndName>?> ConvertEmployeeToEmployeeIdAndName(IQueryable<Employee> query)
+    {
+        try
+        {
+            var employees = await query.Select(e => new EmployeeIdAndName
+            {
+                Id = e.Id,
+                Name = e.Name,
+                DepartmentName = e.Department != null ? e.Department.Name : ""
+            }).ToListAsync();
+            return employees;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
     public async Task<bool> CheckManagerAndEmployeeDepartment(int? ManagerId, int? DepartmentId)
     {
         try
@@ -117,12 +211,11 @@ public class EmployeeService : IEmployeeService
             }
 
             // now extrating employees of the page-[x]
-            var employees = await query.
+            query = query.
                 Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
-                .Take(paginatedDto.PagedItemsCount)
-                .ProjectTo<EmployeePaginationInfo>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+                .Take(paginatedDto.PagedItemsCount);
 
+            var employees = await ConvertEmployeeToEmployeePaginationInfo(query);
             // creating new dto to send the info
             PaginatedItemsDto<List<EmployeePaginationInfo>> res = new PaginatedItemsDto<List<EmployeePaginationInfo>>();
 
@@ -169,30 +262,29 @@ public class EmployeeService : IEmployeeService
         {
             var userId = Convert.ToInt32(claims.First(e => e.Type == "UserId")?.Value);
             var userRole = claims.First(e => e.Type == "Role")?.Value;
-
+            var employees = new List<EmployeeDto>();
             // if user is not a super-admin then sending the employees where the manager id == emp.id
             if (userRole != "SuperAdmin")
             {
-                return await _context.Employees
+                var query = _context.Employees
                     .Where(e => e.ManagerID == userId)
                     .Include(e => e.Manager)
                 .ThenInclude(e => e.Department)
                 .Where(e => e.IsActive)
-                .ProjectTo<EmployeeDto>(_mapper.ConfigurationProvider)
-                .AsNoTracking()
-                .ToListAsync();
+                .AsNoTracking();
+
+                employees = await ConvertEmployeeToEmployeeDto(query);
+                return employees;
             }
 
 
             // fetching employees and converting them to list of dto
-            var employees = await _context.Employees
+            var queryEmp = _context.Employees
                 .Include(e => e.Manager)
                 .ThenInclude(e => e.Department)
                 .Where(e => e.IsActive)
-                .ProjectTo<EmployeeDto>(_mapper.ConfigurationProvider)
-                .AsNoTracking()
-                .ToListAsync();
-
+                .AsNoTracking();
+            employees = await ConvertEmployeeToEmployeeDto(queryEmp);
             return employees;
         }
         catch (Exception ex)
@@ -216,14 +308,12 @@ public class EmployeeService : IEmployeeService
 
             // fetching the employee and converting it into the employee dto
 
-            var employee = await _context.Employees
+            var employeeQuery = _context.Employees
                 .Include(e => e.Manager)
                 .Include(e => e.Department)
                 .Include(e => e.Creator)
-                .ProjectTo<EmployeeInfo>(_mapper.ConfigurationProvider)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == id);
-
+                .AsNoTracking();
+            var employee = await ConvertEmployeeToEmployeeInfo(employeeQuery, id);
             return employee;
         }
         catch (Exception ex)
@@ -271,9 +361,22 @@ public class EmployeeService : IEmployeeService
             Console.WriteLine("First " + firstLetter);
             Console.WriteLine("Last " + lastLetter);
             Console.WriteLine("Url " + imageUrl);
-            var employee = _mapper.Map<Employee>(employeeDto);
-            employee.CreatedBy = userId;
-            employee.ImageUrl = imageUrl;
+            var employee = new Employee
+            {
+                Username = employeeDto.Username,
+                Password = employeeDto.Password,
+                Name = employeeDto.Name,
+                Role = employeeDto.Role,
+                Salary = employeeDto.Salary,
+                Email = employeeDto.Email,
+                Address = employeeDto.Address,
+                Phone = employeeDto.Phone,
+                ManagerID = employeeDto.ManagerID,
+                DepartmentID = employeeDto.DepartmentID,
+                CreatedBy = userId,
+                ImageUrl = imageUrl,
+                CreatedOn = DateTime.Now,
+            };
             // adding and saving to the database
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -335,9 +438,22 @@ public class EmployeeService : IEmployeeService
                 var lastLetter = employeeDto.Name.ElementAt(1);
                 var imageUrl = $"https://ui-avatars.com/api/?name={firstLetter}+{lastLetter}";
 
-                var employee = _mapper.Map<Employee>(employeeDto);
-                employee.CreatedBy = userId;
-                employee.ImageUrl = imageUrl;
+                var employee = new Employee
+                {
+                    Username = employeeDto.Username,
+                    Password = employeeDto.Password,
+                    Name = employeeDto.Name,
+                    Role = employeeDto.Role,
+                    Salary = employeeDto.Salary,
+                    Email = employeeDto.Email,
+                    Address = employeeDto.Address,
+                    Phone = employeeDto.Phone,
+                    ManagerID = employeeDto.ManagerID,
+                    DepartmentID = employeeDto.DepartmentID,
+                    CreatedBy = userId,
+                    ImageUrl = imageUrl,
+                    CreatedOn = DateTime.Now,
+                };
 
                 // adding and saving to the database
                 _context.Employees.Add(employee);
@@ -426,7 +542,7 @@ public class EmployeeService : IEmployeeService
                 .FirstOrDefaultAsync(e => e.Id == id);
 
 
-            // updating the feilds if employee exist
+            // updating the details if employee exist
             if (employeeToUpdate == null)
             {
                 return false;
@@ -439,16 +555,23 @@ public class EmployeeService : IEmployeeService
 
 
             _mapper.Map(employeeDto, employeeToUpdate);
-
+            
+            employeeToUpdate.Name = employeeDto.Name;
+            employeeToUpdate.Role = employeeDto.Role;
+            employeeToUpdate.Salary = employeeDto.Salary;
+            employeeToUpdate.Email = employeeDto.Email;
+            employeeToUpdate.Address = employeeDto.Address;
+            employeeToUpdate.Phone = employeeDto.Phone;
+            employeeToUpdate.ManagerID = employeeDto.ManagerID;
+            employeeToUpdate.DepartmentID = employeeDto.DepartmentID;
+            employeeToUpdate.CreatedBy = userId;
+            employeeToUpdate.ImageUrl = imageUrl;
+            employeeToUpdate.CreatedOn = DateTime.Now;
             employeeToUpdate.ImageUrl = imageUrl;
             employeeToUpdate.UpdatedBy = userId;
 
-            await _context.SaveChangesAsync();
-
-
-
-            var employee = await GetById(id);
-            return true;
+            int rowAffected = await _context.SaveChangesAsync();
+            return rowAffected > 0;
             // var data=await _context.Employees.ExecuteUpdateAsync(x => x.SetProperty(x => x.Username, "ndede"));
 
 
@@ -507,13 +630,11 @@ public class EmployeeService : IEmployeeService
             })*/
 
             // fetching the employees of the department with id-[x]
-            var employees = await _context.Employees
+            var employeeInfo = _context.Employees
                 .Where(e => e.DepartmentID == res.Id & e.IsActive)
-                .ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider)
-                .AsNoTracking()
-                .ToListAsync();
-
-            return employees;
+                .AsNoTracking();
+            var employees = await ConvertEmployeeToEmployeeIdAndName(employeeInfo);
+            return employees ?? new List<EmployeeIdAndName>();
 
         }
         catch (Exception ex)
@@ -526,11 +647,10 @@ public class EmployeeService : IEmployeeService
     {
         try
         {
-            var employeeInfo = await _context.Employees
-                .Include(e => e.Department)
-                .ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider)
-                .ToListAsync();
-            return employeeInfo;
+            var employeeInfo = _context.Employees
+                .Include(e => e.Department);
+            var employees = await ConvertEmployeeToEmployeeIdAndName(employeeInfo);
+            return employees??new List<EmployeeIdAndName>();
         }
         catch (Exception ex)
         {
@@ -554,7 +674,6 @@ public class EmployeeService : IEmployeeService
                     Phone = e.Phone,
                     Role = e.Role,
                     Salary = e.Salary,
-
                 }).FirstAsync();
 
             return employee;

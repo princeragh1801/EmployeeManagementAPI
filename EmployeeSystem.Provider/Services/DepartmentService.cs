@@ -51,11 +51,17 @@
                     totalPages++;
                 }
 
-                // now extrating departments of the page-[x]
+                // now extracting departments of the page-[x]
                 var departments = await query
                     .Skip((paginatedDto.PageIndex - 1) * paginatedDto.PagedItemsCount)
                     .Take(paginatedDto.PagedItemsCount)
-                    .ProjectTo<DepartmentPaginationInfo>(_mapper.ConfigurationProvider).ToListAsync();
+                    .Select(d => new DepartmentPaginationInfo
+                    {
+                        Name = d.Name,
+                        CreatedBy = d.Creator != null ? d.Creator.Name : "",
+                        CreatedOn = d.CreatedOn,
+                        Id = d.Id
+                    }).AsNoTracking().ToListAsync();
 
                 // creating new dto to send the info
                 PaginatedItemsDto<List<DepartmentPaginationInfo>> res = new PaginatedItemsDto<List<DepartmentPaginationInfo>>();
@@ -80,8 +86,13 @@
                 // fetching departments and converting them into list of department dto
                 var departments = await _context.Departments
                     .Where(d => d.IsActive)
-                    .ProjectTo<DepartmentDto>(_mapper.ConfigurationProvider)
-                    .AsNoTracking()
+                    .Select(d => new DepartmentDto
+                    {
+                        Name = d.Name,
+                        CreatedOn = d.CreatedOn,
+                        Id = d.Id,
+                        CreatedBy = d.CreatedBy,
+                    }).AsNoTracking()
                     .ToListAsync();
 
                 response.Data = departments;
@@ -102,7 +113,13 @@
             {
                 var response = new ApiResponse<DepartmentDto>();
                 // fetching department details
-                var department = await _context.Departments.FirstOrDefaultAsync(d => d.Id == id);
+                var department = await _context.Departments.Select(d => new DepartmentDto
+                {
+                    Name = d.Name,
+                    CreatedOn = d.CreatedOn,
+                    Id = d.Id,
+                    CreatedBy = d.CreatedBy
+                }).AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
 
                 if (department == null)
                 {
@@ -110,8 +127,7 @@
                     return response;
                 }
 
-                var departmentDto = _mapper.Map<DepartmentDto>(department);
-                response.Data = departmentDto;
+                response.Data = department;
                 response.Message = "Department fetched";
 
                 return response;

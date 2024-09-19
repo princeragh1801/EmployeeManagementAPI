@@ -1,5 +1,4 @@
-﻿using EmployeeSystem.Contract.Utils;
-using Microsoft.Extensions.Configuration;
+﻿
 using System.Net;
 using System.Net.Mail;
 using Twilio;
@@ -10,23 +9,28 @@ namespace EmployeeSystem.Provider.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly EmailConfiguration _emailConfig;
         private readonly string _accountSid = string.Empty;
+        private readonly string _smtpServer = string.Empty;
+        private readonly string _from = string.Empty;
+        private readonly string _port = string.Empty;
+        private readonly string _username = string.Empty;
+        private readonly string _password = string.Empty;
         private readonly string _authToken = string.Empty;
         private readonly string _whatsAppFrom = string.Empty;
-        public EmailService(EmailConfiguration emailConfig, IConfiguration configuration)
+        public EmailService()
         {
-            _emailConfig = emailConfig;
-            /*_accountSid = configuration["Twilio:AccountSid"];
-            _authToken = configuration["Twilio:AuthToken"];
-            _whatsAppFrom = configuration["Twilio:WhatsAppFrom"];*/
+            _smtpServer = Environment.GetEnvironmentVariable("EMAIL_SMTP_SERVER");
+            _from = Environment.GetEnvironmentVariable("EMAIL_FROM");
+            _port = Environment.GetEnvironmentVariable("EMAIL_PORT");
+            _username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
+            _password = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
         }
 
         public async Task SendEmail(string to, string subject, string body)
         {
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(_emailConfig.From),
+                From = new MailAddress(_from),
                 Subject = subject,
                 Body = body,
                 IsBodyHtml = true
@@ -34,9 +38,9 @@ namespace EmployeeSystem.Provider.Services
 
             mailMessage.To.Add(to);
 
-            using var client = new SmtpClient(_emailConfig.SmtpServer, _emailConfig.Port)
+            using var client = new SmtpClient(_smtpServer, Convert.ToInt32(_port))
             {
-                Credentials = new NetworkCredential(_emailConfig.Username, _emailConfig.Password),
+                Credentials = new NetworkCredential(_username, _password),
                 EnableSsl = true
             };
 

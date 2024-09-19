@@ -10,11 +10,22 @@
             _mapper = mapper;
         }
 
+        // TODO ::: fix the mappers
         public async Task<List<EmployeeIdAndName>> GetAll(int projectId)
         {
             try
             {
-                var employees = await _context.ProjectEmployees.Include(e => e.Employee).Where(e => e.ProjectId == projectId & e.Employee.IsActive).ProjectTo<EmployeeIdAndName>(_mapper.ConfigurationProvider).AsNoTracking().ToListAsync();
+                var employees = await _context.ProjectEmployees
+                    .Include(e => e.Employee)
+                    .ThenInclude(e => e.Department)
+                    .Where(e => e.ProjectId == projectId & e.Employee.IsActive)
+                    .Select(e => new EmployeeIdAndName
+                    {
+                        Id = e.Employee.Id,
+                        Name = e.Employee.Name,
+                        DepartmentName = e.Employee.Department != null ? e.Employee.Department.Name : ""
+                    })
+                    .AsNoTracking().ToListAsync();
                 return employees;
             }
             catch (Exception ex)

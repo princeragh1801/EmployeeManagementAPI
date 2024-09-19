@@ -6,7 +6,7 @@ namespace EmployeeSystemWebApi.Extention
 {
     public static class AddAuthServices
     {
-        public static IServiceCollection AddAuthenticationAuthorizationServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddAuthenticationAuthorizationServices(this IServiceCollection services)
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(option =>
@@ -16,9 +16,9 @@ namespace EmployeeSystemWebApi.Extention
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidAudience = configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+                    ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+                    ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY")))
 
                 };
             });
