@@ -572,8 +572,6 @@ public class EmployeeService : IEmployeeService
 
             int rowAffected = await _context.SaveChangesAsync();
             return rowAffected > 0;
-            // var data=await _context.Employees.ExecuteUpdateAsync(x => x.SetProperty(x => x.Username, "ndede"));
-
 
         }
         catch (Exception ex)

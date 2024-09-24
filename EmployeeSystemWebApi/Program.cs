@@ -23,7 +23,6 @@ builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
     builder.AllowAnyOrigin()
            .AllowAnyMethod()
            .AllowAnyHeader();
-
 }));
 
 
@@ -57,7 +56,6 @@ app.UseCors("MyPolicy");
     app.UseSwaggerUI();
 //}
 //app.MapIdentityApi<IdentityUser>();
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
